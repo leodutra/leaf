@@ -1,25 +1,52 @@
-		
+	
 	/*	LEAF JavaScript Library
 	 * 	Leonardo Dutra
 	 *	v0.4a
 	 *
+	 * Copyright (c) 2009, Leonardo Dutra
+	 * All rights reserved.
+	 *
+	 * Redistribution and use in source and binary forms, with or without
+	 * modification, are permitted provided that the following conditions are met:
+	 *     * Redistributions of source code must retain the above copyright
+	 *       notice, this list of conditions and the following disclaimer.
+	 *     * Redistributions in binary form must reproduce the above copyright
+	 *       notice, this list of conditions and the following disclaimer in the
+	 *       documentation and/or other materials provided with the distribution.
+	 *     * Neither the name of the creator nor the
+	 *       names of its contributors may be used to endorse or promote products
+	 *       derived from this software without specific prior written permission.
+	 *
+	 * THIS SOFTWARE IS PROVIDED BY LEONARDO DUTRA ''AS IS'' AND ANY
+	 * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+	 * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+	 * DISCLAIMED. IN NO EVENT SHALL LEONARDO DUTRA BE LIABLE FOR ANY
+	 * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+	 * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+	 * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+	 * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+	 * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+	 * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+	 *
+	 *
+	 *
 	 *	CHANGES:
 	 *
-	 	todo:
-	 		- test if replace would speedup getByClass RegExp mount
-	 		- check best situations for using "while" or "for"
+	 todo:
+	 - test if replace would speedup getByClass RegExp mount
+	 - check best situations for using "while" or "for"
 	 
-	 	090202:
-			- added getOffset
-			- added setClasses and getClasses
-			- removed offsets from getPosition and getSize returns
-			
-		090204:
-			- added XMLHTTP version to IE XHR
-			- added getAvailCenter to Screen
-			- optimizations
+	 090202:
+	 - added getOffset
+	 - added setClasses and getClasses
+	 - removed offsets from getPosition and getSize returns
+	 
+	 090204:
+	 - added XMLHTTP version to IE XHR
+	 - added getAvailCenter to Screen
+	 - optimizations
 	 */
-	
+
 	
 	/* Check if exists */
 	if ('object' !== typeof window.leaf) {
@@ -32,7 +59,7 @@
 	leaf.Object = {
 	    inherit: function(object, sourceObject)
 	    {
-	        if (object!==null && object!==undefined && sourceObject!==null && sourceObject!==undefined) {
+	        if (object !== null && object !== undefined && sourceObject !== null && sourceObject !== undefined) {
 	            for (var n in sourceObject) {
 	                object[n] = sourceObject[n];
 	            }
@@ -52,15 +79,16 @@
 	        }
 	        else {
 	            var e;
-				var v = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP'];
-				var i = 2;
-				while (i--) {
-					try {
-						e = new W.ActiveXObject(v[i]);
-						return e;
-					} 
-					catch (e) {}
-				}
+	            var v = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP'];
+	            var i = 2;
+	            while (i--) {
+	                try {
+	                    e = new W.ActiveXObject(v[i]);
+	                    return e;
+	                } 
+	                catch (e) {
+	                }
+	            }
 	        }
 	    }
 	};
@@ -87,7 +115,7 @@
 	    {
 	        var S = screen;
 	        return {
-	            width:  S.width,
+	            width: S.width,
 	            height: S.height
 	        };
 	    },
@@ -96,7 +124,7 @@
 	    {
 	        var S = screen;
 	        return {
-	            width:  S.availWidth,
+	            width: S.availWidth,
 	            height: S.availHeight
 	        };
 	    },
@@ -105,19 +133,19 @@
 	    {
 	        var S = screen;
 	        return {
-	            x: S.width  /2,
-	            y: S.height /2
+	            x: S.width / 2,
+	            y: S.height / 2
 	        };
 	    },
-		
-		getAvailCenter: function ()
-		{
-			var S = screen;
+	    
+	    getAvailCenter: function()
+	    {
+	        var S = screen;
 	        return {
-	            x:  S.availWidth/2,
-	            y: S.availHeight/2
+	            x: S.availWidth / 2,
+	            y: S.availHeight / 2
 	        };
-		}
+	    }
 	};
 	
 	
@@ -133,7 +161,7 @@
 	        leaf.DOM.core.removeEvent(document, type, handlerFn);
 	    }
 	};
-	
+
 	
 	/* Mouse
 	 */
@@ -142,8 +170,8 @@
 	    {
 	        if ((event = event || window.event)) {
 	            var D = document.documentElement;
-	            var x = 'number' === typeof event.pageX ? event.pageX : event.clientX +D.scrollLeft -(D.clientLeft || 0);
-	            var y = 'number' === typeof event.pageY ? event.pageY : event.clientY +D.scrollTop  -(D.clientLeft || 0);
+	            var x = 'number' === typeof event.pageX ? event.pageX : event.clientX + D.scrollLeft - (D.clientLeft || 0);
+	            var y = 'number' === typeof event.pageY ? event.pageY : event.clientY + D.scrollTop - (D.clientLeft || 0);
 	            return {
 	                x: 0 < x ? x : 0,
 	                y: 0 < y ? y : 0
@@ -155,7 +183,7 @@
 	        };
 	    }
 	};
-	
+
 	
 	/* DOM
 	 */
@@ -181,7 +209,8 @@
 	                }
 	            }
 	        } 
-	        catch (o) {    }
+	        catch (o) {
+	        }
 	    }
 	    return null;
 	};
@@ -192,7 +221,7 @@
 	    if (W.DOMParser) {
 	        return (new W.DOMParser()).parseFromString(XMLText, 'text/xml');
 	    }
-		var o;
+	    var o;
 	    try {
 	        o = new W.ActiveXObject('Microsoft.XMLDOM');
 	        o.async = false;
@@ -207,8 +236,8 @@
 	leaf.DOM.getById = function(ids)
 	{
 	    if (ids instanceof Array) {
-	        var i = ids.length; 
-			while (i--) {
+	        var i = ids.length;
+	        while (i--) {
 	            ids[i] = document.getElementById(ids[i]);
 	        }
 	        return ids;
@@ -218,17 +247,17 @@
 	
 	leaf.DOM.getByTag = function(tagNames, rootNode)
 	{
-	    rootNode = leaf.DOM.core.getElement(rootNode)||document;
+	    rootNode = leaf.DOM.core.getElement(rootNode) || document;
 	    if (tagNames instanceof Array) {
 	        var l = tagNames.length;
 	        var n = [];
-			var i = 0;
-			var j;
+	        var i = 0;
+	        var j;
 	        var k;
 	        var o;
-	        while(i < l) {
+	        while (i < l) {
 	            k = (o = rootNode.getElementsByTagName(tagNames[i++])).length;
-				j = 0;
+	            j = 0;
 	            while (j < k) {
 	                n[n.length] = o[j++];
 	            }
@@ -240,18 +269,18 @@
 	
 	leaf.DOM.getByClass = function(classNames, rootNode)
 	{
-	    if (('string' === typeof classNames? [classNames] : classNames) instanceof Array) {
+	    if (('string' === typeof classNames ? [classNames] : classNames) instanceof Array) {
 	        var $ = [];
 	        var i = classNames.length;
 	        var o;
 	        var r = '';
 	        while (i--) {
-				r += classNames[i] +(i ? '|' : '');
+	            r += classNames[i] + (i ? '|' : '');
 	        }
-	        r = new RegExp('(?:\\\s|^)(?:' +r +')(?:\\\s|$)');
+	        r = new RegExp('(?:\\\s|^)(?:' + r + ')(?:\\\s|$)');
 	        function q(n)
 	        {
-	            if (n.nodeType===1 && r.test(n.className)) {
+	            if (n.nodeType === 1 && r.test(n.className)) {
 	                $[$.length] = n;
 	            }
 	            if ((n = n.childNodes)) {
@@ -261,7 +290,7 @@
 	                }
 	            }
 	        }
-			q(leaf.DOM.core.getElement(rootNode) || document);
+	        q(leaf.DOM.core.getElement(rootNode) || document);
 	        return $;
 	    }
 	    return null;
@@ -290,12 +319,12 @@
 	        }
 	        else {
 	            if (o.attachEvent) {
-	                o['e' +e +fn] = fn;
-	                o[e +fn] = function()
+	                o['e' + e + fn] = fn;
+	                o[e + fn] = function()
 	                {
 	                    o['e' + e + fn](window.event);
 	                };
-	                o.attachEvent('on'+ e, o[e + fn]);
+	                o.attachEvent('on' + e, o[e + fn]);
 	            }
 	        }
 	    },
@@ -308,9 +337,9 @@
 	        }
 	        else {
 	            if (o.detachEvent) {
-	                o.detachEvent('on' +e, o[(e = e +fn)]);
+	                o.detachEvent('on' + e, o[(e = e + fn)]);
 	                o[e] = null;
-	                o['e'+e] = null;
+	                o['e' + e] = null;
 	            }
 	        }
 	    },
@@ -347,7 +376,7 @@
 	            var $ = o.attributes;
 	            if ($) {
 	                var n;
-					var i = $.length;
+	                var i = $.length;
 	                while (i--) {
 	                    if ('function' === typeof o[(n = $[i].name)]) {
 	                        o[n] = null;
@@ -355,7 +384,7 @@
 	                }
 	            }
 	            if ((o = o.childNodes)) {
-					$ = o.length;
+	                $ = o.length;
 	                while ($--) {
 	                    this.purgeElement(o[$]);
 	                }
@@ -379,9 +408,9 @@
 	        }
 	        return null;
 	    },
-		
-		expObj: new RegExp(),
-		isIE: (/msie/i).test(navigator.userAgent)
+	    
+	    expObj: new RegExp(),
+	    isIE: (/msie/i).test(navigator.userAgent)
 	};
 
 	
@@ -408,28 +437,27 @@
 	    
 	    setStyle: function(cssObj)
 	    {
-	        if (cssObj instanceof Object && !(cssObj instanceof Array))
-	        {
+	        if (cssObj instanceof Object && !(cssObj instanceof Array)) {
 	            var e = this.element;
 	            if (e) {
-	              	var ie = this.core.isIE;
+	                var ie = this.core.isIE;
 	                var s = ie ? e.style.cssText : e.getAttribute('style');
-					var r = this.core.expObj;
-					var i;
-					var k;
+	                var r = this.core.expObj;
+	                var i;
+	                var k;
 	                for (var n in cssObj) {
-						if ('string'===typeof (k = cssObj[n])||'number'===typeof k) {
-							r.compile('(?:^|\\\;|\s)' + n + '\\\:', 'i');
-							if (-1 === (i = s ? s.search(r) : -1)) {
-								s = n + '\: ' +k +'\; ' + s;
-							}
-							else {
-								/* if property found, substitutes value... preventing errors on some browsers */
-								s = s.substr(0, (i += n.length)) + ': ' +k + s.substr(s.indexOf('\;', i));
-							}
-						}
+	                    if ('string' === typeof(k = cssObj[n]) || 'number' === typeof k) {
+	                        r.compile('(?:^|\\\;|\s)' + n + '\\\:', 'i');
+	                        if (-1 === (i = s ? s.search(r) : -1)) {
+	                            s = n + '\: ' + k + '\; ' + s;
+	                        }
+	                        else {
+	                            /* if property found, substitutes value... preventing errors on some browsers */
+	                            s = s.substr(0, (i += n.length)) + ': ' + k + s.substr(s.indexOf('\;', i));
+	                        }
+	                    }
 	                }
-					if (ie) {
+	                if (ie) {
 	                    e.style.cssText = s;
 	                }
 	                else {
@@ -444,126 +472,127 @@
 	        if ('string' === typeof property) {
 	            var o = this.element;
 	            if (o) {
-					var ie = this.core.isIE;
-					if (ie ? e.style.cssText : e.getAttribute('style')) {
-						var r = this.core.expObj;
-						r.compile('(?:^|\\\;| )' + property + '\\\:', 'i');
-						if (-1 < (i = o.search(r))) {
-							return o.substring((i = o.indexOf(':', i)+2), (i = o.indexOf('\;', i))===-1 ?o.length:i);
-						}
-					}
+	                var ie = this.core.isIE;
+	                if (ie ? e.style.cssText : e.getAttribute('style')) {
+	                    var r = this.core.expObj;
+	                    r.compile('(?:^|\\\;| )' + property + '\\\:', 'i');
+	                    if (-1 < (i = o.search(r))) {
+	                        return o.substring((i = o.indexOf(':', i) + 2), (i = o.indexOf('\;', i)) === -1 ? o.length : i);
+	                    }
+	                }
 	            }
 	        }
 	        return '';
 	    },
-		
-		
-		addClass: function(classNames)
-		{
-			var e = this.element;
-			if (e) {
-				if ('string' === typeof classNames) {
-					classNames = [classNames];
-				}
-				if (classNames instanceof Array) {
-					var c = e.className;
-					if ('string'===typeof c) {
-						var l = classNames.length;
-						var r = this.core.expObj;
-						var i = 0;
-						var k;
-						while (i < l) {
-							r.compile('(?:\\\s|^)' + (k = classNames[i++]) +'(?:\\\s|$)');
-							if (!(r.test(c))) {
-								c += ' '+k;
-							}
-						}
-						e.className = c;
-					}
-				}
-			}
-		},
-		
-		removeClass: function (classNames) {
-			var e = this.element;
-			if (e) {
-				if ('string' === typeof classNames) {
-					classNames = [classNames];
-				}
-				if (classNames instanceof Array) {
-					var c = e.className;
-					if ('string'===typeof c) {
-						var i = classNames.length;
-						var r = this.core.expObj;
-						var k;
-						while (i--) {
-							r.compile('(?:\\\s|^)' +(k = classNames[i]) +'(?:\\\s|$)');
-							if ((c.search(r)!==-1)) {
-								c = c.replace(k, '');
-							}
-						}
-						e.className = c;
-					}
-				}
-			}
-		},
 	    
+	    
+	    addClass: function(classNames)
+	    {
+	        var e = this.element;
+	        if (e) {
+	            if ('string' === typeof classNames) {
+	                classNames = [classNames];
+	            }
+	            if (classNames instanceof Array) {
+	                var c = e.className;
+	                if ('string' === typeof c) {
+	                    var l = classNames.length;
+	                    var r = this.core.expObj;
+	                    var i = 0;
+	                    var k;
+	                    while (i < l) {
+	                        r.compile('(?:\\\s|^)' + (k = classNames[i++]) + '(?:\\\s|$)');
+	                        if (!(r.test(c))) {
+	                            c += ' ' + k;
+	                        }
+	                    }
+	                    e.className = c;
+	                }
+	            }
+	        }
+	    },
+	    
+	    removeClass: function(classNames)
+	    {
+	        var e = this.element;
+	        if (e) {
+	            if ('string' === typeof classNames) {
+	                classNames = [classNames];
+	            }
+	            if (classNames instanceof Array) {
+	                var c = e.className;
+	                if ('string' === typeof c) {
+	                    var i = classNames.length;
+	                    var r = this.core.expObj;
+	                    var k;
+	                    while (i--) {
+	                        r.compile('(?:\\\s|^)' + (k = classNames[i]) + '(?:\\\s|$)');
+	                        if ((c.search(r) !== -1)) {
+	                            c = c.replace(k, '');
+	                        }
+	                    }
+	                    e.className = c;
+	                }
+	            }
+	        }
+	    },
+    
 	    
 	    /* Position */
 	    
 	    setPosition: function(x, y, z, type)
 	    {
-			// large but optimum code
+	        // large but optimum code
 	        var $ = this.style;
 	        if ($) {
 	        
 	            $.position = 'string' === typeof type ? type : $.position || 'absolute';
 	            
-                if ('number' === typeof x) {
-					if ($.right) {
-						$.left = '';
-						$.right = x + 'px';
-					}
-					else {
-						$.left = x + 'px';
-						$.right = '';
-					}
-				}
-				else {
-					if ('string' === typeof x) {
-						if ($.right) {
-							$.left = '';
-							$.right = x;
-						}
-						else {
-							$.left = x;
-							$.right = '';
-						}
-					}
-				}
-				
-	            if ('number'===typeof y) {
-	                if ($.bottom) {
-	                    $.top = '';
-	                    $.bottom = y+'px';
+	            if ('number' === typeof x) {
+	                if ($.right) {
+	                    $.left = '';
+	                    $.right = x + 'px';
 	                }
 	                else {
-	                    $.top = y+'px';
+	                    $.left = x + 'px';
+	                    $.right = '';
+	                }
+	            }
+	            else {
+	                if ('string' === typeof x) {
+	                    if ($.right) {
+	                        $.left = '';
+	                        $.right = x;
+	                    }
+	                    else {
+	                        $.left = x;
+	                        $.right = '';
+	                    }
+	                }
+	            }
+	            
+	            if ('number' === typeof y) {
+	                if ($.bottom) {
+	                    $.top = '';
+	                    $.bottom = y + 'px';
+	                }
+	                else {
+	                    $.top = y + 'px';
 	                    $.bottom = '';
 	                }
 	            }
-				else {
-					if ('string'===typeof y) {
-						if ($.bottom) {
-		                    $.top = '';
-		                    $.bottom = y;
-		                }
-		                else {
-		                    $.top = y;
-		                    $.bottom = '';
-		                }
-					}
-				}
+	            else {
+	                if ('string' === typeof y) {
+	                    if ($.bottom) {
+	                        $.top = '';
+	                        $.bottom = y;
+	                    }
+	                    else {
+	                        $.top = y;
+	                        $.bottom = '';
+	                    }
+	                }
+	            }
 	            if ('number' === typeof z) {
 	                $.zIndex = parseInt(z, 10);
 	            }
@@ -577,7 +606,7 @@
 	            var $ = e.style;
 	            
 	            var x = $.left || $.right;
-	            var y = $.top  || $.bottom;
+	            var y = $.top || $.bottom;
 	            var z = $.zIndex;
 	            
 	            if (!keepUnits) {
@@ -598,29 +627,29 @@
 	            position: ''
 	        };
 	    },
-		
-		getOffset: function ()
-		{
-			var e = this.element;
-			if (e) {
-				var x = e.offsetLeft;
-				var y = e.offsetTop;
-				return {
-					left:   x,
-					top:    y,
-					width:  e.offsetWidth,
-					height: e.offsetHeight,
-					parent: e.offsetParent
-				};
-			}
-			return {
-				left:   0,
-				top:    0,
-				width:  0,
-				height: 0,
-				parent: null
-			};
-		},
+	    
+	    getOffset: function()
+	    {
+	        var e = this.element;
+	        if (e) {
+	            var x = e.offsetLeft;
+	            var y = e.offsetTop;
+	            return {
+	                left: x,
+	                top: y,
+	                width: e.offsetWidth,
+	                height: e.offsetHeight,
+	                parent: e.offsetParent
+	            };
+	        }
+	        return {
+	            left: 0,
+	            top: 0,
+	            width: 0,
+	            height: 0,
+	            parent: null
+	        };
+	    },
 	    
 	    invertPosition: function(invertX, invertY)
 	    {
@@ -659,19 +688,19 @@
 	            if ('number' === typeof width) {
 	                $.width = width + 'px';
 	            }
-				else {
-					if ('string' === typeof width) {
-						$.width = width;
-					}
-				}
-				if ('number' === typeof height) {
-	            	$.height = height + 'px';
+	            else {
+	                if ('string' === typeof width) {
+	                    $.width = width;
+	                }
 	            }
-				else {
-					if ('string' === typeof height) {
-						$.height = height;
-					}
-				}
+	            if ('number' === typeof height) {
+	                $.height = height + 'px';
+	            }
+	            else {
+	                if ('string' === typeof height) {
+	                    $.height = height;
+	                }
+	            }
 	        }
 	    },
 	    
@@ -762,10 +791,10 @@
 	            
 	            var p = $.backgroundPosition.split(' ');
 	            
-	            x = 'number' === typeof x ? x + 'px' : 'string'===typeof x ? x:(p[0]||'50%');
-	            y = 'number' === typeof y ? y + 'px' : 'string'===typeof y ? y:(p[1]||'50%');
+	            x = 'number' === typeof x ? x + 'px' : 'string' === typeof x ? x : (p[0] || '50%');
+	            y = 'number' === typeof y ? y + 'px' : 'string' === typeof y ? y : (p[1] || '50%');
 	            
-		        $.backgroundPosition = x +' ' +y;
+	            $.backgroundPosition = x + ' ' + y;
 	            $.backgroundRepeat = repeat ? repeat : 'no-repeat';
 	        }
 	    },
@@ -815,34 +844,34 @@
 	            if ('string' === typeof style) {
 	                $.fontStyle = style;
 	            }
-	            if ('string'===typeof weight||'number'===typeof weight) {
+	            if ('string' === typeof weight || 'number' === typeof weight) {
 	                $.fontWeight = weight;
 	            }
 	            if ('number' === typeof size) {
 	                $.fontSize = size + 'pt';
 	            }
-				else {
-					if ('string' === typeof size) {
-						$.fontSize = size;
-					}
-				}
+	            else {
+	                if ('string' === typeof size) {
+	                    $.fontSize = size;
+	                }
+	            }
 	            if ('number' === typeof spacing) {
 	                $.letterSpacing = spacing + 'px';
 	            }
-				else {
-					if ('string' === typeof spacing) {
-	               		$.letterSpacing = spacing;
-	            	}
-				}
+	            else {
+	                if ('string' === typeof spacing) {
+	                    $.letterSpacing = spacing;
+	                }
+	            }
 	            if ('number' === typeof lineHeight) {
 	                $.lineHeight = lineHeight + 'px';
 	            }
-				else {
-					if ('string' === typeof lineHeight) {
-	             		$.lineHeight = lineHeight;
-	           		}
-				}
-	            if (useSmallCaps!==null && useSmallCaps!==undefined) {
+	            else {
+	                if ('string' === typeof lineHeight) {
+	                    $.lineHeight = lineHeight;
+	                }
+	            }
+	            if (useSmallCaps !== null && useSmallCaps !== undefined) {
 	                $.fontVariant = useSmallCaps ? 'small-caps' : 'normal';
 	            }
 	        }
@@ -897,12 +926,12 @@
 	            if ('number' === typeof width) {
 	                $.borderWidth = width + 'px';
 	            }
-				else {
-					if ('string' === typeof width) {
-	                	$.borderWidth = width;
-	            	}
-				}
-				$.borderStyle = 'string' === typeof style ? style : $.borderStyle || 'solid';
+	            else {
+	                if ('string' === typeof width) {
+	                    $.borderWidth = width;
+	                }
+	            }
+	            $.borderStyle = 'string' === typeof style ? style : $.borderStyle || 'solid';
 	        }
 	    },
 	    
@@ -937,35 +966,35 @@
 	            if ('number' === typeof top) {
 	                $.paddingTop = top + 'px';
 	            }
-				else {
-					if ('string' === typeof top) {
-	                	$.paddingTop = top;
-	            	}
-				}
+	            else {
+	                if ('string' === typeof top) {
+	                    $.paddingTop = top;
+	                }
+	            }
 	            if ('number' === typeof right) {
 	                $.paddingRight = right + 'px';
 	            }
-				else {
-					if ('string' === typeof right) {
-	                	$.paddingRight = right;
-	            	}
-				}
-				if ('number' === typeof bottom) {
-	                $.paddingBottom = bottom+ 'px';
+	            else {
+	                if ('string' === typeof right) {
+	                    $.paddingRight = right;
+	                }
 	            }
-				else {
-					if ('string' === typeof bottom) {
-	                	$.paddingBottom = bottom;
-	            	}
-				}
-				if ('number' === typeof left) {
-	                $.paddingLeft = left +'px';
+	            if ('number' === typeof bottom) {
+	                $.paddingBottom = bottom + 'px';
 	            }
-				else {
-					if ('string' === typeof left) {
-	                	$.paddingLeft = left;
-	            	}
-				}
+	            else {
+	                if ('string' === typeof bottom) {
+	                    $.paddingBottom = bottom;
+	                }
+	            }
+	            if ('number' === typeof left) {
+	                $.paddingLeft = left + 'px';
+	            }
+	            else {
+	                if ('string' === typeof left) {
+	                    $.paddingLeft = left;
+	                }
+	            }
 	        }
 	    },
 	    
@@ -1009,35 +1038,35 @@
 	            if ('number' === typeof top) {
 	                $.marginTop = top + 'px';
 	            }
-				else {
-					if ('string' === typeof top) {
-	                	$.marginTop = top;
-	            	}
-				}
+	            else {
+	                if ('string' === typeof top) {
+	                    $.marginTop = top;
+	                }
+	            }
 	            if ('number' === typeof right) {
 	                $.marginRight = right + 'px';
 	            }
-				else {
-					if ('string' === typeof right) {
-	                	$.marginRight = right;
-	            	}
-				}
-				if ('number' === typeof bottom) {
-	                $.marginBottom = bottom+ 'px';
+	            else {
+	                if ('string' === typeof right) {
+	                    $.marginRight = right;
+	                }
 	            }
-				else {
-					if ('string' === typeof bottom) {
-	                	$.marginBottom = bottom;
-	            	}
-				}
-				if ('number' === typeof left) {
-	                $.marginLeft = left +'px';
+	            if ('number' === typeof bottom) {
+	                $.marginBottom = bottom + 'px';
 	            }
-				else {
-					if ('string' === typeof left) {
-	                	$.marginLeft = left;
-	            	}
-				}
+	            else {
+	                if ('string' === typeof bottom) {
+	                    $.marginBottom = bottom;
+	                }
+	            }
+	            if ('number' === typeof left) {
+	                $.marginLeft = left + 'px';
+	            }
+	            else {
+	                if ('string' === typeof left) {
+	                    $.marginLeft = left;
+	                }
+	            }
 	        }
 	    },
 	    
@@ -1093,19 +1122,19 @@
 	            if ('number' === typeof indent) {
 	                $.textIndent = indent + 'px';
 	            }
-				else {
-					if ('string' === typeof indent) {
-	                	$.textIndent = indent;
-	            	}
-				}
+	            else {
+	                if ('string' === typeof indent) {
+	                    $.textIndent = indent;
+	                }
+	            }
 	            if ('number' === typeof wordSpacing) {
 	                $.wordSpacing = wordSpacing + 'px';
 	            }
-				else {
-					if ('string' === typeof wordSpacing) {
-	                	$.wordSpacing = wordSpacing;
-	            	}
-				}
+	            else {
+	                if ('string' === typeof wordSpacing) {
+	                    $.wordSpacing = wordSpacing;
+	                }
+	            }
 	        }
 	    },
 	    
@@ -1186,8 +1215,7 @@
 	            var $ = this.style;
 	            if ($) {
 	                opacity = opacity < 0 ? 0 : 1 < opacity ? 1 : opacity.toFixed(2);
-	                if (this.core.isIE) /* IE6, IE7 brute force for 'filters' attribute */
-	                {
+	                if (this.core.isIE) /* IE6, IE7 brute force for 'filters' attribute */ {
 	                    var s = $.cssText;
 	                    var i = s.search(/filter/i);
 	                    $.cssText = s.substr(0, i) + 'filter: alpha(opacity=' + parseInt(opacity * 100, 10) + ')' + s.substr(s.indexOf('\;', i));
@@ -1292,7 +1320,7 @@
 	        var e = this.element;
 	        if (e) {
 	            var c = this.getChild(childIndex);
-	            if (c && c.parentNode===e) {
+	            if (c && c.parentNode === e) {
 	                e.removeChild(c);
 	            }
 	        }

@@ -48,6 +48,9 @@
 		 
 		 090207:
 		 - optimizations
+		 
+		 090211
+		 - comments, fixes and optmizations
 	 */
 
 	
@@ -89,10 +92,10 @@
 	                    e = new W.ActiveXObject(v[i]);
 	                    return e;
 	                } 
-	                catch (e) {
-	                }
+	                catch (e) {}
 	            }
 	        }
+			return null;
 	    }
 	};
 	
@@ -118,7 +121,7 @@
 	    {
 	        var S = screen;
 	        return {
-	            width: S.width,
+	            width:  S.width,
 	            height: S.height
 	        };
 	    },
@@ -173,8 +176,10 @@
 	    {
 	        if ((event = event || window.event)) {
 	            var D = document.documentElement;
+				/* fix using client properties */
 	            var x = 'number' === typeof event.pageX ? event.pageX : event.clientX +D.scrollLeft -(D.clientLeft || 0);
-	            var y = 'number' === typeof event.pageY ? event.pageY : event.clientY +D.scrollTop  -(D.clientLeft || 0);
+	            var y = 'number' === typeof event.pageY ? event.pageY : event.clientY +D.scrollTop  -(D.clientTop  || 0);
+				/* zero for good drag and drop works. Some libs let the user drop a box under browser bar, losing box control */
 	            return {
 	                x: 0 < x ? x : 0,
 	                y: 0 < y ? y : 0
@@ -311,6 +316,7 @@
 	
 	
 	/* DOM Core
+	 * It contains general and private functions
 	 */
 	leaf.DOM.core = {
 	
@@ -342,7 +348,7 @@
 	            if (o.detachEvent) {
 	                o.detachEvent('on' + e, o[(e = e + fn)]);
 	                o[e] = null;
-	                o['e' + e] = null;
+	                o['e' +e] = null;
 	            }
 	        }
 	    },
@@ -403,13 +409,7 @@
 	    
 	    getElement: function($)
 	    {
-	        if ($) {
-	            if ($.nodeType === 1 && 'object' === typeof $.style) {
-	                return $;
-	            }
-	            return document.getElementById($);
-	        }
-	        return null;
+			return $ ? $.nodeType === 1 && 'object' === typeof $.style? $ : document.getElementById($) : null;
 	    },
 	    
 	    expObj: new RegExp(),
@@ -422,7 +422,6 @@
 	leaf.DOM.prototype = {
 	
 	    /* Constructor */
-	    
 	    DOM: function(element)
 	    {
 	        this.setElement(element);
@@ -604,24 +603,24 @@
 	    
 	    getPosition: function(keepUnits)
 	    {
-	        var e = this.element;
-	        if (e) {
-	            var $ = e.style;
-	            
-	            var x = $.left || $.right;
-	            var y = $.top || $.bottom;
-	            var z = $.zIndex;
-	            
-	            if (!keepUnits) {
-	                x = parseFloat(x) || 0;
-	                y = parseFloat(y) || 0;
+	        var $ = this.style;
+	        if ($) {
+				if (keepUnits) {
+					return {
+						x: $.left|| $.right,
+						y: $.top || $.bottom,
+						z: $.zIndex,
+						position: $.position
+					};
+				}
+				else {
+	                return {
+						x: parseFloat($.left|| $.right) ||0,
+						y: parseFloat($.top || $.bottom)||0,
+						z: $.zIndex,
+						position: $.position
+					};
 	            }
-	            return {
-	                x: x,
-	                y: y,
-	                z: z,
-	                position: $.position
-	            };
 	        }
 	        return {
 	            x: 0,
@@ -635,12 +634,10 @@
 	    {
 	        var e = this.element;
 	        if (e) {
-	            var x = e.offsetLeft;
-	            var y = e.offsetTop;
 	            return {
-	                left: x,
-	                top: y,
-	                width: e.offsetWidth,
+	                left:   e.offsetLeft,
+	                top:    e.offsetTop,
+	                width:  e.offsetWidth,
 	                height: e.offsetHeight,
 	                parent: e.offsetParent
 	            };
@@ -709,19 +706,20 @@
 	    
 	    getSize: function(keepUnits)
 	    {
-	        var e = this.element;
-	        if (e) {
-	            var $ = e.style;
-	            var w = $.width;
-	            var h = $.height;
-	            if (!keepUnits) {
-	                w = parseFloat(w) || 0;
-	                h = parseFloat(h) || 0;
-	            }
-	            return {
-	                width: w,
-	                height: h
-	            };
+	        var $ = this.style;
+	        if ($) {
+	            if (keepUnits) {
+		            return {
+		                width:  $.width,
+		                height: $.height
+		            };
+				}
+				else {
+					return {
+		                width:  parseFloat($.width) || 0,
+		                height: parseFloat($.height)|| 0
+		            };
+				}
 	        }
 	        return {
 	            width: 0,
@@ -730,7 +728,9 @@
 	    },
 	    
 	    
-	    /* Area */
+	    /* Area
+	     * nice for UI works
+	     */ 
 	    
 	    setArea: function(x, y, z, width, height, positionType)
 	    {
@@ -740,9 +740,11 @@
 	    
 	    getArea: function(keepUnits)
 	    {
-	        var o = this.getPosition(keepUnits);
-	        leaf.Object.inherit(o, this.getSize(keepUnits));
-	        return o;
+	        var p = this.getPosition(keepUnits);
+	        var s = this.getSize(keepUnits);
+			p.width  = s.width;
+			p.height = s.height;
+	        return p;
 	    },
 	    
 	    
@@ -750,6 +752,7 @@
 	    
 	    setContent: function(value)
 	    {
+			/* need intelligent fix... IE6 dont allow innerHTML set when element was not appended yet */
 	        var e = this.element;
 	        if (value !== null && value !== undefined && e) {
                 e.innerHTML = value;
@@ -767,6 +770,7 @@
 	    
 	    addContent: function(value)
 	    {
+			/* need intelligent fix... IE6 dont allow innerHTML set when element was not appended yet */
             var e = this.element;
 	        if (value !== null && value !== undefined && e) {
                 e.innerHTML += String(value);
@@ -784,7 +788,7 @@
 	                $.backgroundColor = color;
 	            }
 	            
-	            if (src !== null && src !== undefined) {
+	            if ('string' === typeof src) {
 	                $.backgroundImage = 'url(\'' +src +'\')';
 	            }
 	            
@@ -803,20 +807,24 @@
 	        var $ = this.style;
 	        if ($) {
 	            var p = $.backgroundPosition.split(' ');
-	            var x = p[0];
-	            var y = p[1];
-	            
-	            if (!keepUnits) {
-	                x = parseFloat(x) || 0;
-	                y = parseFloat(y) || 0;
+	            if (keepUnits) {
+					return {
+						x: p[0]||'',
+	             		y: p[1]||'',
+						color:  $.backgroundColor,
+	                	src:    $.backgroundImage,
+	                	repeat: $.backgroundRepeat
+					};
+				}
+				else {
+					return {
+						x: parseFloat(p[0])||0,
+	             		y: parseFloat(p[1])||0,
+						color:  $.backgroundColor,
+	                	src:    $.backgroundImage,
+	                	repeat: $.backgroundRepeat
+					};
 	            }
-	            return {
-	                x: x,
-	                y: y,
-	                color: $.backgroundColor,
-	                src: $.backgroundImage,
-	                repeat: $.backgroundRepeat
-	            };
 	        }
 	        return {
 	            x: 0,
@@ -880,25 +888,31 @@
 	    {
 	        var $ = this.style;
 	        if ($) {
-	            var s = $.fontSize;
-	            var p = $.letterSpacing;
-	            var h = $.lineHeight;
-	            
-	            if (!keepUnits) {
-	                s = parseFloat(s) || 0;
-	                p = parseFloat(p) || 0;
-	                h = parseFloat(h) || 0;
+	            if (keepUnits) {
+					return {
+		                color:  $.color,
+		                size:   $.fontSize,
+		                family: $.fontFamily,
+		                weight: $.fontWeight,
+		                style:  $.fontStyle,
+		                spacing: $.letterSpacing,
+		                lineHeight: $.lineHeight,
+		                variant: $.fontVariant
+	            	};
+				}
+				else {
+					return {
+		                color:  $.color,
+		                size:   parseFloat($.fontSize)|| 0,
+		                family: $.fontFamily,
+		                weight: $.fontWeight,
+		                style:  $.fontStyle,
+		                spacing:    parseFloat($.letterSpacing)|| 0,
+		                lineHeight: parseFloat($.lineHeight)|| 0,
+		                variant:    $.fontVariant
+	            	};
 	            }
-	            return {
-	                color: $.color,
-	                size: s,
-	                family: $.fontFamily,
-	                weight: $.fontWeight,
-	                style: $.fontStyle,
-	                spacing: p,
-	                lineHeight: h,
-	                variant: $.fontVariant
-	            };
+	       
 	        }
 	        return {
 	            color: '',
@@ -936,23 +950,12 @@
 	    
 	    getBorder: function(keepUnits)
 	    {
-	        var w = this.style;
-	        if (w) {
-	            w = w.borderWidth;
-	            if (!keepUnits) {
-	                w = parseFloat(w) || 0;
-	            }
-	            return {
-	                color: $.borderColor,
-	                width: w,
-	                style: $.borderStyle
-	            };
-	        }
-	        return {
-	            color: '',
-	            width: 0,
-	            style: ''
-	        };
+	        var $ = this.style;
+            return {
+                color: $.borderColor,
+                width: $ ? keepUnits? $.borderWidth : parseFloat($.borderWidth)||0:0,
+                style: $.borderStyle
+            };
 	    },
 	    
 	    
@@ -1000,24 +1003,23 @@
 	    getPadding: function(keepUnits)
 	    {
 	        var $ = this.style;
-	        if ($) {
-	            var t = $.paddingTop;
-	            var r = $.paddingRight;
-	            var b = $.paddingBottom;
-	            var l = $.paddingLeft;
-	            
-	            if (!keepUnits) {
-	                t = parseFloat(t) || 0;
-	                r = parseFloat(r) || 0;
-	                b = parseFloat(b) || 0;
-	                l = parseFloat(l) || 0;
-	            }
-	            return {
-	                top: t,
-	                right: r,
-	                bottom: b,
-	                left: l
-	            };
+	        if ($) {	            
+	            if (keepUnits) {
+					return {
+						top:    $.paddingTop,
+						right:  $.paddingRight,
+						bottom: $.paddingBottom,
+						left:   $.paddingLeft
+					};
+				}
+				else {
+					return {
+						top:    parseFloat($.paddingTop)   ||0,
+						right:  parseFloat($.paddingRight) ||0,
+						bottom: parseFloat($.paddingBottom)||0,
+						left:   parseFloat($.paddingLeft)  ||0
+					};
+				}
 	        }
 	        return {
 	            top: 0,
@@ -1072,24 +1074,23 @@
 	    getMargin: function(keepUnits)
 	    {
 	        var $ = this.style;
-	        if ($) {
-	            var t = $.marginTop;
-	            var r = $.marginRight;
-	            var b = $.marginBottom;
-	            var l = $.marginLeft;
-	            
-	            if (!keepUnits) {
-	                t = parseFloat(t) || 0;
-	                r = parseFloat(r) || 0;
-	                b = parseFloat(b) || 0;
-	                l = parseFloat(l) || 0;
-	            }
-	            return {
-	                top: t,
-	                right: r,
-	                bottom: b,
-	                left: l
-	            };
+	        if ($) {	            
+	            if (keepUnits) {
+					return {
+						top:    $.marginTop,
+						right:  $.marginRight,
+						bottom: $.marginBottom,
+						left:   $.marginLeft
+					};
+				}
+				else {
+					return {
+						top:    parseFloat($.marginTop)   ||0,
+						right:  parseFloat($.marginRight) ||0,
+						bottom: parseFloat($.marginBottom)||0,
+						left:   parseFloat($.marginLeft)  ||0
+					};
+				}
 	        }
 	        return {
 	            top: 0,
@@ -1141,20 +1142,26 @@
 	    {
 	        var $ = this.style;
 	        if ($) {
-	            var s = $.wordSpacing;
-	            var i = $.textIndent;
-	            if (!keepUnits) {
-	                s = parseFloat(s) || 0;
-	                i = parseFloat(i) || 0;
-	            }
-	            return {
-	                align: $.textAlign,
-	                decoration: $.textDecoration,
-	                wordSpacing: s,
-	                whiteSpace: $.whiteSpace,
-	                indent: i,
-	                transform: $.textTransform
-	            };
+	            if (keepUnits) {
+					return {
+						align:       $.textAlign,
+						decoration:  $.textDecoration,
+						wordSpacing: $.wordSpacing,
+						whiteSpace:  $.whiteSpace,
+						indent:      $.textIndent,
+						transform:   $.textTransform
+					};
+				}
+				else {
+					return {
+						align:       $.textAlign,
+						decoration:  $.textDecoration,
+						wordSpacing: parseFloat($.wordSpacing) || 0,
+						whiteSpace:  $.whiteSpace,
+						indent:      parseFloat($.textIndent) || 0,
+						transform:   $.textTransform
+					};
+				}
 	        }
 	        return {
 	            align: '',
@@ -1174,7 +1181,7 @@
 	        var e = this.element;
 	        if (e) {
 	            if ('number' === typeof top) {
-	                if (!(top < 0 || e.scrollHeight < top)) {
+	                if (!(top < 0 && e.scrollHeight < top)) {
 	                    e.scrollTop = top;
 	                }
 	            }
@@ -1214,7 +1221,7 @@
 	            var $ = this.style;
 	            if ($) {
 	                opacity = opacity < 0 ? 0 : 1 < opacity ? 1 : opacity.toFixed(2);
-	                if (this.core.isIE) /* IE6, IE7 brute force for 'filters' attribute */ {
+	                if (this.core.isIE) /* IE6, IE7 fix for 'filters' attribute */ {
 	                    var s = $.cssText;
 	                    var i = s.search(/filter/i);
 	                    $.cssText = s.substr(0, i) + 'filter: alpha(opacity=' + parseInt(opacity * 100, 10) + ')' + s.substr(s.indexOf('\;', i));
@@ -1268,10 +1275,21 @@
 	        if (e && !e.parentNode) {
 	            var p = this.core.getElement(parent)||document.body;
 	            if (p) {
-	                p.appendChild(this.element);
+	                p.appendChild(e);
 	            }
 	        }
 	    },
+
+		insertBefore: function (node) {
+			var e = this.element;
+			if (e) {
+				try {
+					node.parentNode.insertBefore(e, this.core.getElement(node)||node);
+				} 
+				catch (e) {
+				}
+			}
+		},
 	    
 	    removeElement: function()
 	    {
@@ -1305,12 +1323,11 @@
 	    
 	    appendChild: function(childNode)
 	    {
-	        var e = this.element;
-	        if (e) {
-	            if (this.core.isHTML(childNode)) {
-	                e.appendChild(childNode);
-	            }
+	        var e;
+	        try {
+                this.element.appendChild(childNode);
 	        }
+			catch(e) {}
 	    },
 	    
 	    removeChild: function(childIndex)
@@ -1353,6 +1370,7 @@
 	        if (e) {
 	            return e.cloneNode(!!cloneAttrAndChilds);
 	        }
+			return null;
 	    },
 	    
 	    getParent: function()

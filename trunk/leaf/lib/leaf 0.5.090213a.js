@@ -450,7 +450,12 @@
 			return this.element;
 		},
 		
-		setStyle: function(cssObj)
+		getStyle: function () 
+		{
+			return this.style;
+		},
+		
+		setCSS: function(cssObj)
 		{
 			if (cssObj instanceof Object && !(cssObj instanceof Array)) {
 				var e = this.element;
@@ -482,7 +487,7 @@
 			}
 		},
 		
-		getStyle: function(property)
+		getCSS: function(property)
 		{
 			if ('string' === typeof property) {
 				var o = this.element;

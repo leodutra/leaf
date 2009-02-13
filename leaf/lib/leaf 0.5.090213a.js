@@ -1,7 +1,7 @@
 	
 	/*	LEAF JavaScript Library
 	 *	Leonardo Dutra
-	 *	v0.4.090212a
+	 *	v0.5.090213a
 	 *
 	 *	Copyright (c) 2009, Leonardo Dutra
 	 *	All rights reserved.
@@ -31,7 +31,7 @@
 
 	/* Check if exists */
 	if ('object' !== typeof window.leaf) {
-		leaf = {};
+		window.leaf = {};
 	}
 	
 	
@@ -81,11 +81,11 @@
 	leaf.Window = {
 		addEvent: function(type, handlerFn)
 		{
-			leaf.DOM.core.addEvent(window, type, handlerFn);
+			leaf.DOMUtils.core.addEvent(window, type, handlerFn);
 		},
 		removeEvent: function(type, handlerFn)
 		{
-			leaf.DOM.core.removeEvent(window, type, handlerFn);
+			leaf.DOMUtils.core.removeEvent(window, type, handlerFn);
 		}
 	};
 	
@@ -136,11 +136,11 @@
 	leaf.Document = {
 		addEvent: function(type, handlerFn)
 		{
-			leaf.DOM.core.addEvent(document, type, handlerFn);
+			leaf.DOMUtils.core.addEvent(document, type, handlerFn);
 		},
 		removeEvent: function(type, handlerFn)
 		{
-			leaf.DOM.core.removeEvent(document, type, handlerFn);
+			leaf.DOMUtils.core.removeEvent(document, type, handlerFn);
 		}
 	};
 	
@@ -166,239 +166,276 @@
 				y: 0
 			};
 		}
-	};
+	};	
 	
 	
-	/* DOM
+	/* DOMUtils
 	 */
-	leaf.DOM = function(element)
-	{
-		if (this instanceof leaf.DOM) {
-			this.DOM(element);
-		}
-	};
-	
-	
-	leaf.DOM.importXML = function(uri)
-	{
-		/*	XML "sandbox" vary from browser to browser */
-		var o = leaf.Ajax.createXMLHttpRequest();
-		if (o) {
-			try {
-				o.open('GET', uri, false);
-				o.send(null);
-				if (o.readyState === 4) {
-					if (o.status === 200) {
-						return o.responseXML;
+	leaf.DOMUtils = {
+		importXML : function(uri)
+		{
+			/*	XML "sandbox" vary from browser to browser */
+			var o = leaf.Ajax.createXMLHttpRequest();
+			if (o) {
+				try {
+					o.open('GET', uri, false);
+					o.send(null);
+					if (o.readyState === 4) {
+						if (o.status === 200) {
+							return o.responseXML;
+						}
 					}
+				} 
+				catch (o) {
 				}
+			}
+			return null;
+		},
+		
+		buildXML : function(XMLText)
+		{
+			var W = window;
+			if (W.DOMParser) {
+				return (new W.DOMParser()).parseFromString(XMLText, 'text/xml');
+			}
+			var o;
+			try {
+				o = new W.ActiveXObject('Microsoft.XMLDOM');
+				o.async = false;
+				o.loadXML(XMLText);
+				return o;
 			} 
 			catch (o) {
+				return null;
 			}
-		}
-		return null;
-	};
-	
-	leaf.DOM.buildXML = function(XMLText)
-	{
-		var W = window;
-		if (W.DOMParser) {
-			return (new W.DOMParser()).parseFromString(XMLText, 'text/xml');
-		}
-		var o;
-		try {
-			o = new W.ActiveXObject('Microsoft.XMLDOM');
-			o.async = false;
-			o.loadXML(XMLText);
-			return o;
-		} 
-		catch (o) {
-			return null;
-		}
-	};
-	
-	leaf.DOM.getById = function(ids)
-	{
-		if (ids instanceof Array) {
-			var i = ids.length;
-			while (i--) {
-				ids[i] = document.getElementById(ids[i]);
-			}
-			return ids;
-		}
-		return document.getElementById(ids);
-	};
-	
-	leaf.DOM.getByTag = function(tagNames, rootNode)
-	{
-		rootNode = leaf.DOM.core.getElement(rootNode) || document;
-		if (tagNames instanceof Array) {
-			var l = tagNames.length;
-			var n = [];
-			var i = 0;
-			var j;
-			var k;
-			var o;
-			while (i < l) {
-				k = (o = rootNode.getElementsByTagName(tagNames[i++])).length;
-				j = 0;
-				while (j < k) {
-					n[n.length] = o[j++];
+		},
+		
+		getById : function(ids)
+		{
+			if (ids instanceof Array) {
+				var i = ids.length;
+				while (i--) {
+					ids[i] = document.getElementById(ids[i]);
 				}
+				return ids;
 			}
-			return n;
-		}
-		return rootNode.getElementsByTagName(tagNames);
-	};
-	
-	leaf.DOM.getByClass = function(classNames, rootNode)
-	{
-		if (('string' === typeof classNames ? [classNames] : classNames) instanceof Array) {
-			var $ = [];
-			var i = classNames.length;
-			var o;
-			var r = '';
-			while (i--) {
-				r += classNames[i] + (i ? '|' : '');
-			}
-			r = new RegExp('(?:\\\s|^)(?:' + r + ')(?:\\\s|$)');
-			function q(n)
-			{
-				if (n.nodeType === 1 && r.test(n.className)) {
-					$[$.length] = n;
-				}
-				if ((n = n.childNodes)) {
-					var l = n.length;
-					for (var i = 0; i < l; i++) {
-						q(n[i]);
+			return document.getElementById(ids);
+		},
+		
+		getByTag : function(tagNames, rootNode)
+		{
+			rootNode = leaf.DOMUtils.core.getElement(rootNode) || document;
+			if (tagNames instanceof Array) {
+				var l = tagNames.length;
+				var n = [];
+				var i = 0;
+				var j;
+				var k;
+				var o;
+				while (i < l) {
+					k = (o = rootNode.getElementsByTagName(tagNames[i++])).length;
+					j = 0;
+					while (j < k) {
+						n[n.length] = o[j++];
 					}
 				}
+				return n;
 			}
-			q(leaf.DOM.core.getElement(rootNode) || document);
-			return $;
-		}
-		return null;
-	};
-	
-	leaf.DOM.hasCollision = function(elementA, elementB)
-	{
-		leaf.DOM.core.hasCollision(elementA, elementB);
-	};
-	
-	leaf.DOM.purgeElement = function(element)
-	{
-		leaf.DOM.core.purgeElement(element);
-	};
-	
-	
-	/* DOM Core
-	 * It contains general and private functions
-	 */
-	leaf.DOM.core = {
-	
-		addEvent: function(o, e, fn)
-		{
-			/* code by John Resig of JQuery */
-			if (o.addEventListener) {
-				o.addEventListener(e, fn, false);
-			}
-			else {
-				if (o.attachEvent) {
-					o['e' + e + fn] = fn;
-					o[e + fn] = function()
-					{
-						o['e' + e + fn](window.event);
-					};
-					o.attachEvent('on' + e, o[e + fn]);
-				}
-			}
+			return rootNode.getElementsByTagName(tagNames);
 		},
 		
-		removeEvent: function(o, e, fn)
+		getByClass : function(classNames, rootNode)
 		{
-			/* base code by John Resig of JQuery */
-			if (o.removeEventListener) {
-				o.removeEventListener(e, fn, false);
-			}
-			else {
-				if (o.detachEvent) {
-					o.detachEvent('on' + e, o[(e = e + fn)]);
-					o[e] = null;
-					o['e' + e] = null;
+			if (('string' === typeof classNames ? [classNames] : classNames) instanceof Array) {
+				var $ = [];
+				var i = classNames.length;
+				var o;
+				var r = '';
+				while (i--) {
+					r += classNames[i] + (i ? '|' : '');
 				}
-			}
-		},
-		
-		hasCollision: function(a, b)
-		{
-			var g = this.getElement;
-			if ((a = g(a)) && (b = g(b))) {
-				var B = document.body;
-				var aX = 0;
-				var aY = 0;
-				var o = a;
-				for (; o !== B; o = o.parentNode) {
-					aX += o.offsetLeft;
-					aY += o.offsetTop;
-				}
-				var bX = 0;
-				var bY = 0;
-				for (o = b; o !== B; o = o.parentNode) {
-					bX += o.offsetLeft;
-					bY += o.offsetTop;
-				}
-				if (!(aX < bX - a.offsetWidth || bX + b.offsetWidth < aX)) {
-					return !(aY < bY - a.offsetHeight || bY + b.offsetHeight < aY);
-				}
-			}
-			return false;
-		},
-		
-		purgeElement: function(o)
-		{
-			/* based on crockford.com purge */
-			if ((o = this.getElement(o))) {
-				var $ = o.attributes;
-				if ($) {
-					var n;
-					var i = $.length;
-					while (i--) {
-						if ('function' === typeof o[(n = $[i].name)]) {
-							o[n] = null;
+				r = new RegExp('(?:\\\s|^)(?:' + r + ')(?:\\\s|$)');
+				function q(n)
+				{
+					if (n.nodeType === 1 && r.test(n.className)) {
+						$[$.length] = n;
+					}
+					if ((n = n.childNodes)) {
+						var l = n.length;
+						for (var i = 0; i < l; i++) {
+							q(n[i]);
 						}
 					}
 				}
-				if ((o = o.childNodes)) {
-					$ = o.length;
-					while ($--) {
-						this.purgeElement(o[$]);
+				q(leaf.DOMUtils.core.getElement(rootNode) || document);
+				return $;
+			}
+			return null;
+		},
+		
+		hasCollision: function(elementA, elementB)
+		{
+			var c = leaf.DOMUtils.core;
+			c.hasCollision(c.getElement(elementA), c.getElement(elementB));
+		},
+		
+		purgeElement: function(element)
+		{
+			var c = leaf.DOMUtils.core;
+			c.purgeElement(c.getElement(element));
+		},
+		
+		addEvent: function (element, event, handlerFn) {
+			var c = leaf.DOMUtils.core;
+			c.addEvent(c.getElement(element), event, handlerFn);
+		},
+		
+		removeEvent: function (element, event, handlerFn) {
+			var c = leaf.DOMUtils.core;
+			c.removeEvent(c.getElement(element), event, handlerFn);
+		},
+		
+		dispatchEvent: function (element, event) {
+			var c = leaf.DOMUtils.core;
+			c.dispatchEvent(c.getElement(element), event);
+		},
+		
+		core: {
+			addEvent: function(o, e, fn)
+			{
+				if (o && 'string'===typeof e && 'function'===typeof fn) {
+					/* code by John Resig of JQuery */
+					if (o.addEventListener) {
+						o.addEventListener(e, fn, false);
+					}
+					else {
+						if (o.attachEvent) {
+							o['e' + e + fn] = fn;
+							o[e + fn] = function()
+							{
+								o['e' + e + fn](window.event);
+							};
+							o.attachEvent('on' + e, o[e + fn]);
+						}
 					}
 				}
-			}
-			o = null;
-		},
-		
-		isHTML: function(o)
-		{
-			return o && o.nodeType === 1 && 'object' === typeof o.style;
-		},
-		
-		getElement: function($)
-		{
-			return $ ? $.nodeType === 1 && 'object' === typeof $.style ? $ : document.getElementById($) : null;
-		},
-		
-		regObj: new RegExp(),
-		isIE: (/msie/i).test(navigator.userAgent)
+			},
+			
+			removeEvent: function(o, e, fn)
+			{
+				if (o && 'string'===typeof e && 'function'===typeof fn) {
+					/* base code by John Resig of JQuery */
+					if (o.removeEventListener) {
+						o.removeEventListener(e, fn, false);
+					}
+					else {
+						if (o.detachEvent) {
+							o.detachEvent('on' + e, o[(e = e + fn)]);
+							o[e] = null;
+							o['e' + e] = null;
+						}
+					}
+				}
+			},
+			
+			dispatchEvent: function (o, e)
+			{
+				if (o && 'string'===typeof e) {
+					if (o.dispatchEvent) {
+						// dispatch for firefox + others
+						var $ = document.createEvent('HTMLEvents');
+						// event type,bubbling,cancelable
+						$.initEvent(e, true, true);
+						o.dispatchEvent($);
+					}
+					else {
+						if (document.createEventObject) {
+							// dispatch for IE
+							o.fireEvent('on' + e, document.createEventObject());
+						}
+					}
+				}
+			},
+			
+			hasCollision: function(a, b)
+			{
+				if (a && b) {
+					var B = document.body;
+					var aX = 0;
+					var aY = 0;
+					var o = a;
+					for (; o !== B; o = o.parentNode) {
+						aX += o.offsetLeft;
+						aY += o.offsetTop;
+					}
+					var bX = 0;
+					var bY = 0;
+					for (o = b; o !== B; o = o.parentNode) {
+						bX += o.offsetLeft;
+						bY += o.offsetTop;
+					}
+					if (!(aX < bX - a.offsetWidth || bX + b.offsetWidth < aX)) {
+						return !(aY < bY - a.offsetHeight || bY + b.offsetHeight < aY);
+					}
+				}
+				return false;
+			},
+			
+			purgeElement: function(o)
+			{
+				/* based on crockford.com purge */
+				if (o) {
+					var $ = o.attributes;
+					if ($) {
+						var n;
+						var i = $.length;
+						while (i--) {
+							if ('function' === typeof o[(n = $[i].name)]) {
+								o[n] = null;
+							}
+						}
+					}
+					if ((o = o.childNodes)) {
+						$ = o.length;
+						while ($--) {
+							this.purgeElement(o[$]);
+						}
+					}
+				}
+				o = null;
+			},
+			
+			isHTML: function(o)
+			{
+				return o && o.nodeType === 1 && 'object' === typeof o.style;
+			},
+			
+			getElement: function($)
+			{
+				return $ ? $.nodeType === 1 && 'object' === typeof $.style ? $ : document.getElementById($) : null;
+			},
+			
+			regObj: new RegExp(),
+			isIE: (/msie/i).test(navigator.userAgent)
+		}
 	};
 	
 	
-	/* DOM Prototype
+	/* DOMElement
 	 */
-	leaf.DOM.prototype = {
+	leaf.DOMElement = function(element)
+	{
+		if (this instanceof leaf.DOMElement) {
+			this.DOMElement(element);
+		}
+	};
+	
+	/* DOMElement Prototype
+	 */
+	leaf.DOMElement.prototype = {
 	
 		/* Constructor */
-		DOM: function(element)
+		DOMElement: function(element)
 		{
 			this.setElement(element);
 		},
@@ -1225,6 +1262,7 @@
 				}
 				return isNaN(o) ? 1 : o;
 			}
+			return 1;
 		},
 		
 		
@@ -1368,7 +1406,7 @@
 		
 		hasCollision: function(collisorElement)
 		{
-			return this.core.hasCollision(this.element, collisorElement);
+			return this.core.hasCollision(this.element, this.core.getElement(collisorElement));
 		},
 		
 		
@@ -1386,5 +1424,5 @@
 	};
 	
 	/* Intellisense Fix */
-	leaf.DOM.prototype.core = leaf.DOM.core;
-	leaf.DOM = leaf.DOM;
+	leaf.DOMElement.prototype.core = leaf.DOMUtils.core;
+	leaf.DOMElement = leaf.DOMElement;

@@ -152,13 +152,10 @@
 		{
 			if ((event = event || window.event)) {
 				var D = document.documentElement;
-				/* fix using client properties */
-				var x = 'number' === typeof event.pageX ? event.pageX : event.clientX + D.scrollLeft - (D.clientLeft || 0);
-				var y = 'number' === typeof event.pageY ? event.pageY : event.clientY + D.scrollTop - (D.clientTop || 0);
-				/* zero for good drag and drop works. Some libs let the user drop a box under browser bar, losing box control */
 				return {
-					x: 0 < x ? x : 0,
-					y: 0 < y ? y : 0
+					/* fixed using client properties */
+					x: 'number' === typeof event.pageX ? event.pageX : event.clientX + D.scrollLeft - (D.clientLeft || 0),
+					y: 'number' === typeof event.pageY ? event.pageY : event.clientY + D.scrollTop - (D.clientTop || 0)
 				};
 			}
 			return {
@@ -217,7 +214,7 @@
 		}
 	};
 	
-	leaf.DOM.getByIds = function(ids)
+	leaf.DOM.getById = function(ids)
 	{
 		if (ids instanceof Array) {
 			var i = ids.length;
@@ -229,7 +226,7 @@
 		return document.getElementById(ids);
 	};
 	
-	leaf.DOM.getByTags = function(tagNames, rootNode)
+	leaf.DOM.getByTag = function(tagNames, rootNode)
 	{
 		rootNode = leaf.DOM.core.getElement(rootNode) || document;
 		if (tagNames instanceof Array) {
@@ -251,7 +248,7 @@
 		return rootNode.getElementsByTagName(tagNames);
 	};
 	
-	leaf.DOM.getByClasses = function(classNames, rootNode)
+	leaf.DOM.getByClass = function(classNames, rootNode)
 	{
 		if (('string' === typeof classNames ? [classNames] : classNames) instanceof Array) {
 			var $ = [];
@@ -504,7 +501,7 @@
 		},
 		
 		
-		addClasses: function(classNames)
+		addClass: function(classNames)
 		{
 			var e = this.element;
 			if (e) {
@@ -531,7 +528,7 @@
 			}
 		},
 		
-		removeClasses: function(classNames)
+		removeClass: function(classNames)
 		{
 			var e = this.element;
 			if (e) {

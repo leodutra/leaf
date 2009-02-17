@@ -1,7 +1,7 @@
 	
 	/*	LEAF JavaScript Library
 	 *	Leonardo Dutra
-	 *	v0.5.090216a
+	 *	v0.5.090217a
 	 *
 	 *	Copyright (c) 2009, Leonardo Dutra
 	 *	All rights reserved.
@@ -40,7 +40,7 @@
 	leaf.Object = {
 		inherit: function(object, sourceObject)
 		{
-			if (object !== null && object !== undefined && sourceObject !== null && sourceObject !== undefined) {
+			if (object && sourceObject) {
 				for (var n in sourceObject) {
 					object[n] = sourceObject[n];
 				}
@@ -90,47 +90,6 @@
 	};
 	
 	
-	/* Screen
-	 */
-	leaf.Screen = {
-		getSize: function()
-		{
-			var S = screen;
-			return {
-				width: S.width,
-				height: S.height
-			};
-		},
-		
-		getAvailSize: function()
-		{
-			var S = screen;
-			return {
-				width: S.availWidth,
-				height: S.availHeight
-			};
-		},
-		
-		getCenter: function()
-		{
-			var S = screen;
-			return {
-				x: S.width / 2,
-				y: S.height / 2
-			};
-		},
-		
-		getAvailCenter: function()
-		{
-			var S = screen;
-			return {
-				x: S.availWidth / 2,
-				y: S.availHeight / 2
-			};
-		}
-	};
-	
-	
 	/* Document
 	 */
 	leaf.Document = {
@@ -174,7 +133,6 @@
 			this.DOM(element);
 		}
 	};
-	
 	
 	leaf.DOM.importXML = function(uri)
 	{
@@ -254,11 +212,11 @@
 			var $ = [];
 			var i = classNames.length;
 			var o;
-			var r = '';
+			var r = '(?:\\\s|^)(?:';
 			while (i--) {
 				r += classNames[i] + (i ? '|' : '');
 			}
-			r = new RegExp('(?:\\\s|^)(?:' + r + ')(?:\\\s|$)');
+			r = new RegExp(r +')(?:\\\s|$)');
 			function q(n)
 			{
 				if (n.nodeType === 1 && r.test(n.className)) {
@@ -351,7 +309,7 @@
 				if (o.dispatchEvent) {
 					// dispatch for firefox + others
 					var $ = document.createEvent('HTMLEvents');
-					// event type,bubbling,cancelable
+					// event type, bubbling, cancelable
 					$.initEvent(e, true, true);
 					o.dispatchEvent($);
 				}
@@ -412,11 +370,6 @@
 			o = null;
 		},
 		
-		isHTML: function(o)
-		{
-			return o && o.nodeType === 1 && 'object' === typeof o.style;
-		},
-		
 		getElement: function($)
 		{
 			return $ ? $.nodeType === 1 && 'object' === typeof $.style ? $ : document.getElementById($) : null;
@@ -458,15 +411,13 @@
 				if (e) {
 					var ie = this.core.isIE;
 					var s = ie ? e.style.cssText : e.getAttribute('style');
-					var r;
 					var i;
 					var k;
 					for (var n in cssObj) {
-						if ('string' === typeof(k = cssObj[n]) || 'number' === typeof k) {
+						if ('string' === typeof (k = cssObj[n]) || 'number' === typeof k) {
 							// RegExp does not 'compile' on AIR 1.0
-							r = new RegExp('(?:^|\\\;|\s)' + n + '\\\:', 'i');
-							if (-1 === (i = s ? s.search(r) : -1)) {
-								s = n + '\: ' + k + '\; ' + s;
+							if (-1 === (i = s ? s.search(new RegExp('(?:^|\\\;|\s)' + n + '\\\:', 'i')) : -1)) {
+								s = n +'\: ' +k +'\; ' +s;
 							}
 							else {
 								/* if property found, substitutes value... preventing errors on some browsers */
@@ -505,21 +456,16 @@
 		{
 			var e = this.element;
 			if (e) {
-				if ('string' === typeof classNames) {
-					classNames = [classNames];
-				}
-				if (classNames instanceof Array) {
+				if ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array) {
 					var c = e.className;
 					if ('string' === typeof c) {
 						var l = classNames.length;
-						var r;
 						var i = 0;
 						var k;
 						while (i < l) {
 							// RegExp does not 'compile' on AIR 1.0
-							r = new RegExp('(?:\\\s|^)' + (k = classNames[i++]) + '(?:\\\s|$)');
-							if (!(r.test(c))) {
-								c += ' ' + k;
+							if (!(new RegExp('(?:\\\s|^)' + (k = classNames[i++]) + '(?:\\\s|$)')).test(c)) {
+								c += ' ' +k;
 							}
 						}
 						e.className = c;
@@ -532,22 +478,16 @@
 		{
 			var e = this.element;
 			if (e) {
-				if ('string' === typeof classNames) {
-					classNames = [classNames];
-				}
-				if (classNames instanceof Array) {
+				if ('string' === typeof classNames? classNames = [classNames]:classNames instanceof Array) {
 					var c = e.className;
 					if ('string' === typeof c) {
 						var i = classNames.length;
-						var r;
 						var k;
+						var r = '(?:\\\s|^)(?:';
 						while (i--) {
-							r = new RegExp('(?:\\\s|^)' + (k = classNames[i]) + '(?:\\\s|$)');
-							if ((c.search(r) !== -1)) {
-								c = c.replace(k, '');
-							}
+							r += classNames[i] + (i ? '|' : '');
 						}
-						e.className = c;
+						e.className = c.replace(new RegExp(r +')(?:\\\s|$)'), '');
 					}
 				}
 			}
@@ -649,9 +589,9 @@
 			var e = this.element;
 			if (e) {
 				return {
-					left: e.offsetLeft,
-					top: e.offsetTop,
-					width: e.offsetWidth,
+					left:   e.offsetLeft,
+					top:    e.offsetTop,
+					width:  e.offsetWidth,
 					height: e.offsetHeight,
 					parent: e.offsetParent
 				};
@@ -1234,12 +1174,12 @@
 				var $ = this.style;
 				if ($) {
 					opacity = opacity < 0 ? 0 : 1 < opacity ? 1 : opacity.toFixed(2);
-					if (this.core.isIE) /* IE6, IE7 fix for 'filters' attribute */ {
-						var s = $.cssText;
-						var i = s.search(/filter/i);
-						$.cssText = s.substr(0, i) + 'filter: alpha(opacity=' + parseInt(opacity * 100, 10) + ')' + s.substr(s.indexOf('\;', i));
+					if (this.core.isIE) /* IE6, IE7 brute force for 'filters' */ {
+						$.cssText = ($.cssText||'') +'; filter: alpha(opacity=' + parseInt(opacity * 100, 10) + '); ';
 					}
-					$.opacity = opacity;
+					else {
+						$.opacity = opacity;
+					}
 				}
 			}
 		},
@@ -1368,7 +1308,7 @@
 		{
 			var e = this.element;
 			if ('number' === typeof childIndex && e) {
-				return e.childNodes[childIndex] || null;
+				return e.childNodes[childIndex]||null;
 			}
 			return null;
 		},

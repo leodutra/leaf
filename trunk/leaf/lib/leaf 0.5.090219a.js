@@ -1,7 +1,7 @@
 	
 	/*	LEAF JavaScript Library
 	 *	Leonardo Dutra
-	 *	v0.5.090217a
+	 *	v0.5.090219a
 	 *
 	 *	Copyright (c) 2009, Leonardo Dutra
 	 *	All rights reserved.
@@ -28,6 +28,7 @@
 	 *	(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 	 *	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	 */
+
 
 	/* Check "Package" */
 	if ('object' !== typeof window.leaf) {
@@ -142,10 +143,8 @@
 			try {
 				o.open('GET', uri, false);
 				o.send(null);
-				if (o.readyState === 4) {
-					if (o.status === 200) {
-						return o.responseXML;
-					}
+				if (o.readyState === 4 && o.status === 200) {
+					return o.responseXML;
 				}
 			} 
 			catch (o) {
@@ -186,7 +185,7 @@
 	
 	leaf.DOM.getByTag = function(tagNames, rootNode)
 	{
-		rootNode = leaf.DOM.core.getElement(rootNode) || document;
+		rootNode = leaf.DOM.core.getElement(rootNode)||document;
 		if (tagNames instanceof Array) {
 			var l = tagNames.length;
 			var n = [];
@@ -245,6 +244,9 @@
 	{
 		var c = leaf.DOM.core;
 		c.purgeElement(c.getElement(element));
+		if ((c = element.parentNode)) {
+			c.removeChild(element);
+		}
 	};
 	
 	leaf.DOM.addEvent = function (element, event, handlerFn) {
@@ -275,12 +277,13 @@
 				}
 				else {
 					if (o.attachEvent) {
-						o['e' + e + fn] = fn;
-						o[e + fn] = function()
+						var h = e + fn;
+						o['e'+h] = fn;
+						o[h] = function()
 						{
-							o['e' + e + fn](window.event);
+							o['e'+h](event);
 						};
-						o.attachEvent('on' + e, o[e + fn]);
+						o.attachEvent('on' + e, o[h]);
 					}
 				}
 			}
@@ -307,7 +310,7 @@
 		{
 			if (o && 'string'===typeof e) {
 				if (o.dispatchEvent) {
-					// dispatch for firefox + others
+					// dispatch for firefox and others
 					var $ = document.createEvent('HTMLEvents');
 					// event type, bubbling, cancelable
 					$.initEvent(e, true, true);
@@ -406,31 +409,19 @@
 		
 		setCSS: function(cssObj)
 		{
-			if (cssObj && 'object'===typeof cssObj && !(cssObj instanceof Array)) {
-				var e = this.element;
-				if (e) {
-					var ie = this.core.isIE;
-					var s = ie ? e.style.cssText : e.getAttribute('style');
-					var i;
-					var k;
-					for (var n in cssObj) {
-						if ('string' === typeof (k = cssObj[n]) || 'number' === typeof k) {
-							// RegExp does not 'compile' on AIR 1.0
-							if (-1 === (i = s ? s.search(new RegExp('(?:^|\\\;|\s)' + n + '\\\:', 'i')) : -1)) {
-								s = n +'\: ' +k +'\; ' +s;
-							}
-							else {
-								/* if property found, substitutes value... preventing errors on some browsers */
-								s = s.substr(0, (i += n.length)) + ': ' + k + s.substr(s.indexOf('\;', i));
-							}
-						}
-					}
-					if (ie) {
-						e.style.cssText = s;
-					}
-					else {
-						e.setAttribute('style', s);
-					}
+			var e = this.element;
+			if (e && cssObj instanceof Object) {
+				var s = e.style;
+				var c;
+				var $ = '';
+				for (c in cssObj) {
+					$ += (c +': ' +cssObj[c] +'; ');
+				}
+				if (s.cssText===undefined) {
+					e.setAttribute('style', (e.getAttribute('style')||'') +$);
+				}
+				else {					
+					s.cssText = ((c = s.cssText) && (c.charAt(c.length-1)==='\;' ? c:c+'; ')||'')+$;
 				}
 			}
 		},
@@ -464,9 +455,10 @@
 						var k;
 						while (i < l) {
 							// RegExp does not 'compile' on AIR 1.0
-							if (!(new RegExp('(?:\\\s|^)' + (k = classNames[i++]) + '(?:\\\s|$)')).test(c)) {
-								c += ' ' +k;
+							if ((new RegExp('(?:\\\s|^)' + (k = classNames[i++]) + '(?:\\\s|$)')).test(c)) {
+								continue;
 							}
+							c += ' ' +k;
 						}
 						e.className = c;
 					}
@@ -526,7 +518,6 @@
 						}
 					}
 				}
-				
 				if ('number' === typeof y) {
 					if ($.bottom) {
 						$.top = '';
@@ -705,7 +696,7 @@
 		
 		setContent: function(value)
 		{
-			/* need intelligent fix... IE6 dont allow innerHTML set when element was not appended yet */
+			/* need intelligent fix... IE6 dont allow changes to innerHTML when element was not appended yet */
 			var e = this.element;
 			if (value !== null && value !== undefined && e) {
 				e.innerHTML = value;
@@ -723,7 +714,7 @@
 		
 		addContent: function(value)
 		{
-			/* need intelligent fix... IE6 dont allow innerHTML set when element was not appended yet */
+			/* need intelligent fix... IE6 dont allow changes to innerHTML when element was not appended yet */
 			var e = this.element;
 			if (value !== null && value !== undefined && e) {
 				e.innerHTML += String(value);
@@ -745,10 +736,11 @@
 					$.backgroundImage = 'url(\'' + src + '\')';
 				}
 				
-				var p = $.backgroundPosition.split(' ');
+				/* reusing var */
+				src = $.backgroundPosition.split(' ');
 				
-				x = 'number' === typeof x ? x + 'px' : 'string' === typeof x ? x : (p[0] || '50%');
-				y = 'number' === typeof y ? y + 'px' : 'string' === typeof y ? y : (p[1] || '50%');
+				x = 'number' === typeof x ? x + 'px' : 'string' === typeof x ? x : (src[0] || '50%');
+				y = 'number' === typeof y ? y + 'px' : 'string' === typeof y ? y : (src[1] || '50%');
 				
 				$.backgroundPosition = x + ' ' + y;
 				$.backgroundRepeat = repeat ? repeat : 'no-repeat';
@@ -1212,14 +1204,14 @@
 		createElement: function(tagName, id, x, y, z, width, height, positionType)
 		{
 			if ('string' === typeof tagName) {
-				var e = document.createElement(tagName);
-				if (e) {
+				/* reusing var tagName */
+				if ((tagName = document.createElement(tagName))) {
 					if ('string' === typeof id) {
-						e.id = id;
+						tagName.id = id;
 					}
-					this.style = (this.element = e).style;
+					this.style = (this.element = tagName).style;
 					this.setArea(x, y, z, width, height, positionType);
-					return e;
+					return tagName;
 				}
 			}
 			return null;
@@ -1228,20 +1220,17 @@
 		appendElement: function(parent)
 		{
 			var e = this.element;
-			if (e && !e.parentNode) {
-				var p = this.core.getElement(parent) || document.body;
-				if (p) {
-					p.appendChild(e);
-				}
+			if (e && !e.parentNode && (parent = this.core.getElement(parent)||document.body)) {
+				parent.appendChild(e);
 			}
 		},
 		
 		insertBefore: function(node)
 		{
 			var e = this.element;
-			if (e) {
+			if (e && (node = this.core.getElement(node))) {
 				try {
-					node.parentNode.insertBefore(e, this.core.getElement(node) || node);
+					node.parentNode.insertBefore(e, node);
 				} 
 				catch (e) {
 				}
@@ -1288,45 +1277,40 @@
 			}
 		},
 		
-		removeChild: function(childIndex)
+		removeChild: function(child)
 		{
 			var e = this.element;
-			if ('number' === typeof childIndex && e) {
-				var c = e.childNodes[childIndex] || null;
-				if (c && c.parentNode === e) {
-					e.removeChild(c);
-				}
+			if (e && (child = this.getChild(child))) {
+				e.removeChild(child);
 			}
 		},
 		
-		setChild: function(childIndex)
+		setChild: function(child)
 		{
-			this.setElement(this.getChild(childIndex));
+			this.setElement(this.getChild(child));
 		},
 		
-		getChild: function(childIndex)
+		getChild: function(child)
 		{
 			var e = this.element;
-			if ('number' === typeof childIndex && e) {
-				return e.childNodes[childIndex]||null;
+			if (e) {
+				return e.childNodes[child]||((child = this.core.getElement(child)) && e===child.parentNode ? child : null);
 			}
 			return null;
 		},
 		
-		purgeChild: function(childIndex)
+		purgeChild: function(child)
 		{
-			var e = this.getChild(childIndex);
-			if (e) {
-				this.core.purgeElement(e);
-				this.removeChild(childIndex);
+			if ((child = this.getChild(child))) {
+				this.core.purgeElement(child);
+				this.removeChild(child);
 			}
 		},
 		
-		cloneChild: function(childIndex, cloneAttrAndChilds)
+		cloneChild: function(child, cloneAttrAndChilds)
 		{
-			var e = this.getChild(childIndex);
-			if (e) {
-				return e.cloneNode(!!cloneAttrAndChilds);
+			if ((child = this.getChild(child))) {
+				return child.cloneNode(!!cloneAttrAndChilds);
 			}
 			return null;
 		},
@@ -1335,7 +1319,7 @@
 		{
 			var e = this.element;
 			if (e) {
-				return e.parentNode || null;
+				return e.parentNode||null;
 			}
 			return null;
 		},

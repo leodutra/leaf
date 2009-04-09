@@ -1,48 +1,66 @@
 	
 	/*	LEAF JavaScript Library
 	 *	Leonardo Dutra
-	 *	v0.5.090219a
+	 *	v0.6.090509a
 	 *
-	 *	Copyright (c) 2009, Leonardo Dutra
+	 *	Copyright (c) 2009, Leonardo Dutra.
 	 *	All rights reserved.
 	 *
-	 *	Redistribution and use in source and binary forms, with or without
-	 *	modification, are permitted provided that the following conditions are met:
-	 *	   * Redistributions of source code must retain the above copyright
-	 *	     notice, this list of conditions and the following disclaimer.
-	 *	   * Redistributions in binary form must reproduce the above copyright
-	 *	     notice, this list of conditions and the following disclaimer in the
-	 *	     documentation and/or other materials provided with the distribution.
-	 *	   * Neither the name of the creator nor the
-	 *	     names of its contributors may be used to endorse or promote products
-	 *	     derived from this software without specific prior written permission.
+	 *	Redistribution and use in source and binary forms, with or without modification,
+	 *	are permitted provided that the following conditions are met:
 	 *
-	 *	THIS SOFTWARE IS PROVIDED BY LEONARDO DUTRA ''AS IS'' AND ANY
-	 *	EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+	 *	    * Redistributions of source code must retain the above copyright notice,
+	 *	      this list of conditions and the following disclaimer.
+	 *
+	 *	    * Redistributions in binary form must reproduce the above copyright notice,
+	 *	      this list of conditions and the following disclaimer in the documentation
+	 *	      and/or other materials provided with the distribution.
+	 *
+	 *	    * Neither the name of Leonardo Dutra nor the names of its
+	 *	      contributors may be used to endorse or promote products derived from this
+	 *	      software without specific prior written permission.
+	 *
+	 *	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+	 *	ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 	 *	WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-	 *	DISCLAIMED. IN NO EVENT SHALL LEONARDO DUTRA BE LIABLE FOR ANY
-	 *	DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+	 *	DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+	 *	ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
 	 *	(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-	 *	LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-	 *	ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+	 *	LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+	 *	ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 	 *	(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 	 *	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	 */
-
-
-	/* Check "Package" */
-	if ('object' !== typeof window.leaf) {
+	
+	/* This ALPHA version implements:
+	 * 
+	 * leaf.Object
+	 *     .Ajax
+	 *     .Window
+	 *     .Document
+	 *     .Mouse
+	 *     .DOM        (core is a kind of "private" object, but it's public for advanced purpouses like extensions)
+	 *     .DOMElement (handles only elements, think in it as a box that you put some element inside and mod)
+	 */
+	
+	
+	/* Check LEAF "namespace" */
+	if ('object' !== typeof window.leaf) 
+	{
 		window.leaf = {};
 	}
-	
-	
+
+
 	/* Object
 	 */
 	leaf.Object = {
+	
 		inherit: function(object, sourceObject)
 		{
-			if (object && sourceObject) {
-				for (var n in sourceObject) {
+			if (object && sourceObject) 
+			{
+				for (var n in sourceObject) 
+				{
 					object[n] = sourceObject[n];
 				}
 			}
@@ -53,22 +71,30 @@
 	/* Ajax
 	 */
 	leaf.Ajax = {
+	
 		createXMLHttpRequest: function()
 		{
+			/* constant for optimization */
 			var W = window;
-			if (W.XMLHttpRequest) {
+			if (W.XMLHttpRequest) 
+			{
 				return new W.XMLHttpRequest();
 			}
-			else {
-				var e;
-				var v = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP'];
-				var i = 2;
-				while (i--) {
-					try {
-						e = new W.ActiveXObject(v[i]);
-						return e;
+			else 
+			{
+				/* add more ActiveX versions in this array */
+				var v = ['MSXML2.XMLHTTP.3.0', 'Msxml2.XMLHTTP', 'Microsoft.XMLHTTP'];
+				var i = v.length;
+				var o;
+				while (i--) 
+				{
+					try 
+					{
+						o = new W.ActiveXObject(v[i]);
+						return o;
 					} 
-					catch (e) {
+					catch (o) 
+					{
 					}
 				}
 			}
@@ -80,6 +106,7 @@
 	/* Window
 	 */
 	leaf.Window = {
+	
 		addEvent: function(type, handlerFn)
 		{
 			leaf.DOM.core.addEvent(window, type, handlerFn);
@@ -94,6 +121,7 @@
 	/* Document
 	 */
 	leaf.Document = {
+	
 		addEvent: function(type, handlerFn)
 		{
 			leaf.DOM.core.addEvent(document, type, handlerFn);
@@ -108,14 +136,16 @@
 	/* Mouse
 	 */
 	leaf.Mouse = {
-		getPosition: function(event)
+	
+		getPosition: function(mouseEvent)
 		{
-			if ((event = event || window.event)) {
+			if ((mouseEvent = mouseEvent||event)) 
+			{
 				var D = document.documentElement;
 				return {
-					/* fixed using client properties */
-					x: 'number' === typeof event.pageX ? event.pageX : event.clientX + D.scrollLeft - (D.clientLeft || 0),
-					y: 'number' === typeof event.pageY ? event.pageY : event.clientY + D.scrollTop - (D.clientTop || 0)
+					/* IE adjusted using client properties */
+					x: 'number' === typeof mouseEvent.pageX ? mouseEvent.pageX : mouseEvent.clientX + D.scrollLeft - (D.clientLeft || 0),
+					y: 'number' === typeof mouseEvent.pageY ? mouseEvent.pageY : mouseEvent.clientY + D.scrollTop - (D.clientTop || 0)
 				};
 			}
 			return {
@@ -123,271 +153,314 @@
 				y: 0
 			};
 		}
-	};	
-	
-	
-	/* DOM
-	 */
-	leaf.DOM = function(element)
-	{
-		if (this instanceof leaf.DOM) {
-			this.DOM(element);
-		}
 	};
 	
-	leaf.DOM.importXML = function(uri)
-	{
-		/*	XML "sandbox" vary from browser to browser */
-		var o = leaf.Ajax.createXMLHttpRequest();
-		if (o) {
-			try {
-				o.open('GET', uri, false);
-				o.send(null);
-				if (o.readyState === 4 && o.status === 200) {
-					return o.responseXML;
-				}
-			} 
-			catch (o) {
-			}
-		}
-		return null;
-	};
 	
-	leaf.DOM.buildXML = function(XMLText)
-	{
-		var W = window;
-		if (W.DOMParser) {
-			return (new W.DOMParser()).parseFromString(XMLText, 'text/xml');
-		}
-		var o;
-		try {
-			o = new W.ActiveXObject('Microsoft.XMLDOM');
-			o.async = false;
-			o.loadXML(XMLText);
-			return o;
-		} 
-		catch (o) {
-			return null;
-		}
-	};
+	leaf.DOM = {
 	
-	leaf.DOM.getById = function(ids)
-	{
-		if (ids instanceof Array) {
-			var i = ids.length;
-			while (i--) {
-				ids[i] = document.getElementById(ids[i]);
-			}
-			return ids;
-		}
-		return document.getElementById(ids);
-	};
-	
-	leaf.DOM.getByTag = function(tagNames, rootNode)
-	{
-		rootNode = leaf.DOM.core.getElement(rootNode)||document;
-		if (tagNames instanceof Array) {
-			var l = tagNames.length;
-			var n = [];
-			var i = 0;
-			var j;
-			var k;
-			var o;
-			while (i < l) {
-				k = (o = rootNode.getElementsByTagName(tagNames[i++])).length;
-				j = 0;
-				while (j < k) {
-					n[n.length] = o[j++];
-				}
-			}
-			return n;
-		}
-		return rootNode.getElementsByTagName(tagNames);
-	};
-	
-	leaf.DOM.getByClass = function(classNames, rootNode)
-	{
-		if (('string' === typeof classNames ? [classNames] : classNames) instanceof Array) {
-			var $ = [];
-			var i = classNames.length;
-			var o;
-			var r = '(?:\\\s|^)(?:';
-			while (i--) {
-				r += classNames[i] + (i ? '|' : '');
-			}
-			r = new RegExp(r +')(?:\\\s|$)');
-			function q(n)
+		importXML: function(uri)
+		{
+			/*	XML security and access vary from browser to browser */
+			var o = leaf.Ajax.createXMLHttpRequest();
+			if (o) 
 			{
-				if (n.nodeType === 1 && r.test(n.className)) {
-					$[$.length] = n;
-				}
-				if ((n = n.childNodes)) {
-					var l = n.length;
-					for (var i = 0; i < l; i++) {
-						q(n[i]);
+				try 
+				{
+					o.open('GET', uri, false);
+					o.send(null);
+					if (o.readyState === 4 && o.status === 200) 
+					{
+						return o.responseXML;
 					}
+				} 
+				catch (o) 
+				{
 				}
 			}
-			q(leaf.DOM.core.getElement(rootNode) || document);
-			return $;
-		}
-		return null;
-	};
-	
-	leaf.DOM.hasCollision = function(elementA, elementB)
-	{
-		var c = leaf.DOM.core;
-		c.hasCollision(c.getElement(elementA), c.getElement(elementB));
-	};
-	
-	leaf.DOM.purgeElement = function(element)
-	{
-		var c = leaf.DOM.core;
-		c.purgeElement(c.getElement(element));
-		if ((c = element.parentNode)) {
-			c.removeChild(element);
-		}
-	};
-	
-	leaf.DOM.addEvent = function (element, event, handlerFn) {
-		var c = leaf.DOM.core;
-		c.addEvent(c.getElement(element), event, handlerFn);
-	};
-	
-	leaf.DOM.removeEvent = function (element, event, handlerFn) {
-		var c = leaf.DOM.core;
-		c.removeEvent(c.getElement(element), event, handlerFn);
-	};
-	
-	leaf.DOM.dispatchEvent = function (element, event) {
-		var c = leaf.DOM.core;
-		c.dispatchEvent(c.getElement(element), event);
-	};
-
-
-	/* DOM Core
-	 */
-	leaf.DOM.core = {
-		addEvent: function(o, e, fn)
+			return null;
+		},
+		
+		buildXML: function(XMLText)
 		{
-			if (o && 'string'===typeof e && 'function'===typeof fn) {
-				/* code by John Resig of JQuery */
-				if (o.addEventListener) {
-					o.addEventListener(e, fn, false);
+			var W = window;
+			if (W.DOMParser) 
+			{
+				return (new W.DOMParser()).parseFromString(XMLText, 'text/xml');
+			}
+			var o;
+			try 
+			{
+				o = new W.ActiveXObject('Microsoft.XMLDOM');
+				o.async = false;
+				o.loadXML(XMLText);
+				return o;
+			} 
+			catch (o) 
+			{
+			}
+			return null;
+		},
+		
+		getById: function(ids)
+		{
+			if (ids instanceof Array) 
+			{
+				var i = ids.length;
+				while (i--) 
+				{
+					ids[i] = document.getElementById(ids[i]);
 				}
-				else {
-					if (o.attachEvent) {
-						var h = e + fn;
-						o['e'+h] = fn;
-						o[h] = function()
+				return ids;
+			}
+			return document.getElementById(ids);
+		},
+		
+		getByTag: function(tagNames, rootNode)
+		{
+			rootNode = this.core.getElement(rootNode)||document;
+			if (tagNames instanceof Array) 
+			{
+				var l = tagNames.length;
+				var $ = [];
+				var i = 0;
+				var n = 0;
+				var j;
+				var k;
+				var o;
+				while (i < l) 
+				{
+					k = (o = rootNode.getElementsByTagName(tagNames[i++])).length;
+					j = 0;
+					while (j < k) 
+					{
+						$[n++] = o[j++];
+					}
+				}
+				return $;
+			}
+			return rootNode.getElementsByTagName(tagNames);
+		},
+		
+		getByClass: function(classNames, rootNode)
+		{
+			if ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array && classNames.length) 
+			{
+				var r = new RegExp('(?:\\\s|^)(?:' +classNames.toString().replace(/\,/g,'\|') +')(?:\\\s|$)');
+				var $ = [];
+				function q(n)
+				{
+					if (n.nodeType === 1 && r.test(n.className)) 
+					{
+						$[$.length] = n;
+					}
+					if ((n = n.childNodes)) 
+					{
+						var l = n.length;
+						for (var i = 0; i < l; i++) 
 						{
-							o['e'+h](event);
-						};
-						o.attachEvent('on' + e, o[h]);
-					}
-				}
-			}
-		},
-		
-		removeEvent: function(o, e, fn)
-		{
-			if (o && 'string'===typeof e && 'function'===typeof fn) {
-				/* base code by John Resig of JQuery */
-				if (o.removeEventListener) {
-					o.removeEventListener(e, fn, false);
-				}
-				else {
-					if (o.detachEvent) {
-						o.detachEvent('on' + e, o[(e = e + fn)]);
-						o[e] = null;
-						o['e' + e] = null;
-					}
-				}
-			}
-		},
-		
-		dispatchEvent: function (o, e)
-		{
-			if (o && 'string'===typeof e) {
-				if (o.dispatchEvent) {
-					// dispatch for firefox and others
-					var $ = document.createEvent('HTMLEvents');
-					// event type, bubbling, cancelable
-					$.initEvent(e, true, true);
-					o.dispatchEvent($);
-				}
-				else {
-					if (document.createEventObject) {
-						// dispatch for IE
-						o.fireEvent('on' + e, document.createEventObject());
-					}
-				}
-			}
-		},
-		
-		hasCollision: function(a, b)
-		{
-			if (a && b) {
-				var B = document.body;
-				var aX = 0;
-				var aY = 0;
-				var o = a;
-				for (; o !== B; o = o.parentNode) {
-					aX += o.offsetLeft;
-					aY += o.offsetTop;
-				}
-				var bX = 0;
-				var bY = 0;
-				for (o = b; o !== B; o = o.parentNode) {
-					bX += o.offsetLeft;
-					bY += o.offsetTop;
-				}
-				if (!(aX < bX - a.offsetWidth || bX + b.offsetWidth < aX)) {
-					return !(aY < bY - a.offsetHeight || bY + b.offsetHeight < aY);
-				}
-			}
-			return false;
-		},
-		
-		purgeElement: function(o)
-		{
-			/* based on crockford.com purge */
-			if (o) {
-				var $ = o.attributes;
-				if ($) {
-					var n;
-					var i = $.length;
-					while (i--) {
-						if ('function' === typeof o[(n = $[i].name)]) {
-							o[n] = null;
+							q(n[i]);
 						}
 					}
 				}
-				if ((o = o.childNodes)) {
-					$ = o.length;
-					while ($--) {
-						this.purgeElement(o[$]);
+				q(this.core.getElement(rootNode) || document);
+				return $;
+			}
+			return null;
+		},
+		
+		hasCollision: function(elementA, elementB)
+		{
+			var c = this.core;
+			c.hasCollision(c.getElement(elementA), c.getElement(elementB));
+		},
+		
+		purgeElement: function(element)
+		{
+			var c = this.core;
+			c.purgeElement(c.getElement(element));
+			if ((c = element.parentNode)) 
+			{
+				c.removeChild(element);
+			}
+		},
+		
+		addEvent: function(element, event, handlerFn)
+		{
+			var c = this.core;
+			c.addEvent(c.getElement(element), event, handlerFn);
+		},
+		
+		removeEvent: function(element, event, handlerFn)
+		{
+			var c = this.core;
+			c.removeEvent(c.getElement(element), event, handlerFn);
+		},
+		
+		dispatchEvent: function(element, event)
+		{
+			var c = this.core;
+			c.dispatchEvent(c.getElement(element), event);
+		},
+		
+		
+		/* DOM Core
+		 */
+		core: {
+			addEvent: function(o, e, fn)
+			{
+				if (o && 'string' === typeof e && 'function' === typeof fn) 
+				{
+					/* base code by John Resig of JQuery */
+					if (o.addEventListener) 
+					{
+						o.addEventListener(e, fn, false);
+					}
+					else 
+					{
+						if (o.attachEvent) 
+						{
+							var h = e + fn;
+							o['e' + h] = fn;
+							o.attachEvent('on' + e, (o[h] = function()
+							{
+								o['e' + h](event);
+							}));
+						}
 					}
 				}
-			}
-			o = null;
-		},
-		
-		getElement: function($)
-		{
-			return $ ? $.nodeType === 1 && 'object' === typeof $.style ? $ : document.getElementById($) : null;
-		},
-		
-		isIE: (/msie/i).test(navigator.userAgent)
+			},
+			
+			removeEvent: function(o, e, fn)
+			{
+				if (o && 'string' === typeof e && 'function' === typeof fn) 
+				{
+					/* base code by John Resig of JQuery */
+					if (o.removeEventListener) 
+					{
+						o.removeEventListener(e, fn, false);
+					}
+					else 
+					{
+						if (o.detachEvent) 
+						{
+							o.detachEvent('on' + e, o[(e = e + fn)]);
+							o[e] = null;
+							o['e' + e] = null;
+						}
+					}
+				}
+			},
+			
+			dispatchEvent: function(o, e)
+			{
+				if (o && 'string' === typeof e) 
+				{
+					if (o.dispatchEvent) 
+					{
+						/* dispatch for firefox and others */
+						var $ = document.createEvent('HTMLEvents');
+						/* event type, bubbling, cancelable */
+						$.initEvent(e, true, true);
+						o.dispatchEvent($);
+					}
+					else 
+					{
+						if (document.createEventObject) 
+						{
+							/* dispatch for IE */
+							o.fireEvent('on' + e, document.createEventObject());
+						}
+					}
+				}
+			},
+			
+			hasCollision: function(a, b)
+			{
+				if (a && b) 
+				{
+					var B = document.body;
+					var aX = 0;
+					var aY = 0;
+					var o = a;
+					for (; o !== B; o = o.parentNode) 
+					{
+						aX += o.offsetLeft;
+						aY += o.offsetTop;
+					}
+					var bX = 0;
+					var bY = 0;
+					for (o = b; o !== B; o = o.parentNode) 
+					{
+						bX += o.offsetLeft;
+						bY += o.offsetTop;
+					}
+					if (!(aX < bX - a.offsetWidth || bX + b.offsetWidth < aX)) 
+					{
+						return !(aY < bY - a.offsetHeight || bY + b.offsetHeight < aY);
+					}
+				}
+				return false;
+			},
+			
+			purgeElement: function(o)
+			{
+				/* based on crockford.com purge */
+				if (o) 
+				{
+					var $ = o.attributes;
+					if ($) 
+					{
+						var i = $.length;
+						var n;
+						while (i--) 
+						{
+							if ('function' === typeof o[(n = $[i].name)]) 
+							{
+								o[n] = null;
+							}
+						}
+					}
+					if ((o = o.childNodes)) 
+					{
+						$ = o.length;
+						while ($--) 
+						{
+							this.purgeElement(o[$]);
+						}
+					}
+				}
+				o = null;
+			},
+			
+			getElement: function($)
+			{
+				return $ ? $.nodeType === 1 && 'object' === typeof $.style ? $ : document.getElementById($) : null;
+			},
+			
+			isIE: (/msie/i).test(navigator.userAgent)
+		}
 	};
+	
+	
+		
+	/* DOMElement
+	 */
+	leaf.DOMElement = function(element)
+	{
+		if (this instanceof leaf.DOMElement) 
+		{
+			this.DOMElement(element);
+		}
+	};
+	
 	
 	
 	/* DOM Prototype
 	 */
-	leaf.DOM.prototype = {
+	leaf.DOMElement.prototype = {
 	
 		/* Constructor */
-		DOM: function(element)
+		DOMElement: function(element)
 		{
 			this.setElement(element);
 		},
@@ -415,7 +488,7 @@
 				var c;
 				var $ = '';
 				for (c in cssObj) {
-					$ += (c +': ' +cssObj[c] +'; ');
+					$ += c +': ' +cssObj[c] +'\; ';
 				}
 				if (s.cssText===undefined) {
 					e.setAttribute('style', (e.getAttribute('style')||'') +$);
@@ -431,8 +504,8 @@
 			if ('string' === typeof property) {
 				var o = this.element;
 				if (o) {
-					if ((o = this.core.isIE ? o.style.cssText : o.getAttribute('style'))) {
-						// RegExp does not 'compile' on AIR 1.0
+					if ((o = o.style.cssText===undefined ? o.getAttribute('style') : o.style.cssText)) {
+						/* RegExp does not 'compile' on AIR 1.0 */
 						if (-1 < (i = o.search(new RegExp('(?:^|\\\;| )' + property + '\\\:', 'i')))) {
 							return o.substring((i = o.indexOf(':', i) + 2), (i = o.indexOf('\;', i)) === -1 ? o.length : i);
 						}
@@ -442,55 +515,49 @@
 			return '';
 		},
 		
-		
+		/* Class operations needs new regexp
+		 * replace doesn't work with this one similar
+		 */
 		addClass: function(classNames)
 		{
 			var e = this.element;
-			if (e) {
-				if ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array) {
-					var c = e.className;
-					if ('string' === typeof c) {
-						var l = classNames.length;
-						var i = 0;
-						var k;
-						while (i < l) {
-							// RegExp does not 'compile' on AIR 1.0
-							if ((new RegExp('(?:\\\s|^)' + (k = classNames[i++]) + '(?:\\\s|$)')).test(c)) {
-								continue;
-							}
-							c += ' ' +k;
+			if (e && ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array)) {
+				var c = e.className;
+				if ('string' === typeof c) {
+					var l = classNames.length;
+					var i = 0;
+					var k;
+					while (i < l) {
+						// RegExp does not 'compile' on AIR 1.0
+						if ((new RegExp('(?:\\\s|^)' + (k = classNames[i++]) + '(?:\\\s|$)')).test(c)) {
+							continue;
 						}
-						e.className = c;
+						c += ' ' +k;
 					}
-				}
+					e.className = c;
+				}			
 			}
 		},
 		
 		removeClass: function(classNames)
 		{
 			var e = this.element;
-			if (e) {
-				if ('string' === typeof classNames? classNames = [classNames]:classNames instanceof Array) {
-					var c = e.className;
-					if ('string' === typeof c) {
-						var i = classNames.length;
-						var k;
-						var r = '(?:\\\s|^)(?:';
-						while (i--) {
-							r += classNames[i] + (i ? '|' : '');
-						}
-						e.className = c.replace(new RegExp(r +')(?:\\\s|$)'), '');
-					}
+			if (e && ('string' === typeof classNames? classNames = [classNames]:classNames instanceof Array)) {
+				var c = e.className;
+				if ('string' === typeof c) {
+					var i = classNames.length;
+					var k;
+					e.className = c.replace(new RegExp('(?:\\\s|^)(?:' +classNames.toString().replace(/\,/g,'\|') +')(?:\\\s|$)'), '');
 				}
 			}
 		},
-		
+
 		
 		/* Position */
 		
 		setPosition: function(x, y, z, type)
 		{
-			// large but optimum code
+			/* large but optimum code */
 			var $ = this.style;
 			if ($) {
 			
@@ -674,7 +741,7 @@
 		
 		
 		/* Area
-		 * nice for UI works
+		 * nice for UI and effects
 		 */
 		setArea: function(x, y, z, width, height, positionType)
 		{
@@ -698,7 +765,7 @@
 		{
 			/* need intelligent fix... IE6 dont allow changes to innerHTML when element was not appended yet */
 			var e = this.element;
-			if (value !== null && value !== undefined && e) {
+			if (!(value === null && value === undefined) && e) {
 				e.innerHTML = value;
 			}
 		},
@@ -733,7 +800,7 @@
 				}
 				
 				if ('string' === typeof src) {
-					$.backgroundImage = 'url(\'' + src + '\')';
+					$.backgroundImage = 'url(\'' +src + '\')';
 				}
 				
 				/* reusing var */
@@ -896,10 +963,18 @@
 		getBorder: function(keepUnits)
 		{
 			var $ = this.style;
+			if ($) 
+			{
+				return {
+					color: $.borderColor,
+					width: keepUnits ? $.borderWidth : parseFloat($.borderWidth),
+					style: $.borderStyle
+				};
+			}
 			return {
-				color: $.borderColor,
-				width: $ ? keepUnits ? $.borderWidth : parseFloat($.borderWidth) || 0 : 0,
-				style: $.borderStyle
+				color: '',
+				width: 0,
+				style: ''
 			};
 		},
 		
@@ -1211,10 +1286,8 @@
 					}
 					this.style = (this.element = tagName).style;
 					this.setArea(x, y, z, width, height, positionType);
-					return tagName;
 				}
 			}
-			return null;
 		},
 		
 		appendElement: function(parent)
@@ -1347,7 +1420,8 @@
 		}
 		
 	};
-	
-	/* Intellisense Fix */
-	leaf.DOM.prototype.core = leaf.DOM.core;
+		
+	/* Aptana intellisense adjust */
+	leaf.DOMElement.prototype.core = leaf.DOM.core;
+	leaf.DOMElement = leaf.DOMElement;
 	leaf.DOM = leaf.DOM;

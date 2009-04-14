@@ -1,41 +1,41 @@
 	
-	/*	LEAF JavaScript Library
-	 *	Leonardo Dutra
-	 *	v0.6.090509a
+	/*  LEAF JavaScript Library
+	 *  Leonardo Dutra
+	 *  v0.6.090513a
 	 *
-	 *	Copyright (c) 2009, Leonardo Dutra.
-	 *	All rights reserved.
+	 *  Copyright (c) 2009, Leonardo Dutra.
+	 *  All rights reserved.
 	 *
-	 *	Redistribution and use in source and binary forms, with or without modification,
-	 *	are permitted provided that the following conditions are met:
+	 *  Redistribution and use in source and binary forms, with or without modification,
+	 *  are permitted provided that the following conditions are met:
 	 *
-	 *	    * Redistributions of source code must retain the above copyright notice,
-	 *	      this list of conditions and the following disclaimer.
+	 *      * Redistributions of source code must retain the above copyright notice,
+	 *        this list of conditions and the following disclaimer.
 	 *
-	 *	    * Redistributions in binary form must reproduce the above copyright notice,
-	 *	      this list of conditions and the following disclaimer in the documentation
-	 *	      and/or other materials provided with the distribution.
+	 *      * Redistributions in binary form must reproduce the above copyright notice,
+	 *        this list of conditions and the following disclaimer in the documentation
+	 *        and/or other materials provided with the distribution.
 	 *
-	 *	    * Neither the name of Leonardo Dutra nor the names of its
-	 *	      contributors may be used to endorse or promote products derived from this
-	 *	      software without specific prior written permission.
+	 *      * Neither the name of Leonardo Dutra nor the names of its
+	 *        contributors may be used to endorse or promote products derived from this
+	 *        software without specific prior written permission.
 	 *
-	 *	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-	 *	ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-	 *	WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-	 *	DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-	 *	ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-	 *	(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-	 *	LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-	 *	ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-	 *	(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-	 *	SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+	 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+	 *  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+	 *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+	 *  DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+	 *  ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+	 *  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+	 *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+	 *  ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+	 *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+	 *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	 */
 	
 	/* This ALPHA version implements:
 	 * 
 	 * leaf.Object
-	 *     .Ajax
+	 *     .AJAX
 	 *     .Window
 	 *     .Document
 	 *     .Mouse
@@ -44,7 +44,7 @@
 	 */
 	
 	
-	/* Check LEAF "namespace" */
+	/* check LEAF "namespace" */
 	if ('object' !== typeof window.leaf) 
 	{
 		window.leaf = {};
@@ -69,8 +69,9 @@
 	
 	
 	/* Ajax
+	 * TODO: replace with the new AJAX prototype
 	 */
-	leaf.Ajax = {
+	leaf.AJAX = {
 	
 		createXMLHttpRequest: function()
 		{
@@ -82,7 +83,7 @@
 			}
 			else 
 			{
-				/* add more ActiveX versions in this array */
+				/* ActiveX versions in this array */
 				var v = ['MSXML2.XMLHTTP.3.0', 'Msxml2.XMLHTTP', 'Microsoft.XMLHTTP'];
 				var i = v.length;
 				var o;
@@ -107,6 +108,7 @@
 	 */
 	leaf.Window = {
 	
+		/* ease event handling */
 		addEvent: function(type, handlerFn)
 		{
 			leaf.DOM.core.addEvent(window, type, handlerFn);
@@ -121,7 +123,8 @@
 	/* Document
 	 */
 	leaf.Document = {
-	
+
+		/* ease event handling */	
 		addEvent: function(type, handlerFn)
 		{
 			leaf.DOM.core.addEvent(document, type, handlerFn);
@@ -136,22 +139,19 @@
 	/* Mouse
 	 */
 	leaf.Mouse = {
-	
+		 
 		getPosition: function(mouseEvent)
 		{
-			if ((mouseEvent = mouseEvent||event)) 
+			if ('object'===typeof (mouseEvent = mouseEvent||event)) 
 			{
 				var D = document.documentElement;
 				return {
 					/* IE adjusted using client properties */
-					x: 'number' === typeof mouseEvent.pageX ? mouseEvent.pageX : mouseEvent.clientX + D.scrollLeft - (D.clientLeft || 0),
-					y: 'number' === typeof mouseEvent.pageY ? mouseEvent.pageY : mouseEvent.clientY + D.scrollTop - (D.clientTop || 0)
+					x: 'number' === typeof mouseEvent.pageX ? mouseEvent.pageX : mouseEvent.clientX + D.scrollLeft - (D.clientLeft || 0)||0,
+					y: 'number' === typeof mouseEvent.pageY ? mouseEvent.pageY : mouseEvent.clientY + D.scrollTop - (D.clientTop || 0)||0
 				};
 			}
-			return {
-				x: 0,
-				y: 0
-			};
+			return null;
 		}
 	};
 	
@@ -161,20 +161,23 @@
 		importXML: function(uri)
 		{
 			/*	XML security and access vary from browser to browser */
-			var o = leaf.Ajax.createXMLHttpRequest();
-			if (o) 
+			if ((/.\.xml$/i).test(uri)) 
 			{
-				try 
+				var o = leaf.AJAX.createXMLHttpRequest();
+				if (o) 
 				{
-					o.open('GET', uri, false);
-					o.send(null);
-					if (o.readyState === 4 && o.status === 200) 
+					try 
 					{
-						return o.responseXML;
+						o.open('GET', uri +'?decachexml=' +(new Date()).getTime(), false);
+						o.send(null);
+						if (o.readyState === 4 && o.status === 200) 
+						{
+							return o.responseXML;
+						}
+					} 
+					catch (o) 
+					{
 					}
-				} 
-				catch (o) 
-				{
 				}
 			}
 			return null;
@@ -182,6 +185,7 @@
 		
 		buildXML: function(XMLText)
 		{
+			/* constant for optimization */
 			var W = window;
 			if (W.DOMParser) 
 			{
@@ -201,6 +205,7 @@
 			return null;
 		},
 		
+		/* TODO: better code for check empty and null arrays */
 		getById: function(ids)
 		{
 			if (ids instanceof Array) 
@@ -210,11 +215,13 @@
 				{
 					ids[i] = document.getElementById(ids[i]);
 				}
-				return ids;
+				/* check if array is empty */
+				return ids.toString().replace(/\,/g, '') ? ids : null;
 			}
 			return document.getElementById(ids);
 		},
 		
+		/* TODO: better code for check empty and null arrays */
 		getByTag: function(tagNames, rootNode)
 		{
 			rootNode = this.core.getElement(rootNode)||document;
@@ -236,11 +243,13 @@
 						$[n++] = o[j++];
 					}
 				}
-				return $;
+				/* check if array is empty */
+				return $.toString().replace(/\,/g, '') ? $ : null;
 			}
 			return rootNode.getElementsByTagName(tagNames);
 		},
-		
+
+		/* TODO: better code for check empty and null arrays */		
 		getByClass: function(classNames, rootNode)
 		{
 			if ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array && classNames.length) 
@@ -263,19 +272,25 @@
 					}
 				}
 				q(this.core.getElement(rootNode) || document);
-				return $;
+				/* check if array is empty */
+				if ($.toString().replace(/\,/g, '')) 
+				{
+					return $;
+				}
 			}
 			return null;
 		},
 		
 		hasCollision: function(elementA, elementB)
 		{
+			/* check two elements collision */
 			var c = this.core;
 			c.hasCollision(c.getElement(elementA), c.getElement(elementB));
 		},
 		
 		purgeElement: function(element)
 		{
+			/* removes functions to prevent memory leak */
 			var c = this.core;
 			c.purgeElement(c.getElement(element));
 			if ((c = element.parentNode)) 
@@ -310,7 +325,9 @@
 			{
 				if (o && 'string' === typeof e && 'function' === typeof fn) 
 				{
-					/* base code by John Resig of JQuery */
+					/* base code by John Resig
+					 * uses hashing name for IE fix
+					 */
 					if (o.addEventListener) 
 					{
 						o.addEventListener(e, fn, false);
@@ -334,7 +351,9 @@
 			{
 				if (o && 'string' === typeof e && 'function' === typeof fn) 
 				{
-					/* base code by John Resig of JQuery */
+					/* base code by John Resig
+					 * uses hashing name for IE fix
+					 */
 					if (o.removeEventListener) 
 					{
 						o.removeEventListener(e, fn, false);
@@ -647,16 +666,16 @@
 			var e = this.element;
 			if (e) {
 				return {
-					left:   e.offsetLeft,
-					top:    e.offsetTop,
+					x:   e.offsetLeft,
+					y:    e.offsetTop,
 					width:  e.offsetWidth,
 					height: e.offsetHeight,
 					parent: e.offsetParent
 				};
 			}
 			return {
-				left: 0,
-				top: 0,
+				x: 0,
+				y: 0,
 				width: 0,
 				height: 0,
 				parent: null
@@ -763,7 +782,7 @@
 		
 		setContent: function(value)
 		{
-			/* need intelligent fix... IE6 dont allow changes to innerHTML when element was not appended yet */
+			/* FIXME: IE6 dont allow changes to innerHTML when element was not appended yet */
 			var e = this.element;
 			if (!(value === null && value === undefined) && e) {
 				e.innerHTML = value;
@@ -781,7 +800,7 @@
 		
 		addContent: function(value)
 		{
-			/* need intelligent fix... IE6 dont allow changes to innerHTML when element was not appended yet */
+			/* FIXME: IE6 dont allow changes to innerHTML when element was not appended yet */
 			var e = this.element;
 			if (value !== null && value !== undefined && e) {
 				e.innerHTML += String(value);

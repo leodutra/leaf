@@ -1,7 +1,7 @@
 	
 	/*  LEAF JavaScript Library
 	 *  Leonardo Dutra
-	 *  v0.6.090513a
+	 *  v0.6.090515a
 	 *
 	 *  Copyright (c) 2009, Leonardo Dutra.
 	 *  All rights reserved.
@@ -1309,7 +1309,7 @@
 			}
 		},
 		
-		appendElement: function(parent)
+		addElement: function(parent)
 		{
 			var e = this.element;
 			if (e && !e.parentNode && (parent = this.core.getElement(parent)||document.body)) {
@@ -1359,7 +1359,7 @@
 			}
 		},
 		
-		appendChild: function(childNode)
+		addChild: function(childNode)
 		{
 			var e;
 			try {

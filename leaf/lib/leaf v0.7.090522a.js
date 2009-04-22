@@ -1,7 +1,7 @@
 	
 	/*  LEAF JavaScript Library
 	 *  Leonardo Dutra
-	 *  v0.6.090515.1a
+	 *  v0.7.090522a
 	 *
 	 *  Copyright (c) 2009, Leonardo Dutra.
 	 *  All rights reserved.
@@ -34,7 +34,8 @@
 	
 	/* This ALPHA version implements:
 	 * 
-	 * leaf.Object
+	 * leaf.Array
+	 *     .Object
 	 *     .AJAX
 	 *     .Window
 	 *     .Document
@@ -45,40 +46,51 @@
 	
 	
 	/* check LEAF "namespace" */
-	if ('object' !== typeof window.leaf) 
+	if (!window.leaf) 
 	{
 		window.leaf = {};
 	}
 
 
+	/* Array
+	 */
+	leaf.Array = {
+
+		each: function (array, itemHandler)
+		{
+			var l;
+			if (array && (l = array.length) && !(array instanceof String) && 'function'===typeof itemHandler)
+			{
+				var i = 0;
+				var k;
+				while (i < l)  {
+					if ((k = array[i++])) {
+						itemHandler.call(k);
+					}
+				}
+			}
+		}
+	};
+	
+
 	/* Object
 	 */
 	leaf.Object = {
-	
-		inherit: function(object, sourceObject)
+
+		extend: function(object, sourceObject, doOverride)
 		{
 			if (object && sourceObject) 
 			{
-				for (var n in sourceObject) 
-				{
-					object[n] = sourceObject[n];
+				if (doOverride===undefined) {
+					doOverride = true;
 				}
-			}
-		},
-		
-		extend: function(object, sourceObject)
-		{
-			if (object && sourceObject) 
-			{
 				for (var n in sourceObject) 
-				{
-					if (object[n]) 
+				{	
+					if (object[n]!==undefined && doOverride) 
 					{
 						continue;
 					}
-					else {
-						object[n] = sourceObject[n];
-					}
+					object[n] = sourceObject[n];
 				}
 			}
 		}
@@ -89,7 +101,7 @@
 	 * TODO: replace with the new AJAX prototype
 	 */
 	leaf.AJAX = {
-	
+
 		createRequester: function()
 		{
 			/* constant for optimization */
@@ -101,8 +113,15 @@
 			else 
 			{
 				/* ActiveX versions in this array */
-				var v = ['MSXML2.XMLHTTP.3.0', 'Msxml2.XMLHTTP', 'Microsoft.XMLHTTP'];
-				var i = v.length;
+				var v = [
+					'MSXML2.XMLHTTP.6.0',
+					'MSXML2.XMLHTTP.5.0',
+					'MSXML2.XMLHTTP.4.0',
+					'MSXML2.XMLHTTP.3.0',
+					'MSXML2.XMLHTTP',
+					'Microsoft.XMLHTTP'
+				];
+				var i = 6;
 				var o;
 				while (i--) 
 				{
@@ -124,7 +143,7 @@
 	/* Window
 	 */
 	leaf.Window = {
-	
+
 		/* ease event handling */
 		addEvent: function(type, handlerFn)
 		{
@@ -156,16 +175,17 @@
 	/* Mouse
 	 */
 	leaf.Mouse = {
-		 
+
 		getPosition: function(mouseEvent)
 		{
 			if ('object'===typeof (mouseEvent = mouseEvent||event)) 
 			{
 				var D = document.documentElement;
+				var p = 'number' === typeof mouseEvent.pageY;
 				return {
 					/* IE adjusted using client properties */
-					x: 'number' === typeof mouseEvent.pageX ? mouseEvent.pageX : mouseEvent.clientX + D.scrollLeft - (D.clientLeft || 0)||0,
-					y: 'number' === typeof mouseEvent.pageY ? mouseEvent.pageY : mouseEvent.clientY + D.scrollTop - (D.clientTop || 0)||0
+					x: p ? mouseEvent.pageX : mouseEvent.clientX +D.scrollLeft -(D.clientLeft||0),
+					y: p ? mouseEvent.pageY : mouseEvent.clientY +D.scrollTop  -(D.clientTop ||0)
 				};
 			}
 			return null;
@@ -174,13 +194,16 @@
 	
 	
 	leaf.DOM = {
-	
+		
+/* removed in 0.7.09.0520... leaf.AJAX will implement some
+ * this one is evil for page loading
+ * 
 		importXML: function(uri)
 		{
-			/*	XML security and access vary from browser to browser */
+			/ XML security and access vary from browser to browser /
 			if ((/.\.xml$/i).test(uri)) 
 			{
-				var o = leaf.AJAX.createXMLHttpRequest();
+				var o = leaf.AJAX.createRequester();
 				if (o) 
 				{
 					try 
@@ -199,7 +222,9 @@
 			}
 			return null;
 		},
-		
+*/
+
+		/* TODO: add more ActiveX versions(research for avaiable ones) */
 		buildXML: function(XMLText)
 		{
 			/* constant for optimization */
@@ -211,8 +236,7 @@
 			var o;
 			try 
 			{
-				o = new W.ActiveXObject('Microsoft.XMLDOM');
-				o.async = false;
+				(o = new W.ActiveXObject('Microsoft.XMLDOM')).async = false;
 				o.loadXML(XMLText);
 				return o;
 			} 
@@ -221,19 +245,27 @@
 			}
 			return null;
 		},
-		
-		/* TODO: better code for check empty and null arrays */
+
 		getById: function(ids)
 		{
 			if (ids instanceof Array) 
 			{
-				var i = ids.length;
-				while (i--) 
+				var l = ids.length;
+				var n = 0;
+				var i = 0;
+				var $ = [];
+				var o;
+				while (i < l) 
 				{
-					ids[i] = document.getElementById(ids[i]);
+					if ((o = document.getElementById(ids[i++]))) {
+						$[n++] = o;
+					}
 				}
 				/* check if array is empty */
-				return ids.toString().replace(/\,/g, '') ? ids : null;
+				if (n) 
+				{
+					return $;
+				}
 			}
 			return document.getElementById(ids);
 		},
@@ -245,52 +277,56 @@
 			if (tagNames instanceof Array) 
 			{
 				var l = tagNames.length;
-				var $ = [];
-				var i = 0;
 				var n = 0;
-				var j;
+				var i = 0;
+				var j = 0;
+				var $ = [];
 				var k;
 				var o;
 				while (i < l) 
 				{
 					k = (o = rootNode.getElementsByTagName(tagNames[i++])).length;
-					j = 0;
 					while (j < k) 
 					{
 						$[n++] = o[j++];
 					}
+					j = 0;
 				}
 				/* check if array is empty */
-				return $.toString().replace(/\,/g, '') ? $ : null;
+				if (n) 
+				{
+					return $;
+				}
 			}
 			return rootNode.getElementsByTagName(tagNames);
 		},
-
-		/* TODO: better code for check empty and null arrays */		
+	
 		getByClass: function(classNames, rootNode)
 		{
 			if ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array && classNames.length) 
 			{
-				var r = new RegExp('(?:\\\s|^)(?:' +classNames.toString().replace(/\,/g,'\|') +')(?:\\\s|$)');
+				var r = new RegExp('(?:\\s|^)(?:' +classNames.toString().replace(/\,/g,'\|') +')(?:\\s|$)');
 				var $ = [];
-				function q(n)
+				var n = 0;
+				/* Depth search */
+				var q = function (o)
 				{
-					if (n.nodeType === 1 && r.test(n.className)) 
+					if (o.nodeType === 1 && r.test(o.className)) 
 					{
-						$[$.length] = n;
+						$[n++] = o;
 					}
-					if ((n = n.childNodes)) 
+					if ((o = o.childNodes)) 
 					{
-						var l = n.length;
-						for (var i = 0; i < l; i++) 
+						var l = o.length;
+						for (var i = 0; i < l;) 
 						{
-							q(n[i]);
+							q(o[i++]);
 						}
 					}
-				}
-				q(this.core.getElement(rootNode) || document);
+				};
+				q(this.core.getElement(rootNode)||document);
 				/* check if array is empty */
-				if ($.toString().replace(/\,/g, '')) 
+				if (n) 
 				{
 					return $;
 				}
@@ -309,10 +345,12 @@
 		{
 			/* removes functions to prevent memory leak */
 			var c = this.core;
-			c.purgeElement(c.getElement(element));
-			if ((c = element.parentNode)) 
-			{
-				c.removeChild(element);
+			if ((element = c.getElement(element))) {
+				c.purgeElement(element);
+				if ((c = element.parentNode)) 
+				{
+					c.removeChild(element);
+				}
 			}
 		},
 		
@@ -336,14 +374,16 @@
 		
 		
 		/* DOM Core
+		 * core contains functions used in many internal operations
 		 */
 		core: {
+
 			addEvent: function(o, e, fn)
 			{
 				if (o && 'string' === typeof e && 'function' === typeof fn) 
 				{
 					/* base code by John Resig
-					 * uses hashing name for IE fix
+					 * uses hash name to fix IE
 					 */
 					if (o.addEventListener) 
 					{
@@ -369,7 +409,7 @@
 				if (o && 'string' === typeof e && 'function' === typeof fn) 
 				{
 					/* base code by John Resig
-					 * uses hashing name for IE fix
+					 * uses hash to fix IE
 					 */
 					if (o.removeEventListener) 
 					{
@@ -418,17 +458,20 @@
 					var aX = 0;
 					var aY = 0;
 					var o = a;
-					for (; o !== B; o = o.parentNode) 
+					while (o !== B) 
 					{
 						aX += o.offsetLeft;
 						aY += o.offsetTop;
+						o = o.parentNode;
 					}
 					var bX = 0;
 					var bY = 0;
-					for (o = b; o !== B; o = o.parentNode) 
+					o = b;
+					while (o !== B) 
 					{
 						bX += o.offsetLeft;
 						bY += o.offsetTop;
+						o = o.parentNode;
 					}
 					if (!(aX < bX - a.offsetWidth || bX + b.offsetWidth < aX)) 
 					{
@@ -440,7 +483,7 @@
 			
 			purgeElement: function(o)
 			{
-				/* based on crockford.com purge */
+				/* base code on crockford.com */
 				if (o) 
 				{
 					var $ = o.attributes;
@@ -465,15 +508,12 @@
 						}
 					}
 				}
-				o = null;
 			},
 			
 			getElement: function($)
 			{
-				return $ ? $.nodeType === 1 && 'object' === typeof $.style ? $ : document.getElementById($) : null;
-			},
-			
-			isIE: (/msie/i).test(navigator.userAgent)
+				return $ ? $.nodeType === 1 ? $ : document.getElementById($) : null;
+			}
 		}
 	};
 	
@@ -483,6 +523,7 @@
 	 */
 	leaf.DOMElement = function(element)
 	{
+		/* some intellisenses need this kind of initilization */
 		if (this instanceof leaf.DOMElement) 
 		{
 			this.DOMElement(element);
@@ -494,8 +535,11 @@
 	/* DOM Prototype
 	 */
 	leaf.DOMElement.prototype = {
+		
+		element: null,
+		style:   null,
+		core:    null,
 	
-		/* Constructor */
 		DOMElement: function(element)
 		{
 			this.setElement(element);
@@ -521,8 +565,8 @@
 			var e = this.element;
 			if (e && cssObj instanceof Object) {
 				var s = e.style;
-				var c;
 				var $ = '';
+				var c;
 				for (c in cssObj) {
 					$ += c +': ' +cssObj[c] +'\; ';
 				}
@@ -541,18 +585,21 @@
 				var o = this.element;
 				if (o) {
 					if ((o = o.style.cssText===undefined ? o.getAttribute('style') : o.style.cssText)) {
-						/* RegExp does not 'compile' on AIR 1.0 */
-						if (-1 < (i = o.search(new RegExp('(?:^|\\\;| )' + property + '\\\:', 'i')))) {
-							return o.substring((i = o.indexOf(':', i) + 2), (i = o.indexOf('\;', i)) === -1 ? o.length : i);
+						/* RegExp does not 'compile' on AIR 1.0
+						 * This code is a little more faster than using pure RegExp
+						 */
+						if (-1 < (i = o.search(new RegExp('(?:\\\;|\\s|^)' +property +'\\\:', 'i')))) {
+							return o.substring((i = o.indexOf(':', i) +2), (i = o.indexOf('\;', i)) === -1 ? o.length : i);
 						}
+						
 					}
 				}
 			}
-			return '';
+			return null;
 		},
 		
 		/* Class operations needs new regexp
-		 * replace doesn't work with this one similar
+		 * code cannot only add or remove because classNames keeps residual values on some browsers
 		 */
 		addClass: function(classNames)
 		{
@@ -564,8 +611,10 @@
 					var i = 0;
 					var k;
 					while (i < l) {
-						// RegExp does not 'compile' on AIR 1.0
-						if ((new RegExp('(?:\\\s|^)' + (k = classNames[i++]) + '(?:\\\s|$)')).test(c)) {
+						/* RegExp does not 'compile' on AIR 1.0
+						 * This test avoids className duplication since browsers don't reformat them
+						 */
+						if ((new RegExp('(?:\\s|^)' + (k = classNames[i++]) + '(?:\\s|$)')).test(c)) {
 							continue;
 						}
 						c += ' ' +k;
@@ -580,14 +629,12 @@
 			var e = this.element;
 			if (e && ('string' === typeof classNames? classNames = [classNames]:classNames instanceof Array)) {
 				var c = e.className;
-				if ('string' === typeof c) {
-					var i = classNames.length;
-					var k;
-					e.className = c.replace(new RegExp('(?:\\\s|^)(?:' +classNames.toString().replace(/\,/g,'\|') +')(?:\\\s|$)'), '');
+				if ('string'===typeof c) {
+					e.className = c.replace(new RegExp('(?:\\s|\\b)(?:' +classNames.toString().replace(/\,/g, '|') +')(?:\\s|$)', 'gi'), '');
 				}
 			}
 		},
-
+		
 		
 		/* Position */
 		
@@ -598,14 +645,14 @@
 			if ($) {
 			
 				$.position = 'string' === typeof type ? type : $.position || 'absolute';
-				
+
 				if ('number' === typeof x) {
 					if ($.right) {
 						$.left = '';
-						$.right = x + 'px';
+						$.right = x +'px';
 					}
 					else {
-						$.left = x + 'px';
+						$.left = x +'px';
 						$.right = '';
 					}
 				}
@@ -655,27 +702,22 @@
 			if ($) {
 				if (keepUnits) {
 					return {
-						x: $.left || $.right,
-						y: $.top || $.bottom,
+						x: $.left||$.right,
+						y: $.top ||$.bottom,
 						z: $.zIndex,
 						position: $.position
 					};
 				}
 				else {
 					return {
-						x: parseFloat($.left || $.right) || 0,
-						y: parseFloat($.top || $.bottom) || 0,
+						x: parseFloat($.left||$.right) ||0,
+						y: parseFloat($.top ||$.bottom)||0,
 						z: $.zIndex,
 						position: $.position
 					};
 				}
 			}
-			return {
-				x: 0,
-				y: 0,
-				z: 0,
-				position: ''
-			};
+			return null;
 		},
 		
 		getOffset: function()
@@ -683,23 +725,17 @@
 			var e = this.element;
 			if (e) {
 				return {
-					x:   e.offsetLeft,
-					y:    e.offsetTop,
+					x:      e.offsetLeft,
+					y:      e.offsetTop,
 					width:  e.offsetWidth,
 					height: e.offsetHeight,
 					parent: e.offsetParent
 				};
 			}
-			return {
-				x: 0,
-				y: 0,
-				width: 0,
-				height: 0,
-				parent: null
-			};
+			return null;
 		},
 		
-		invertAxis: function(x, y)
+		invertXY: function(x, y)
 		{
 			var $ = this.style;
 			if ($) {
@@ -728,7 +764,6 @@
 		
 		
 		/* Size */
-		
 		setSize: function(width, height)
 		{
 			var $ = this.style;
@@ -769,10 +804,7 @@
 					};
 				}
 			}
-			return {
-				width: 0,
-				height: 0
-			};
+			return null;
 		},
 		
 		
@@ -787,16 +819,34 @@
 		
 		getArea: function(keepUnits)
 		{
-			var p = this.getPosition(keepUnits);
-			var s = this.getSize(keepUnits);
-			p.width = s.width;
-			p.height = s.height;
-			return p;
+			var $ = this.style;
+			if ($) {
+				if (keepUnits) {
+					return {
+						x: $.left||$.right,
+						y: $.top ||$.bottom,
+						z: $.zIndex,
+						width: $.width,
+						height: $.height,
+						position: $.position
+					};
+				}
+				else {
+					return {
+						x: parseFloat($.left||$.right) ||0,
+						y: parseFloat($.top ||$.bottom)||0,
+						z: $.zIndex,
+						width: parseFloat($.width)  ||0,
+						height: parseFloat($.height)||0,
+						position: $.position
+					};
+				}
+			}
+			return null;
 		},
 		
 		
 		/* Content */
-		
 		setContent: function(value)
 		{
 			/* FIXME: IE6 dont allow changes to innerHTML when element was not appended yet */
@@ -809,10 +859,7 @@
 		getContent: function()
 		{
 			var e = this.element;
-			if (e) {
-				return e.innerHTML;
-			}
-			return '';
+			return e && e.innerHTML || null;
 		},
 		
 		addContent: function(value)
@@ -845,7 +892,7 @@
 				x = 'number' === typeof x ? x + 'px' : 'string' === typeof x ? x : (src[0] || '50%');
 				y = 'number' === typeof y ? y + 'px' : 'string' === typeof y ? y : (src[1] || '50%');
 				
-				$.backgroundPosition = x + ' ' + y;
+				$.backgroundPosition = x +' ' + y;
 				$.backgroundRepeat = repeat ? repeat : 'no-repeat';
 			}
 		},
@@ -857,30 +904,24 @@
 				var p = $.backgroundPosition.split(' ');
 				if (keepUnits) {
 					return {
-						x: p[0] || '',
-						y: p[1] || '',
-						color: $.backgroundColor,
-						src: $.backgroundImage,
+						x:      p[0]||'',
+						y:      p[1]||'',
+						color:  $.backgroundColor,
+						src:    $.backgroundImage,
 						repeat: $.backgroundRepeat
 					};
 				}
 				else {
 					return {
-						x: parseFloat(p[0]) || 0,
-						y: parseFloat(p[1]) || 0,
-						color: $.backgroundColor,
-						src: $.backgroundImage,
+						x:      parseFloat(p[0])||0,
+						y:      parseFloat(p[1])||0,
+						color:  $.backgroundColor,
+						src:    $.backgroundImage,
 						repeat: $.backgroundRepeat
 					};
 				}
 			}
-			return {
-				x: 0,
-				y: 0,
-				color: '',
-				src: '',
-				repeat: ''
-			};
+			return null;
 		},
 		
 		
@@ -962,16 +1003,7 @@
 				}
 				
 			}
-			return {
-				color: '',
-				size: 0,
-				family: '',
-				weight: '',
-				style: '',
-				spacing: 0,
-				lineHeight: 0,
-				variant: ''
-			};
+			return null;
 		},
 		
 		
@@ -1007,11 +1039,7 @@
 					style: $.borderStyle
 				};
 			}
-			return {
-				color: '',
-				width: 0,
-				style: ''
-			};
+			return null;
 		},
 		
 		
@@ -1077,12 +1105,7 @@
 					};
 				}
 			}
-			return {
-				top: 0,
-				right: 0,
-				bottom: 0,
-				left: 0
-			};
+			return null;
 		},
 		
 		
@@ -1148,12 +1171,7 @@
 					};
 				}
 			}
-			return {
-				top: 0,
-				right: 0,
-				bottom: 0,
-				left: 0
-			};
+			return null;
 		},
 		
 		
@@ -1219,14 +1237,7 @@
 					};
 				}
 			}
-			return {
-				align: '',
-				decoration: '',
-				wordSpacing: 0,
-				whiteSpace: '',
-				indent: 0,
-				transform: ''
-			};
+			return null;
 		},
 		
 		
@@ -1260,53 +1271,48 @@
 					width: e.scrollWidth
 				};
 			}
-			return {
-				top: 0,
-				left: 0,
-				height: 0,
-				width: 0
-			};
+			return null;
 		},
 		
 		
-		/* Opacity */
-		
+		/* Opacity 
+		 */
+		/* FIXME: IE6 does not apply opacity on static elements if no dimension is set */
 		setOpacity: function(opacity)
 		{
-			if ('number' === typeof opacity) {
-				var $ = this.style;
-				if ($) {
-					opacity = opacity < 0 ? 0 : 1 < opacity ? 1 : opacity.toFixed(2);
-					if (this.core.isIE) /* IE6, IE7 brute force for 'filters' */ {
-						$.cssText = ($.cssText||'') +'; filter: alpha(opacity=' + parseInt(opacity * 100, 10) + '); ';
-					}
-					else {
-						$.opacity = opacity;
-					}
+			var $ = this.style;
+			if ($ && 'number' === typeof opacity) {
+				opacity = opacity < 0 ? 0 : 1 < opacity ? 1 : opacity.toFixed(2);
+				if ($.opacity===undefined) // use IE 'filters'
+				{
+					$.filter = 'alpha(opacity=' +(opacity * 100) +')';
+				}
+				else {
+					$.opacity = opacity;
 				}
 			}
 		},
-		
+
 		getOpacity: function()
 		{
 			var e = this.element;
 			if (e) {
-				var o;
-				if (this.core.isIE) {
-					if ((e = e.filters)) {
-						if ((e = e.alpha)) {
-							if ((e = e.opacity)) {
-								o = e / 100;
-							}
-						}
+				var $ = e.style;
+				if ($.opacity===undefined) {
+					try {
+						$ = e.filters.alpha.opacity /100;
+						return $;
+					}
+					catch ($) { 
+						return ($ = (/opacity=(\d+)/i).exec(e.style.cssText)) ? $[1]/100 : 1;
 					}
 				}
 				else {
-					o = parseFloat(e.style.opacity);
+					return ($ = parseFloat($.opacity))? $ : 1;
 				}
-				return isNaN(o) ? 1 : o;
+				return 1;
 			}
-			return 1;
+			return null;
 		},
 		
 		
@@ -1326,23 +1332,20 @@
 			}
 		},
 		
-		addElement: function(parent)
+		appendElement: function(parent)
 		{
 			var e = this.element;
-			if (e && !e.parentNode && (parent = this.core.getElement(parent)||document.body)) {
-				parent.appendChild(e);
+			if (e && !e.parentNode)
+			{
+				((parent && (parent.nodeType===1||parent.nodeType===11) ? parent : document.getElementById(parent))||document.body).appendChild(e);
 			}
 		},
 		
 		insertBefore: function(node)
 		{
 			var e = this.element;
-			if (e && (node = this.core.getElement(node))) {
-				try {
-					node.parentNode.insertBefore(e, node);
-				} 
-				catch (e) {
-				}
+			if (e && !e.parentNode && (node = this.core.getElement(node)) && node.parentNode) {
+				node.parentNode.insertBefore(e, node);
 			}
 		},
 		
@@ -1360,10 +1363,7 @@
 		cloneElement: function(cloneAttributesAndChilds)
 		{
 			var e = this.element;
-			if (e) {
-				return e.cloneNode(!!cloneAttributesAndChilds);
-			}
-			return null;
+			return e && e.cloneNode(!!cloneAttributesAndChilds)||null;
 		},
 		
 		purgeElement: function()
@@ -1376,13 +1376,117 @@
 			}
 		},
 		
-		addChild: function(childNode)
+		getFirst: function()
 		{
-			var e;
-			try {
-				this.element.appendChild(childNode);
+			var e = this.element;
+			if (e) 
+			{
+				e = e.firstChild;
+				while (e && e.nodeType !== 1) 
+				{
+					e = e.nextSibling;
+				}
+				return e;
+			}
+			return null;
+		},
+		
+		getNext: function()
+		{
+			var e = this.element;
+			if (e) 
+			{	
+				e = e.nextSibling;
+				while (e && e.nodeType !== 1) 
+				{
+					e = e.nextSibling;
+				}
+			}
+			return null;
+		},
+		
+		
+		getPrevious: function()
+		{
+			var e = this.element;
+			if (e) 
+			{	
+				e = e.previousSibling;
+				while (e && e.nodeType !== 1) 
+				{
+					e = e.previousSibling;
+				}
+			}
+			return null;
+		},
+
+		getLast: function()
+		{
+			var e = this.element;
+			if (e) 
+			{
+				e = e.lastChild;
+				while (e && e.nodeType!== 1) 
+				{
+					e = e.previousSibling;
+				}
+				return e;
+			}
+			return null;
+		},
+		
+		getChildElements: function()
+		{
+			var e = this.element;
+			if (e) 
+			{
+				var $ = [];
+				var n = 0;
+				e = e.firstChild;
+				while (e) 
+				{
+					if (e.nodeType===1) 
+					{
+						$[n++] = e;
+					}
+					e = e.nextSibling;
+				}
+				if (n) 
+				{
+					return $;
+				}
+			}
+			return null;
+		},
+		
+		getChild: function(child)
+		{
+			var e = this.element;
+			return e.childNodes[child]||(child = this.core.getElement(child)) && e===child.parentNode && child||null;
+		},
+		
+		appendChild: function(childNode)
+		{
+			var e = this.element;
+			if (e && childNode && 'number'===typeof childNode.nodeType && !childNode.parentNode)
+			{
+				e.appendChild(childNode);
 			} 
-			catch (e) {
+		},
+		
+		appendChildren: function(childNodes)
+		{
+			var e = this.element;
+			var l;
+			if (e && childNodes && (l = childNodes.length)) {
+				var i = 0;
+				var k;
+				while (i < l) {
+					if (!(k = childNodes[i++]).parentNode && 'number'===typeof k.nodeType)
+					{
+						e.appendChild(k);
+					}
+				}
 			}
 		},
 		
@@ -1394,18 +1498,18 @@
 			}
 		},
 		
-		setChild: function(child)
-		{
-			this.setElement(this.getChild(child));
-		},
-		
-		getChild: function(child)
+		removeChildren: function()
 		{
 			var e = this.element;
-			if (e) {
-				return e.childNodes[child]||((child = this.core.getElement(child)) && e===child.parentNode ? child : null);
+			if (e)
+			{
+				var $ = e.childNodes;
+				var i = $.length;
+				var k;
+				while (i--) {
+					e.removeChild($[i]);
+				}
 			}
-			return null;
 		},
 		
 		purgeChild: function(child)
@@ -1416,10 +1520,76 @@
 			}
 		},
 		
+		purgeChildren: function()
+		{
+			var e = this.element;
+			if (e) {
+				/* local purge function for best performance */
+				var p = function (o) {
+					if (o) 
+					{
+						var $ = o.attributes;
+						if ($) 
+						{
+							var i = $.length;
+							var n;
+							while (i--) 
+							{
+								if ('function' === typeof o[(n = $[i].name)]) 
+								{
+									o[n] = null;
+								}
+							}
+						}
+						if ((o = o.childNodes)) 
+						{
+							$ = o.length;
+							while ($--) 
+							{
+								p(o[$]);
+							}
+						}
+					}
+				};
+				var $ = e.childNodes;
+				var i = $.length;
+				var k;
+				while (i--) {
+					if ((k = $[i]).nodeType === 1) 
+					{
+						p(k);
+					}
+					e.remove(k);
+				}
+			}
+		},
+		
 		cloneChild: function(child, cloneAttrAndChilds)
 		{
-			if ((child = this.getChild(child))) {
-				return child.cloneNode(!!cloneAttrAndChilds);
+			return (child = this.getChild(child))? child.cloneNode(!!cloneAttrAndChilds) : null;
+		},
+		
+		cloneChildElements: function(cloneAttrAndChilds)
+		{
+			var e = this.element;
+			if (e)
+			{
+				cloneAttrAndChilds = !!cloneAttrAndChilds;
+				var c = e.childNodes;
+				var i = c.length;
+				var $ = [];
+				var n = 0;
+				var k;
+				while (i--) {
+					if ((k = c[i]).nodeType === 1) 
+					{
+						$[n++] = k.cloneNode(cloneAttrAndChilds);
+					}
+				}
+				if (n)
+				{
+					return $;
+				}
 			}
 			return null;
 		},
@@ -1427,15 +1597,7 @@
 		getParent: function()
 		{
 			var e = this.element;
-			if (e) {
-				return e.parentNode||null;
-			}
-			return null;
-		},
-		
-		setParent: function()
-		{
-			this.setElement(this.getParent());
+			return e && e.parentNode||null;
 		},
 		
 		hasCollision: function(collisorElement)
@@ -1443,9 +1605,55 @@
 			return this.core.hasCollision(this.element, this.core.getElement(collisorElement));
 		},
 		
+		setAttribute: function (attribute, value) {
+			var e = this.element;
+			if (e && value !== undefined) 
+			{
+				if ('string' === typeof attribute) 
+				{
+					if ('style'===attribute && e.style.cssText!==undefined) {
+						e.style.cssText = value;
+					}
+					else {
+						e.setAttribute(attribute, value);
+					}
+				}
+				else 
+				{
+					if ('number' === typeof attribute) 
+					{
+						if ('object'===typeof e.attributes[attribute])
+						{
+							e.attributes[attribute].nodeValue = value;
+						}
+						else {
+							e.attributes[attribute] = value;
+						}
+					}
+				}
+			}
+		},
 		
+		getAttribute: function (attribute) {
+			var o = this.element;
+			if (o && (o = o[attribute]||o.getAttribute(attribute)||o.attributes[attribute])) {
+				if ('style' === attribute && o.cssText !== undefined) 
+				{
+					return o.cssText.toLowerCase();
+				}
+				if ('object' === typeof o) 
+				{
+					return o.nodeValue||'';
+				}
+			}
+			if ('string' === typeof o) 
+			{
+				return o;
+			}
+			return null;
+		},
+
 		/* Event */
-		
 		addEvent: function(type, handlerFn)
 		{
 			this.core.addEvent(this.element, type, handlerFn);
@@ -1453,11 +1661,13 @@
 		removeEvent: function(type, handlerFn)
 		{
 			this.core.removeEvent(this.element, type, handlerFn);
-		}
+		},
 		
+		dispatchEvent: function (type) {
+			this.core.dispatchEvent(this.element, type);
+		}
 	};
+	leaf.DOMElement.prototype.core = leaf.DOM.core;	
 		
 	/* Aptana intellisense adjust */
-	leaf.DOMElement.prototype.core = leaf.DOM.core;
 	leaf.DOMElement = leaf.DOMElement;
-	leaf.DOM = leaf.DOM;

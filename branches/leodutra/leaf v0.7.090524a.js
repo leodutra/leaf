@@ -1,3 +1,10 @@
+	/* TODO:
+	 * 
+	 * - review all code
+	 * - optimize the ones that uses arrays
+	 * - create reference
+	 */
+
 	
 	/*  LEAF JavaScript Library
 	 *  Leonardo Dutra

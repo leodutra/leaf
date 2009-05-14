@@ -1,0 +1,39 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+		<title>LEAF test</title>
+		<style type="text/css">
+			
+			html, body
+			{
+				padding: 0px;
+				margin: 0px;
+				width: 100%;
+				height: 100%;
+				overflow: hidden;
+			}
+			
+		</style>
+		<script type="text/javascript" src="leaf v0.7.090527a.js"></script>
+	</head>
+	<body>
+		<script type="text/javascript">
+			
+			var d = new leaf.DOMElement();
+			
+			window.onload = function()
+			{
+				var T = (new Date()).getTime();
+				var i = 10000;
+				while (i--)
+				{
+					d.appendElement();
+				}
+				document.body.innerHTML = (new Date()).getTime()-T;
+			};
+
+			
+		</script>
+	</body>
+</html>

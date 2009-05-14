@@ -1,0 +1,46 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+		<title>Untitled Document</title>
+		<style type="text/css" >
+			
+			.doo {
+				width: 40px;
+				height: 40px;
+				position: absolute;
+				top: 10px;
+				left: 10px;
+				background-color: black;
+				border: 1px solid red;
+			}
+			
+		</style>
+		<script type="text/javascript" src="../lib/leaf 0.5.090219a.js"></script>
+		<script type="text/javascript">
+			
+			var dom = new leaf.DOM();
+			
+			function init()
+			{
+				dom.createElement('div', 'one', 0,0,0,40,40, 'static');
+				dom.setBorder('red', 1);
+				dom.appendElement();
+				
+				dom.createElement('div', 'two', 0,0,0,40,40, 'static');
+				dom.setBorder('gray', 1);
+				dom.insertBefore('one');
+				
+				setTimeout(function () {
+					dom.setElement(document.body);
+
+				}, 1000);
+			}
+			
+			leaf.Window.addEvent('load', init);
+			
+		</script>
+	</head>
+	<body>
+	</body>
+</html>

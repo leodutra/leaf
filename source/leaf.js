@@ -96,38 +96,10 @@
 	};
 	
 	/* Ajax
+	 * Factory optimization
 	 * TODO: replace with the new AJAX prototype
 	 */
 	leaf.AJAX = {
-		
-		createRequester: function()
-		{
-			/* constant for optimization */
-			var W = window;
-			if (W.XMLHttpRequest) 
-			{
-				return new W.XMLHttpRequest();
-			}
-			else 
-			{
-				/* ActiveX versions in this array
-				 * reverse loop because is optimum
-				 */ 
-				var A = this.core.activeX;
-				var i = A.length;
-				var o;
-				while (i--) 
-				{
-					try 
-					{
-						o = new W.ActiveXObject(A[i]);
-						return o;
-					} 
-					catch (o) {}
-				}
-			}
-			return null;
-		},
 		
 		getActiveXList: function (version)
 		{
@@ -145,6 +117,36 @@
 			]
 		}
 	};
+	
+	(function () {
+		var W = window;
+		if (W.XMLHttpRequest) {
+			leaf.AJAX.createRequester = function()
+			{
+				return new window.XMLHttpRequest();
+			};
+		}
+		else
+		{
+			leaf.AJAX.createRequester = function()
+			{
+				var W = window;				// constant for optimization
+				var A = this.core.activeX;	// ActiveX versions in this array
+				var i = A.length;
+				var o;
+				while (i--)					//reverse loop because is optimum
+				{
+					try 
+					{
+						o = new W.ActiveXObject(A[i]);
+						return o;
+					} 
+					catch (o) {}
+				}
+				return null;
+			};
+		}
+	})();
 	
 	
 	/* Window
@@ -180,6 +182,7 @@
 	
 	
 	/* Mouse
+	 * TODO: factory optimization
 	 */
 	leaf.Mouse = {
 
@@ -201,26 +204,6 @@
 	
 	
 	leaf.DOM = {
-
-		/* TODO: add more ActiveX versions(research for avaiable ones) */
-		buildXML: function(XMLText)
-		{
-			/* constant for optimization */
-			var W = window;
-			if (W.DOMParser) 
-			{
-				return (new W.DOMParser()).parseFromString(XMLText, 'text/xml');
-			}
-			var o;
-			try 
-			{
-				(o = new W.ActiveXObject('Microsoft.XMLDOM')).async = false;
-				o.loadXML(XMLText);
-				return o;
-			} 
-			catch (o) {}
-			return null;
-		},
 
 		getById: function(ids)
 		{
@@ -494,7 +477,6 @@
 			}
 		}
 	};
-	
 	
 		
 	/* DOMElement
@@ -1256,9 +1238,9 @@
 		},
 		
 		
-		/* Opacity 
+		/* Opacity
+		 * FIXME: IE6 does not apply opacity on static elements if no dimension is set 
 		 */
-		/* FIXME: IE6 does not apply opacity on static elements if no dimension is set */
 		setOpacity: function(opacity)
 		{
 			var $ = this.style;

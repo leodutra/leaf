@@ -1,7 +1,7 @@
 	
 	/*  LEAF JavaScript Library
 	 *  Leonardo Dutra
-	 *  v0.7.090524a
+	 *  version Alpha
 	 *
 	 *  Copyright (c) 2009, Leonardo Dutra.
 	 *  All rights reserved.
@@ -58,7 +58,7 @@
 	/* BENCHMARKIT */
 	leaf.Array = {
 
-		forEach: function (array, itemHandler)
+		each: function (array, itemHandler)
 		{
 			var l;
 			if (array && !(array instanceof String) && 'function'===typeof itemHandler && (l = array.length))
@@ -66,8 +66,8 @@
 				var i = 0;
 				var k;
 				while (i < l)  {
-					if ((k = array[i++])) {
-						itemHandler.call(k, i);
+					if ((k = array[i])) {
+						itemHandler.call(k, i++);
 					}
 				}
 			}
@@ -79,16 +79,13 @@
 	 */
 	leaf.Object = {
 
-		extend: function(object, sourceObject, doOverride)
+		extend: function(object, sourceObject, noOverride)
 		{
 			if (object && sourceObject) 
 			{
-				if (doOverride===undefined) {
-					doOverride = true;
-				}
 				for (var n in sourceObject) 
 				{	
-					if (object[n]!==undefined && doOverride) 
+					if (object[n]!==undefined && noOverride) 
 					{
 						continue;
 					}
@@ -98,48 +95,58 @@
 		}
 	};
 	
-	
 	/* Ajax
+	 * Factory optimization
 	 * TODO: replace with the new AJAX prototype
 	 */
 	leaf.AJAX = {
-
-		createRequester: function()
+		
+		getActiveXList: function (version)
 		{
-			/* constant for optimization */
-			var W = window;
-			if (W.XMLHttpRequest) 
+			return this.core.activeX;
+		},
+		
+		core: {
+			activeX: [
+				'Microsoft.XMLHTTP',
+				'MSXML2.XMLHTTP',
+				'MSXML2.XMLHTTP.3.0',
+				'MSXML2.XMLHTTP.4.0',
+				'MSXML2.XMLHTTP.5.0',
+				'MSXML2.XMLHTTP.6.0'
+			]
+		}
+	};
+	
+	(function () {
+		var W = window;
+		if (W.XMLHttpRequest) {
+			leaf.AJAX.createRequester = function()
 			{
-				return new W.XMLHttpRequest();
-			}
-			else 
+				return new window.XMLHttpRequest();
+			};
+		}
+		else
+		{
+			leaf.AJAX.createRequester = function()
 			{
-				/* ActiveX versions in this array */
-				var v = [
-					'Microsoft.XMLHTTP',
-					'MSXML2.XMLHTTP',
-					'MSXML2.XMLHTTP.3.0',
-					'MSXML2.XMLHTTP.4.0',
-					'MSXML2.XMLHTTP.5.0',
-					'MSXML2.XMLHTTP.6.0'
-				];
-				var i = 6;
+				var W = window;				// constant for optimization
+				var A = this.core.activeX;	// ActiveX versions in this array
+				var i = A.length;
 				var o;
-				while (i--) 
+				while (i--)					//reverse loop because is optimum
 				{
 					try 
 					{
-						o = new W.ActiveXObject(v[i]);
+						o = new W.ActiveXObject(A[i]);
 						return o;
 					} 
-					catch (o) 
-					{
-					}
+					catch (o) {}
 				}
-			}
-			return null;
+				return null;
+			};
 		}
-	};
+	})();
 	
 	
 	/* Window
@@ -175,6 +182,7 @@
 	
 	
 	/* Mouse
+	 * TODO: factory optimization
 	 */
 	leaf.Mouse = {
 
@@ -196,62 +204,12 @@
 	
 	
 	leaf.DOM = {
-		
-/* removed in 0.7.09.0520... leaf.AJAX will implement some
- * this one is evil for page loading
- * 
-		importXML: function(uri)
-		{
-			/ XML security and access vary from browser to browser /
-			if ((/.\.xml$/i).test(uri)) 
-			{
-				var o = leaf.AJAX.createRequester();
-				if (o) 
-				{
-					try 
-					{
-						o.open('GET', uri +'?decachexml=' +(new Date()).getTime(), false);
-						o.send(null);
-						if (o.readyState === 4 && o.status === 200) 
-						{
-							return o.responseXML;
-						}
-					} 
-					catch (o) 
-					{
-					}
-				}
-			}
-			return null;
-		},
-*/
-
-		/* TODO: add more ActiveX versions(research for avaiable ones) */
-		buildXML: function(XMLText)
-		{
-			/* constant for optimization */
-			var W = window;
-			if (W.DOMParser) 
-			{
-				return (new W.DOMParser()).parseFromString(XMLText, 'text/xml');
-			}
-			var o;
-			try 
-			{
-				(o = new W.ActiveXObject('Microsoft.XMLDOM')).async = false;
-				o.loadXML(XMLText);
-				return o;
-			} 
-			catch (o) 
-			{
-			}
-			return null;
-		},
 
 		getById: function(ids)
 		{
 			if (ids instanceof Array) 
 			{
+				var d = document;
 				var L = ids.length;
 				var n = 0;
 				var i = 0;
@@ -259,7 +217,7 @@
 				var o;
 				while (i < L) 
 				{
-					if ((o = document.getElementById(ids[i++]))) {
+					if ((o = d.getElementById(ids[i++]))) {
 						$[n++] = o;
 					}
 				}
@@ -272,7 +230,7 @@
 			return document.getElementById(ids);
 		},
 		
-		/* TODO: better code for check empty and null arrays, reducing complexity for each found */
+		/* TODO: better code for check empty and null arrays */
 		getByTag: function(tagNames, rootNode)
 		{
 			rootNode = this.core.getElement(rootNode)||document;
@@ -386,7 +344,7 @@
 				if (o && 'string' === typeof e && 'function' === typeof fn) 
 				{
 					/* base code by John Resig
-					 * uses hash name to fix IE
+					 * uses hash name to fix IE problems
 					 */
 					if (o.addEventListener) 
 					{
@@ -412,7 +370,7 @@
 				if (o && 'string' === typeof e && 'function' === typeof fn) 
 				{
 					/* base code by John Resig
-					 * uses hash to fix IE
+					 * uses hash to fix IE problems
 					 */
 					if (o.removeEventListener) 
 					{
@@ -520,7 +478,6 @@
 		}
 	};
 	
-	
 		
 	/* DOMElement
 	 */
@@ -573,10 +530,7 @@
 				var n = 0;
 				var c;
 				for (c in cssObj) {
-					$[n++] = c;
-					$[n++] = ': ';
-					$[n++] = cssObj[c];
-					$[n++] = '\; ';
+					$[n++] = c +': ' +cssObj[c] +'\; ';
 				}
 				if (s.cssText===undefined) {
 					E.setAttribute('style', (E.getAttribute('style')||'') +$.join(''));
@@ -615,23 +569,21 @@
 		{
 			var E = this.element;
 			if (E && ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array)) {
-				var c = E.className;
-				if ('string' === typeof c) {
-					var R = new RegExp('(?:\\s|^)' +classNames.join('\|') +'(?:\\s|$)');
+				var k = E.className;
+				if ('string' === typeof k) {
+					var R = new RegExp('(?:\\s|^)' +k.replace(/(?:^\s+|\s+$)/g, '').replace(/\s+/g, '\|') +'(?:\\s|$)');
 					var L = classNames.length;
+					var $ = [];
+					var n = 0;
 					var i = 0;
-					var k;
 					while (i < L) {
-						/* RegExp does not 'compile' on AIR 1.0
-						 * This test avoids className duplication since browsers don't reformat them
-						 */
-						if (R.test(c)) {
+						if (R.test((k = classNames[i++])))
+						{
 							continue;
 						}
-						c += ' ';
-						c += k;
+						$[n++] = k;
 					}
-					E.className = c;
+					E.className += ' ' +$.join(' ').replace(/\s{2,}/g, ' ');
 				}			
 			}
 		},
@@ -863,7 +815,7 @@
 		{
 			/* FIXME: IE6 dont allow changes to innerHTML when element was not appended yet */
 			var E = this.element;
-			if (!(value === null && value === undefined) && E) {
+			if (E && !(value === null && value === undefined)) {
 				E.innerHTML = value;
 			}
 		},
@@ -878,7 +830,7 @@
 		{
 			/* FIXME: IE6 dont allow changes to innerHTML when element was not appended yet */
 			var E = this.element;
-			if (!(value === null && value === undefined) && E) {
+			if (E && !(value === null && value === undefined)) {
 				E.innerHTML += String(value);
 			}
 		},
@@ -1286,9 +1238,9 @@
 		},
 		
 		
-		/* Opacity 
+		/* Opacity
+		 * FIXME: IE6 does not apply opacity on static elements if no dimension is set 
 		 */
-		/* FIXME: IE6 does not apply opacity on static elements if no dimension is set */
 		setOpacity: function(opacity)
 		{
 			var $ = this.style;
@@ -1425,11 +1377,13 @@
 			if (e) 
 			{
 				e = e.firstChild;
-				while (e && e.nodeType !== 1) 
+				while (e) 
 				{
+					if (e.nodeType === 1) {
+						return e;
+					}
 					e = e.nextSibling;
 				}
-				return e;
 			}
 			return null;
 		},
@@ -1439,12 +1393,12 @@
 			var e = this.element;
 			if (e) 
 			{	
-				e = e.nextSibling;
-				while (e && e.nodeType !== 1) 
+				while ((e = e.nextSibling)) 
 				{
-					e = e.nextSibling;
+					if (e.nodeType === 1) {
+						return e;
+					}
 				}
-				return e;
 			}
 			return null;
 		},
@@ -1454,12 +1408,12 @@
 			var e = this.element;
 			if (e) 
 			{	
-				e = e.previousSibling;
-				while (e && e.nodeType !== 1) 
+				while ((e = e.previousSibling)) 
 				{
-					e = e.previousSibling;
+					if (e.nodeType === 1) {
+						return e;
+					}
 				}
-				return e;
 			}
 			return null;
 		},
@@ -1470,11 +1424,13 @@
 			if (e) 
 			{
 				e = e.lastChild;
-				while (e && e.nodeType!== 1) 
+				while (e) 
 				{
+					if (e.nodeType === 1) {
+						return e;
+					}
 					e = e.previousSibling;
 				}
-				return e;
 			}
 			return null;
 		},
@@ -1600,28 +1556,25 @@
 			if (E) {
 				/* local purge function for best performance */
 				var P = function (o) {
-					if (o) 
+					var $ = o.attributes;
+					if ($) 
 					{
-						var $ = o.attributes;
-						if ($) 
+						var i = $.length;
+						var n;
+						while (i--) 
 						{
-							var i = $.length;
-							var n;
-							while (i--) 
+							if ('function' === typeof o[(n = $[i].name)]) 
 							{
-								if ('function' === typeof o[(n = $[i].name)]) 
-								{
-									o[n] = null;
-								}
+								o[n] = null;
 							}
 						}
-						if ((o = o.childNodes)) 
+					}
+					if ((o = o.childNodes)) 
+					{
+						$ = o.length;
+						while ($--) 
 						{
-							$ = o.length;
-							while ($--) 
-							{
-								P(o[$]);
-							}
+							P(o[$]);
 						}
 					}
 				};

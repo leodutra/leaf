@@ -96,13 +96,38 @@
 	};
 	
 	/* Ajax
-	 * Factory optimization
-	 * TODO: replace with the new AJAX prototype
+	 * TODO: enhance
 	 */
 	leaf.AJAX = {
 		
+		createRequester: function()
+		{
+			var W = window; // constant for optimization
+			if (W.XMLHttpRequest) 
+			{
+				return new W.XMLHttpRequest();
+			}
+			// if no return
+			if(W.ActiveXObject){
+				var A = this.core.activeX; // ActiveX versions in this array
+				var i = A.length;
+				var o;
+				while (i--) // optimum
+ 				{
+					try // try catch allow infinite versions
+					{
+						o = new W.ActiveXObject(A[i]);
+						return o;
+					} 
+					catch (o) {}
+				}
+			}
+			return null;
+		},
+		
 		getActiveXList: function (version)
 		{
+			// return array with version list (ascending)
 			return this.core.activeX;
 		},
 		
@@ -117,36 +142,7 @@
 			]
 		}
 	};
-	
-	(function () {
-		var W = window;
-		if (W.XMLHttpRequest) {
-			leaf.AJAX.createRequester = function()
-			{
-				return new window.XMLHttpRequest();
-			};
-		}
-		else
-		{
-			leaf.AJAX.createRequester = function()
-			{
-				var W = window;				// constant for optimization
-				var A = this.core.activeX;	// ActiveX versions in this array
-				var i = A.length;
-				var o;
-				while (i--)					//reverse loop because is optimum
-				{
-					try 
-					{
-						o = new W.ActiveXObject(A[i]);
-						return o;
-					} 
-					catch (o) {}
-				}
-				return null;
-			};
-		}
-	})();
+
 	
 	
 	/* Window
@@ -182,7 +178,6 @@
 	
 	
 	/* Mouse
-	 * TODO: factory optimization
 	 */
 	leaf.Mouse = {
 
@@ -191,11 +186,23 @@
 			if ('object'===typeof (mouseEvent = mouseEvent||event)) 
 			{
 				var D = document.documentElement;
-				var P = 'number' === typeof mouseEvent.pageY;
+				if ('number' === typeof mouseEvent.pageY) 
+				{
+					return {
+						x: mouseEvent.pageX,
+						y: mouseEvent.pageY
+					};
+				}
+				if ('number' === typeof D.clientLeft) // IE adjust
+				{
+					return {
+						x: mouseEvent.clientX +D.scrollLeft -D.clientLeft,
+						y: mouseEvent.clientY +D.scrollTop  -D.clientTop
+					};
+				}
 				return {
-					/* IE adjusted using client properties */
-					x: P ? mouseEvent.pageX : mouseEvent.clientX +D.scrollLeft -(D.clientLeft||0),
-					y: P ? mouseEvent.pageY : mouseEvent.clientY +D.scrollTop  -(D.clientTop ||0)
+					x: mouseEvent.clientX +D.scrollLeft,
+					y: mouseEvent.clientY +D.scrollTop
 				};
 			}
 			return null;
@@ -221,8 +228,7 @@
 						$[n++] = o;
 					}
 				}
-				/* check if array is empty */
-				if (n) 
+				if (n)
 				{
 					return $;
 				}
@@ -230,7 +236,7 @@
 			return document.getElementById(ids);
 		},
 		
-		/* TODO: better code for check empty and null arrays */
+		/* TODO: optimize */
 		getByTag: function(tagNames, rootNode)
 		{
 			rootNode = this.core.getElement(rootNode)||document;
@@ -252,7 +258,6 @@
 					}
 					j = 0;
 				}
-				/* check if array is empty */
 				if (n) 
 				{
 					return $;

@@ -1,7 +1,7 @@
 	
 	/*  LEAF JavaScript Library
 	 *  Leonardo Dutra
-	 *  version Alpha
+	 *  v0.7.XXXXXXa
 	 *
 	 *  Copyright (c) 2009, Leonardo Dutra.
 	 *  All rights reserved.

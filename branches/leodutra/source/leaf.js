@@ -1,4 +1,4 @@
-UIIUIu	
+	
 	/*  LEAF JavaScript Library
 	 *  Leonardo Dutra
 	 *  v0.7.XXXXXXa

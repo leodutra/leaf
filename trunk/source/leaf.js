@@ -1267,8 +1267,8 @@
 		{
 			var E = this.element;
 			if (E) {
-				var $ = E.style;
-				if ($.opacity===undefined) {
+				var $ = E.style.opacity;
+				if ($===undefined) {
 					try {
 						$ = E.filters.alpha.opacity /100;
 						return $;
@@ -1277,10 +1277,7 @@
 						return ($ = (/opacity=(\d+)/i).exec(E.style.cssText)) ? $[1]/100 : 1;
 					}
 				}
-				else {
-					return ($ = parseFloat($.opacity)) ? $ : 1;
-				}
-				return 1;
+				return isNaN($ = parseFloat($)) ? 1 : $;
 			}
 			return null;
 		},

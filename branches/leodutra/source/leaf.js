@@ -185,7 +185,6 @@
 		{
 			if ('object'===typeof (mouseEvent = mouseEvent||event)) 
 			{
-				var D = document.documentElement;
 				if ('number' === typeof mouseEvent.pageY) 
 				{
 					return {
@@ -193,16 +192,18 @@
 						y: mouseEvent.pageY
 					};
 				}
-				if ('number' === typeof D.clientLeft) // IE adjust
+				var H = document.documentElement;
+				var B = document.body;
+				if (B) 
 				{
 					return {
-						x: mouseEvent.clientX +D.scrollLeft -D.clientLeft,
-						y: mouseEvent.clientY +D.scrollTop  -D.clientTop
+						x: mouseEvent.clientX +(H.scrollLeft||B.scrollLeft) -(H.clientLeft||0),
+						y: mouseEvent.clientY +(H.scrollTop ||B.scrollTop)  -(H.clientTop ||0)
 					};
 				}
 				return {
-					x: mouseEvent.clientX +D.scrollLeft,
-					y: mouseEvent.clientY +D.scrollTop
+					x: mouseEvent.clientX +H.scrollLeft -(H.clientLeft||0),
+					y: mouseEvent.clientY +H.scrollTop  -(H.clientTop ||0)
 				};
 			}
 			return null;
@@ -488,7 +489,7 @@
 	 */
 	leaf.DOMElement = function(element)
 	{
-		/* some intellisenses need this kind of initilization */
+		// intellisense friend constructor
 		if (this instanceof leaf.DOMElement) 
 		{
 			this.DOMElement(element);
@@ -501,6 +502,7 @@
 	 */
 	leaf.DOMElement.prototype = {
 		
+		// private vars
 		element: null,
 		style:   null,
 		core:    null,

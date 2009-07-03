@@ -1,4 +1,4 @@
-	
+
 	/*  LEAF JavaScript Library
 	 *  Leonardo Dutra
 	 *  v0.7.XXXXXXa
@@ -95,6 +95,7 @@
 		}
 	};
 	
+	
 	/* Ajax
 	 * TODO: enhance
 	 */
@@ -143,7 +144,6 @@
 		}
 	};
 
-	
 	
 	/* Window
 	 */
@@ -211,6 +211,8 @@
 	};
 	
 	
+	/* DOM
+	 */
 	leaf.DOM = {
 
 		getById: function(ids)
@@ -770,8 +772,8 @@
 				}
 				else {
 					return {
-						width:  parseFloat($.width)  || 0,
-						height: parseFloat($.height) || 0
+						width:  parseFloat($.width) ||0,
+						height: parseFloat($.height)||0
 					};
 				}
 			}
@@ -1217,15 +1219,11 @@
 		{
 			var E = this.element;
 			if (E) {
-				if ('number' === typeof top) {
-					if (!(top < 0 || E.scrollHeight < top)) {
-						E.scrollTop = top;
-					}
+				if ('number'===typeof top) {
+					E.scrollTop = top < 0 ? 0 : E.scrollHeight < top ? E.scrollHeight : top;
 				}
-				if ('number' === typeof left) {
-					if (!(left < 0 || E.scrollWidth < left)) {
-						E.scrollLeft = left;
-					}
+				if ('number'===typeof left) {
+					E.scrollLeft = left < 0 ? 0 : E.scrollWidth < left ? E.scrollWidth : left;
 				}
 			}
 		},

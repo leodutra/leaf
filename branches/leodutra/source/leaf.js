@@ -3,7 +3,7 @@
 	 *  Leonardo Dutra
 	 *  v0.7.XXXXXXa
 	 *
-	 *  Copyright (c) 2009, Leonardo Dutra.
+	 *  Copyright (c) 2009, Leonardo Dutra Constâncio.
 	 *  All rights reserved.
 	 *
 	 *  Redistribution and use in source and binary forms, with or without modification,

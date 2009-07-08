@@ -1,4 +1,4 @@
-
+	
 	/*  LEAF JavaScript Library
 	 *  Leonardo Dutra
 	 *  v0.7.XXXXXXa
@@ -33,7 +33,7 @@
 	 */
 	
 	/* This ALPHA version implements:
-	 * 
+	 *
 	 * leaf.Array
 	 *     .Object
 	 *     .AJAX
@@ -50,23 +50,24 @@
 	{
 		window.leaf = {};
 	}
-
-
+	
+	
 	/* Array
 	 */
-	
 	/* BENCHMARKIT */
 	leaf.Array = {
-
-		each: function (array, itemHandler)
+	
+		each: function(array, itemHandler)
 		{
 			var l;
-			if (array && !(array instanceof String) && 'function'===typeof itemHandler && (l = array.length))
+			if (array && !(array instanceof String) && 'function' === typeof itemHandler && (l = array.length)) 
 			{
 				var i = 0;
 				var k;
-				while (i < l)  {
-					if ((k = array[i])) {
+				while (i < l) 
+				{
+					if ((k = array[i])) 
+					{
 						itemHandler.call(k, i++);
 					}
 				}
@@ -74,18 +75,18 @@
 		}
 	};
 	
-
+	
 	/* Object
 	 */
 	leaf.Object = {
-
+	
 		extend: function(object, sourceObject, noOverride)
 		{
 			if (object && sourceObject) 
 			{
 				for (var n in sourceObject) 
-				{	
-					if (object[n]!==undefined && noOverride) 
+				{
+					if (object[n] !== undefined && noOverride) 
 					{
 						continue;
 					}
@@ -100,7 +101,7 @@
 	 * TODO: enhance
 	 */
 	leaf.AJAX = {
-		
+	
 		createRequester: function()
 		{
 			var W = window; // constant for optimization
@@ -109,24 +110,27 @@
 				return new W.XMLHttpRequest();
 			}
 			// if no return
-			if(W.ActiveXObject){
+			if (W.ActiveXObject) 
+			{
 				var A = this.core.activeX; // ActiveX versions in this array
 				var i = A.length;
 				var o;
 				while (i--) // optimum
- 				{
+	 			{
 					try // try catch allow infinite versions
-					{
+	 				{
 						o = new W.ActiveXObject(A[i]);
 						return o;
 					} 
-					catch (o) {}
+					catch (o) 
+					{
+					}
 				}
 			}
 			return null;
 		},
 		
-		getActiveXList: function (version)
+		getActiveXList: function(version)
 		{
 			// return array with version list (ascending)
 			return this.core.activeX;
@@ -143,12 +147,12 @@
 			]
 		}
 	};
-
+	
 	
 	/* Window
 	 */
 	leaf.Window = {
-
+	
 		/* ease event handling */
 		addEvent: function(type, handlerFn)
 		{
@@ -164,8 +168,8 @@
 	/* Document
 	 */
 	leaf.Document = {
-
-		/* ease event handling */	
+	
+		/* ease event handling */
 		addEvent: function(type, handlerFn)
 		{
 			leaf.DOM.core.addEvent(document, type, handlerFn);
@@ -180,10 +184,10 @@
 	/* Mouse
 	 */
 	leaf.Mouse = {
-
+	
 		getPosition: function(mouseEvent)
 		{
-			if ('object'===typeof (mouseEvent = mouseEvent||event)) 
+			if ('object' === typeof(mouseEvent = mouseEvent || event)) 
 			{
 				if ('number' === typeof mouseEvent.pageY) 
 				{
@@ -197,13 +201,13 @@
 				if (B) 
 				{
 					return {
-						x: mouseEvent.clientX +(H.scrollLeft||B.scrollLeft) -(H.clientLeft||0),
-						y: mouseEvent.clientY +(H.scrollTop ||B.scrollTop)  -(H.clientTop ||0)
+						x: mouseEvent.clientX + (H.scrollLeft || B.scrollLeft) - (H.clientLeft || 0),
+						y: mouseEvent.clientY + (H.scrollTop  || B.scrollTop)  - (H.clientTop  || 0)
 					};
 				}
 				return {
-					x: mouseEvent.clientX +H.scrollLeft -(H.clientLeft||0),
-					y: mouseEvent.clientY +H.scrollTop  -(H.clientTop ||0)
+					x: mouseEvent.clientX + H.scrollLeft - (H.clientLeft || 0),
+					y: mouseEvent.clientY + H.scrollTop  - (H.clientTop || 0)
 				};
 			}
 			return null;
@@ -214,7 +218,7 @@
 	/* DOM
 	 */
 	leaf.DOM = {
-
+	
 		getById: function(ids)
 		{
 			if (ids instanceof Array) 
@@ -227,11 +231,12 @@
 				var o;
 				while (i < L) 
 				{
-					if ((o = d.getElementById(ids[i++]))) {
+					if ((o = d.getElementById(ids[i++]))) 
+					{
 						$[n++] = o;
 					}
 				}
-				if (n)
+				if (n) 
 				{
 					return $;
 				}
@@ -242,7 +247,7 @@
 		/* TODO: optimize */
 		getByTag: function(tagNames, rootNode)
 		{
-			rootNode = this.core.getElement(rootNode)||document;
+			rootNode = this.core.getElement(rootNode) || document;
 			if (tagNames instanceof Array) 
 			{
 				var L = tagNames.length;
@@ -268,17 +273,17 @@
 			}
 			return rootNode.getElementsByTagName(tagNames);
 		},
-	
+		
 		/* BENCHMARKIT */
 		getByClass: function(classNames, rootNode)
 		{
 			if ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array && classNames.length) 
 			{
-				var R = new RegExp('(?:\\s|^)(?:' +classNames.join('\|') +')(?:\\s|$)');
+				var R = new RegExp('(?:\\s|^)(?:' + classNames.join('\|') + ')(?:\\s|$)');
 				var $ = [];
 				var n = 0;
 				/* Depth search */
-				var Q = function (o)
+				var Q = function(o)
 				{
 					if (o.nodeType === 1 && R.test(o.className)) 
 					{
@@ -293,7 +298,7 @@
 						}
 					}
 				};
-				Q(this.core.getElement(rootNode)||document);
+				Q(this.core.getElement(rootNode) || document);
 				/* check if array is empty */
 				if (n) 
 				{
@@ -303,18 +308,12 @@
 			return null;
 		},
 		
-		hasCollision: function(elementA, elementB)
-		{
-			/* check two elements collision */
-			var C = this.core;
-			C.hasCollision(C.getElement(elementA), C.getElement(elementB));
-		},
-		
 		purgeElement: function(element)
 		{
 			/* removes functions to prevent memory leak */
 			var c = this.core;
-			if ((element = c.getElement(element))) {
+			if ((element = c.getElement(element))) 
+			{
 				c.purgeElement(element);
 				if ((c = element.parentNode)) 
 				{
@@ -323,30 +322,12 @@
 			}
 		},
 		
-		addEvent: function(element, event, handlerFn)
-		{
-			var C = this.core;
-			C.addEvent(C.getElement(element), event, handlerFn);
-		},
-		
-		removeEvent: function(element, event, handlerFn)
-		{
-			var C = this.core;
-			C.removeEvent(C.getElement(element), event, handlerFn);
-		},
-		
-		dispatchEvent: function(element, event)
-		{
-			var C = this.core;
-			C.dispatchEvent(C.getElement(element), event);
-		},
-		
 		
 		/* DOM Core
 		 * core contains functions used in many internal operations
 		 */
 		core: {
-
+		
 			addEvent: function(o, e, fn)
 			{
 				if (o && 'string' === typeof e && 'function' === typeof fn) 
@@ -362,11 +343,11 @@
 					{
 						if (o.attachEvent) 
 						{
-							var h = e +fn;
-							o['e' +h] = fn;
-							o.attachEvent('on' +e, (o[h] = function()
+							var h = e + fn;
+							o['e' + h] = fn;
+							o.attachEvent('on' + e, (o[h] = function()
 							{
-								o['e' +h](event);
+								o['e' + h](event);
 							}));
 						}
 					}
@@ -388,9 +369,9 @@
 					{
 						if (o.detachEvent) 
 						{
-							o.detachEvent('on' +e, o[(e = e +fn)]);
+							o.detachEvent('on' + e, o[(e = e + fn)]);
 							o[e] = null;
-							o['e' +e] = null;
+							o['e' + e] = null;
 						}
 					}
 				}
@@ -413,41 +394,10 @@
 						if (document.createEventObject) 
 						{
 							/* dispatch for IE */
-							o.fireEvent('on' +e, document.createEventObject());
+							o.fireEvent('on' + e, document.createEventObject());
 						}
 					}
 				}
-			},
-			
-			hasCollision: function(a, b)
-			{
-				if (a && b) 
-				{
-					var B = document.body;
-					var aX = 0;
-					var aY = 0;
-					var o = a;
-					while (o !== B) 
-					{
-						aX += o.offsetLeft;
-						aY += o.offsetTop;
-						o = o.parentNode;
-					}
-					var bX = 0;
-					var bY = 0;
-					o = b;
-					while (o !== B) 
-					{
-						bX += o.offsetLeft;
-						bY += o.offsetTop;
-						o = o.parentNode;
-					}
-					if (!(aX < bX - a.offsetWidth || bX + b.offsetWidth < aX)) 
-					{
-						return !(aY < bY - a.offsetHeight || bY + b.offsetHeight < aY);
-					}
-				}
-				return false;
 			},
 			
 			purgeElement: function(o)
@@ -486,7 +436,7 @@
 		}
 	};
 	
-		
+	
 	/* DOMElement
 	 */
 	leaf.DOMElement = function(element)
@@ -499,16 +449,15 @@
 	};
 	
 	
-	
 	/* DOM Prototype
 	 */
 	leaf.DOMElement.prototype = {
-		
+	
 		// private vars
 		element: null,
 		style:   null,
 		core:    null,
-	
+		
 		DOMElement: function(element)
 		{
 			this.setElement(element);
@@ -524,7 +473,7 @@
 			return this.element;
 		},
 		
-		getStyle: function () 
+		getStyle: function()
 		{
 			return this.style;
 		},
@@ -533,34 +482,42 @@
 		setCSS: function(cssObj)
 		{
 			var E = this.element;
-			if (E && cssObj instanceof Object) {
+			if (E && cssObj instanceof Object) 
+			{
 				var s = E.style;
 				var $ = [];
 				var n = 0;
 				var c;
-				for (c in cssObj) {
-					$[n++] = c +': ' +cssObj[c] +'\; ';
+				for (c in cssObj) 
+				{
+					$[n++] = c + ': ' + cssObj[c] + '\; ';
 				}
-				if (s.cssText===undefined) {
-					E.setAttribute('style', (E.getAttribute('style')||'') +$.join(''));
+				if (s.cssText === undefined) 
+				{
+					E.setAttribute('style', (E.getAttribute('style') || '') + $.join(''));
 				}
-				else {					
-					s.cssText = ((c = s.cssText) && (c.charAt(c.length-1)==='\;' ? c:c+'; ')||'')+$.join('');
+				else 
+				{
+					s.cssText = ((c = s.cssText) && (c.charAt(c.length - 1) === '\;' ? c : c + '; ') || '') + $.join('');
 				}
 			}
 		},
 		
 		getCSS: function(property)
 		{
-			if ('string' === typeof property) {
+			if ('string' === typeof property) 
+			{
 				var o = this.element;
-				if (o) {
-					if ((o = o.style.cssText===undefined ? o.getAttribute('style') : o.style.cssText)) {
+				if (o) 
+				{
+					if ((o = o.style.cssText === undefined ? o.getAttribute('style') : o.style.cssText)) 
+					{
 						/* RegExp does not 'compile' on AIR 1.0
 						 * This code is a little more faster than using pure RegExp
 						 */
-						if (-1 < (i = o.search(new RegExp('(?:\\\;|\\s|^)' +property +'\\\:', 'i')))) {
-							return o.substring((i = o.indexOf(':', i) +2), (i = o.indexOf('\;', i)) === -1 ? o.length : i);
+						if (-1 < (i = o.search(new RegExp('(?:\\\;|\\s|^)' + property + '\\\:', 'i')))) 
+						{
+							return o.substring((i = o.indexOf(':', i) + 2), (i = o.indexOf('\;', i)) === -1 ? o.length : i);
 						}
 						
 					}
@@ -572,38 +529,42 @@
 		/* Class operations needs new regexp
 		 * code cannot only add or remove because classNames keeps residual values on some browsers
 		 */
-		
 		/* BENCHMARKIT */
 		addClass: function(classNames)
 		{
 			var E = this.element;
-			if (E && ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array)) {
+			if (E && ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array)) 
+			{
 				var k = E.className;
-				if ('string' === typeof k) {
-					var R = new RegExp('(?:\\s|^)' +k.replace(/(?:^\s+|\s+$)/g, '').replace(/\s+/g, '\|') +'(?:\\s|$)');
+				if ('string' === typeof k) 
+				{
+					var R = new RegExp('(?:\\s|^)' + k.replace(/(?:^\s+|\s+$)/g, '').replace(/\s+/g, '\|') + '(?:\\s|$)');
 					var L = classNames.length;
 					var $ = [];
 					var n = 0;
 					var i = 0;
-					while (i < L) {
-						if (R.test((k = classNames[i++])))
+					while (i < L) 
+					{
+						if (R.test((k = classNames[i++]))) 
 						{
 							continue;
 						}
 						$[n++] = k;
 					}
-					E.className += ' ' +$.join(' ').replace(/\s{2,}/g, ' ');
-				}			
+					E.className += ' ' + $.join(' ').replace(/\s{2,}/g, ' ');
+				}
 			}
 		},
 		
 		removeClass: function(classNames)
 		{
 			var E = this.element;
-			if (E && ('string' === typeof classNames? classNames = [classNames]:classNames instanceof Array)) {
+			if (E && ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array)) 
+			{
 				var C = E.className;
-				if ('string'===typeof C) {
-					E.className = C.replace(new RegExp('(?:\\s|\\b)(?:' +classNames.join('\|') +')(?:\\s|$)', 'gi'), '');
+				if ('string' === typeof C) 
+				{
+					E.className = C.replace(new RegExp('(?:\\s|\\b)(?:' + classNames.join('\|') + ')(?:\\s|$)', 'gi'), '');
 				}
 			}
 		},
@@ -615,55 +576,71 @@
 		{
 			/* large but optimum code */
 			var $ = this.style;
-			if ($) {
+			if ($) 
+			{
 			
 				$.position = 'string' === typeof type ? type : $.position || 'absolute';
-
-				if ('number' === typeof x) {
-					if ($.right) {
+				
+				if ('number' === typeof x) 
+				{
+					if ($.right) 
+					{
 						$.left = '';
-						$.right = x +'px';
+						$.right = x + 'px';
 					}
-					else {
-						$.left = x +'px';
+					else 
+					{
+						$.left = x + 'px';
 						$.right = '';
 					}
 				}
-				else {
-					if ('string' === typeof x) {
-						if ($.right) {
+				else 
+				{
+					if ('string' === typeof x) 
+					{
+						if ($.right) 
+						{
 							$.left = '';
 							$.right = x;
 						}
-						else {
+						else 
+						{
 							$.left = x;
 							$.right = '';
 						}
 					}
 				}
-				if ('number' === typeof y) {
-					if ($.bottom) {
+				if ('number' === typeof y) 
+				{
+					if ($.bottom) 
+					{
 						$.top = '';
 						$.bottom = y + 'px';
 					}
-					else {
+					else 
+					{
 						$.top = y + 'px';
 						$.bottom = '';
 					}
 				}
-				else {
-					if ('string' === typeof y) {
-						if ($.bottom) {
+				else 
+				{
+					if ('string' === typeof y) 
+					{
+						if ($.bottom) 
+						{
 							$.top = '';
 							$.bottom = y;
 						}
-						else {
+						else 
+						{
 							$.top = y;
 							$.bottom = '';
 						}
 					}
 				}
-				if ('number' === typeof z) {
+				if ('number' === typeof z) 
+				{
 					$.zIndex = parseInt(z, 10);
 				}
 			}
@@ -672,19 +649,22 @@
 		getPosition: function(keepUnits)
 		{
 			var $ = this.style;
-			if ($) {
-				if (keepUnits) {
+			if ($) 
+			{
+				if (keepUnits) 
+				{
 					return {
-						x: $.left||$.right,
-						y: $.top ||$.bottom,
+						x: $.left || $.right,
+						y: $.top || $.bottom,
 						z: $.zIndex,
 						position: $.position
 					};
 				}
-				else {
+				else 
+				{
 					return {
-						x: parseFloat($.left||$.right) ||0,
-						y: parseFloat($.top ||$.bottom)||0,
+						x: parseFloat($.left || $.right)  || 0,
+						y: parseFloat($.top  || $.bottom) || 0,
 						z: $.zIndex,
 						position: $.position
 					};
@@ -696,11 +676,12 @@
 		getOffset: function()
 		{
 			var E = this.element;
-			if (E) {
+			if (E) 
+			{
 				return {
-					x:      E.offsetLeft,
-					y:      E.offsetTop,
-					width:  E.offsetWidth,
+					x: E.offsetLeft,
+					y: E.offsetTop,
+					width: E.offsetWidth,
 					height: E.offsetHeight,
 					parent: E.offsetParent
 				};
@@ -711,23 +692,30 @@
 		invertXY: function(x, y)
 		{
 			var $ = this.style;
-			if ($) {
-				if (x) {
-					if ($.right) {
+			if ($) 
+			{
+				if (x) 
+				{
+					if ($.right) 
+					{
 						$.left = $.right;
 						$.right = '';
 					}
-					else {
+					else 
+					{
 						$.right = $.left;
 						$.left = '';
 					}
 				}
-				if (y) {
-					if ($.bottom) {
+				if (y) 
+				{
+					if ($.bottom) 
+					{
 						$.top = $.bottom;
 						$.bottom = '';
 					}
-					else {
+					else 
+					{
 						$.bottom = $.top;
 						$.top = '';
 					}
@@ -740,20 +728,27 @@
 		setSize: function(width, height)
 		{
 			var $ = this.style;
-			if ($) {
-				if ('number' === typeof width) {
+			if ($) 
+			{
+				if ('number' === typeof width) 
+				{
 					$.width = width + 'px';
 				}
-				else {
-					if ('string' === typeof width) {
+				else 
+				{
+					if ('string' === typeof width) 
+					{
 						$.width = width;
 					}
 				}
-				if ('number' === typeof height) {
+				if ('number' === typeof height) 
+				{
 					$.height = height + 'px';
 				}
-				else {
-					if ('string' === typeof height) {
+				else 
+				{
+					if ('string' === typeof height) 
+					{
 						$.height = height;
 					}
 				}
@@ -763,17 +758,20 @@
 		getSize: function(keepUnits)
 		{
 			var $ = this.style;
-			if ($) {
-				if (keepUnits) {
+			if ($) 
+			{
+				if (keepUnits) 
+				{
 					return {
-						width:  $.width,
+						width: $.width,
 						height: $.height
 					};
 				}
-				else {
+				else 
+				{
 					return {
-						width:  parseFloat($.width) ||0,
-						height: parseFloat($.height)||0
+						width:  parseFloat($.width)  || 0,
+						height: parseFloat($.height) || 0
 					};
 				}
 			}
@@ -793,24 +791,27 @@
 		getArea: function(keepUnits)
 		{
 			var $ = this.style;
-			if ($) {
-				if (keepUnits) {
+			if ($) 
+			{
+				if (keepUnits) 
+				{
 					return {
-						x: $.left||$.right,
-						y: $.top ||$.bottom,
+						x: $.left || $.right,
+						y: $.top || $.bottom,
 						z: $.zIndex,
-						width:    $.width,
-						height:   $.height,
+						width: $.width,
+						height: $.height,
 						position: $.position
 					};
 				}
-				else {
+				else 
+				{
 					return {
-						x: parseFloat($.left||$.right) ||0,
-						y: parseFloat($.top ||$.bottom)||0,
+						x: parseFloat($.left || $.right) || 0,
+						y: parseFloat($.top || $.bottom) || 0,
 						z: $.zIndex,
-						width:    parseFloat($.width) ||0,
-						height:   parseFloat($.height)||0,
+						width:  parseFloat($.width)  || 0,
+						height: parseFloat($.height) || 0,
 						position: $.position
 					};
 				}
@@ -824,7 +825,8 @@
 		{
 			/* FIXME: IE6 dont allow changes to innerHTML when element was not appended yet */
 			var E = this.element;
-			if (E && !(value === null && value === undefined)) {
+			if (E && !(value === null && value === undefined)) 
+			{
 				E.innerHTML = value;
 			}
 		},
@@ -832,14 +834,15 @@
 		getContent: function()
 		{
 			var E = this.element;
-			return E && E.innerHTML||null;
+			return E && E.innerHTML || null;
 		},
 		
 		addContent: function(value)
 		{
 			/* FIXME: IE6 dont allow changes to innerHTML when element was not appended yet */
 			var E = this.element;
-			if (E && !(value === null && value === undefined)) {
+			if (E && !(value === null && value === undefined)) 
+			{
 				E.innerHTML += String(value);
 			}
 		},
@@ -850,21 +853,23 @@
 		setBackground: function(color, src, x, y, repeat)
 		{
 			var $ = this.style;
-			if ($) {
-				if ('string' === typeof color) {
+			if ($) 
+			{
+				if ('string' === typeof color) 
+				{
 					$.backgroundColor = color;
 				}
 				
-				if ('string' === typeof src) {
-					$.backgroundImage = 'url(\'' +src + '\')';
+				if ('string' === typeof src) 
+				{
+					$.backgroundImage = 'url(\'' + src + '\')';
 				}
 				
 				/* reusing var */
-				src = $.backgroundPosition.split(' ');				
-				$.backgroundPosition =
-					('number' === typeof x ? x + 'px' : 'string' === typeof x ? x : (src[0] || '50%')) +' ' +
-					('number' === typeof y ? y + 'px' : 'string' === typeof y ? y : (src[1] || '50%'));
-					
+				src = $.backgroundPosition.split(' ');
+				$.backgroundPosition = ('number' === typeof x ? x + 'px' : 'string' === typeof x ? x : (src[0] || '50%')) + ' ' +
+				('number' === typeof y ? y + 'px' : 'string' === typeof y ? y : (src[1] || '50%'));
+				
 				$.backgroundRepeat = repeat ? repeat : 'no-repeat';
 			}
 		},
@@ -872,23 +877,26 @@
 		getBackground: function(keepUnits)
 		{
 			var $ = this.style;
-			if ($) {
+			if ($) 
+			{
 				var P = $.backgroundPosition.split(' ');
-				if (keepUnits) {
+				if (keepUnits) 
+				{
 					return {
-						x:      P[0]||'',
-						y:      P[1]||'',
-						color:  $.backgroundColor,
-						src:    $.backgroundImage,
+						x: P[0] || '',
+						y: P[1] || '',
+						color: $.backgroundColor,
+						src: $.backgroundImage,
 						repeat: $.backgroundRepeat
 					};
 				}
-				else {
+				else 
+				{
 					return {
-						x:      parseFloat(P[0])||0,
-						y:      parseFloat(P[1])||0,
-						color:  $.backgroundColor,
-						src:    $.backgroundImage,
+						x: parseFloat(P[0]) || 0,
+						y: parseFloat(P[1]) || 0,
+						color: $.backgroundColor,
+						src: $.backgroundImage,
 						repeat: $.backgroundRepeat
 					};
 				}
@@ -902,44 +910,59 @@
 		setFont: function(color, size, family, weight, style, spacing, lineHeight, useSmallCaps)
 		{
 			var $ = this.style;
-			if ($) {
-				if ('string' === typeof color) {
+			if ($) 
+			{
+				if ('string' === typeof color) 
+				{
 					$.color = color;
 				}
-				if ('string' === typeof family) {
+				if ('string' === typeof family) 
+				{
 					$.fontFamily = family;
 				}
-				if ('string' === typeof style) {
+				if ('string' === typeof style) 
+				{
 					$.fontStyle = style;
 				}
-				if ('string' === typeof weight || 'number' === typeof weight) {
+				if ('string' === typeof weight || 'number' === typeof weight) 
+				{
 					$.fontWeight = weight;
 				}
-				if ('number' === typeof size) {
+				if ('number' === typeof size) 
+				{
 					$.fontSize = size + 'pt';
 				}
-				else {
-					if ('string' === typeof size) {
+				else 
+				{
+					if ('string' === typeof size) 
+					{
 						$.fontSize = size;
 					}
 				}
-				if ('number' === typeof spacing) {
+				if ('number' === typeof spacing) 
+				{
 					$.letterSpacing = spacing + 'px';
 				}
-				else {
-					if ('string' === typeof spacing) {
+				else 
+				{
+					if ('string' === typeof spacing) 
+					{
 						$.letterSpacing = spacing;
 					}
 				}
-				if ('number' === typeof lineHeight) {
+				if ('number' === typeof lineHeight) 
+				{
 					$.lineHeight = lineHeight + 'px';
 				}
-				else {
-					if ('string' === typeof lineHeight) {
+				else 
+				{
+					if ('string' === typeof lineHeight) 
+					{
 						$.lineHeight = lineHeight;
 					}
 				}
-				if (useSmallCaps !== null && useSmallCaps !== undefined) {
+				if (useSmallCaps !== null && useSmallCaps !== undefined) 
+				{
 					$.fontVariant = useSmallCaps ? 'small-caps' : 'normal';
 				}
 			}
@@ -948,29 +971,32 @@
 		getFont: function(keepUnits)
 		{
 			var $ = this.style;
-			if ($) {
-				if (keepUnits) {
+			if ($) 
+			{
+				if (keepUnits) 
+				{
 					return {
-						color:      $.color,
-						size:       $.fontSize,
-						family:     $.fontFamily,
-						weight:     $.fontWeight,
-						style:      $.fontStyle,
-						spacing:    $.letterSpacing,
+						color: $.color,
+						size: $.fontSize,
+						family: $.fontFamily,
+						weight: $.fontWeight,
+						style: $.fontStyle,
+						spacing: $.letterSpacing,
 						lineHeight: $.lineHeight,
-						variant:    $.fontVariant
+						variant: $.fontVariant
 					};
 				}
-				else {
+				else 
+				{
 					return {
-						color:      $.color,
-						size:       parseFloat($.fontSize)||0,
-						family:     $.fontFamily,
-						weight:     $.fontWeight,
-						style:      $.fontStyle,
-						spacing:    parseFloat($.letterSpacing)||0,
-						lineHeight: parseFloat($.lineHeight)   ||0,
-						variant:    $.fontVariant
+						color: $.color,
+						size: parseFloat($.fontSize) || 0,
+						family: $.fontFamily,
+						weight: $.fontWeight,
+						style: $.fontStyle,
+						spacing: parseFloat($.letterSpacing) || 0,
+						lineHeight: parseFloat($.lineHeight) || 0,
+						variant: $.fontVariant
 					};
 				}
 				
@@ -984,15 +1010,20 @@
 		setBorder: function(color, width, style)
 		{
 			var $ = this.style;
-			if ($) {
-				if ('string' === typeof color) {
+			if ($) 
+			{
+				if ('string' === typeof color) 
+				{
 					$.borderColor = color;
 				}
-				if ('number' === typeof width) {
+				if ('number' === typeof width) 
+				{
 					$.borderWidth = width + 'px';
 				}
-				else {
-					if ('string' === typeof width) {
+				else 
+				{
+					if ('string' === typeof width) 
+					{
 						$.borderWidth = width;
 					}
 				}
@@ -1020,36 +1051,49 @@
 		setPadding: function(top, right, bottom, left)
 		{
 			var $ = this.style;
-			if ($) {
-				if ('number' === typeof top) {
+			if ($) 
+			{
+				if ('number' === typeof top) 
+				{
 					$.paddingTop = top + 'px';
 				}
-				else {
-					if ('string' === typeof top) {
+				else 
+				{
+					if ('string' === typeof top) 
+					{
 						$.paddingTop = top;
 					}
 				}
-				if ('number' === typeof right) {
+				if ('number' === typeof right) 
+				{
 					$.paddingRight = right + 'px';
 				}
-				else {
-					if ('string' === typeof right) {
+				else 
+				{
+					if ('string' === typeof right) 
+					{
 						$.paddingRight = right;
 					}
 				}
-				if ('number' === typeof bottom) {
+				if ('number' === typeof bottom) 
+				{
 					$.paddingBottom = bottom + 'px';
 				}
-				else {
-					if ('string' === typeof bottom) {
+				else 
+				{
+					if ('string' === typeof bottom) 
+					{
 						$.paddingBottom = bottom;
 					}
 				}
-				if ('number' === typeof left) {
+				if ('number' === typeof left) 
+				{
 					$.paddingLeft = left + 'px';
 				}
-				else {
-					if ('string' === typeof left) {
+				else 
+				{
+					if ('string' === typeof left) 
+					{
 						$.paddingLeft = left;
 					}
 				}
@@ -1059,21 +1103,24 @@
 		getPadding: function(keepUnits)
 		{
 			var $ = this.style;
-			if ($) {
-				if (keepUnits) {
+			if ($) 
+			{
+				if (keepUnits) 
+				{
 					return {
-						top:    $.paddingTop,
-						right:  $.paddingRight,
+						top: $.paddingTop,
+						right: $.paddingRight,
 						bottom: $.paddingBottom,
-						left:   $.paddingLeft
+						left: $.paddingLeft
 					};
 				}
-				else {
+				else 
+				{
 					return {
-						top:    parseFloat($.paddingTop)   ||0,
-						right:  parseFloat($.paddingRight) ||0,
-						bottom: parseFloat($.paddingBottom)||0,
-						left:   parseFloat($.paddingLeft)  ||0
+						top: parseFloat($.paddingTop) || 0,
+						right: parseFloat($.paddingRight) || 0,
+						bottom: parseFloat($.paddingBottom) || 0,
+						left: parseFloat($.paddingLeft) || 0
 					};
 				}
 			}
@@ -1086,36 +1133,49 @@
 		setMargin: function(top, right, bottom, left)
 		{
 			var $ = this.style;
-			if ($) {
-				if ('number' === typeof top) {
+			if ($) 
+			{
+				if ('number' === typeof top) 
+				{
 					$.marginTop = top + 'px';
 				}
-				else {
-					if ('string' === typeof top) {
+				else 
+				{
+					if ('string' === typeof top) 
+					{
 						$.marginTop = top;
 					}
 				}
-				if ('number' === typeof right) {
+				if ('number' === typeof right) 
+				{
 					$.marginRight = right + 'px';
 				}
-				else {
-					if ('string' === typeof right) {
+				else 
+				{
+					if ('string' === typeof right) 
+					{
 						$.marginRight = right;
 					}
 				}
-				if ('number' === typeof bottom) {
+				if ('number' === typeof bottom) 
+				{
 					$.marginBottom = bottom + 'px';
 				}
-				else {
-					if ('string' === typeof bottom) {
+				else 
+				{
+					if ('string' === typeof bottom) 
+					{
 						$.marginBottom = bottom;
 					}
 				}
-				if ('number' === typeof left) {
+				if ('number' === typeof left) 
+				{
 					$.marginLeft = left + 'px';
 				}
-				else {
-					if ('string' === typeof left) {
+				else 
+				{
+					if ('string' === typeof left) 
+					{
 						$.marginLeft = left;
 					}
 				}
@@ -1125,21 +1185,24 @@
 		getMargin: function(keepUnits)
 		{
 			var $ = this.style;
-			if ($) {
-				if (keepUnits) {
+			if ($) 
+			{
+				if (keepUnits) 
+				{
 					return {
-						top:    $.marginTop,
-						right:  $.marginRight,
+						top: $.marginTop,
+						right: $.marginRight,
 						bottom: $.marginBottom,
-						left:   $.marginLeft
+						left: $.marginLeft
 					};
 				}
-				else {
+				else 
+				{
 					return {
-						top:    parseFloat($.marginTop)   ||0,
-						right:  parseFloat($.marginRight) ||0,
-						bottom: parseFloat($.marginBottom)||0,
-						left:   parseFloat($.marginLeft)  ||0
+						top: parseFloat($.marginTop) || 0,
+						right: parseFloat($.marginRight) || 0,
+						bottom: parseFloat($.marginBottom) || 0,
+						left: parseFloat($.marginLeft) || 0
 					};
 				}
 			}
@@ -1152,32 +1215,43 @@
 		setText: function(align, decoration, wordSpacing, whiteSpace, indent, transform)
 		{
 			var $ = this.style;
-			if ($) {
-				if ('string' === typeof align) {
+			if ($) 
+			{
+				if ('string' === typeof align) 
+				{
 					$.textAlign = align;
 				}
-				if ('string' === typeof decoration) {
+				if ('string' === typeof decoration) 
+				{
 					$.textDecoration = decoration;
 				}
-				if ('string' === typeof whiteSpace) {
+				if ('string' === typeof whiteSpace) 
+				{
 					$.whiteSpace = whiteSpace;
 				}
-				if ('string' === typeof transform) {
+				if ('string' === typeof transform) 
+				{
 					$.textTransform = transform;
 				}
-				if ('number' === typeof indent) {
+				if ('number' === typeof indent) 
+				{
 					$.textIndent = indent + 'px';
 				}
-				else {
-					if ('string' === typeof indent) {
+				else 
+				{
+					if ('string' === typeof indent) 
+					{
 						$.textIndent = indent;
 					}
 				}
-				if ('number' === typeof wordSpacing) {
+				if ('number' === typeof wordSpacing) 
+				{
 					$.wordSpacing = wordSpacing + 'px';
 				}
-				else {
-					if ('string' === typeof wordSpacing) {
+				else 
+				{
+					if ('string' === typeof wordSpacing) 
+					{
 						$.wordSpacing = wordSpacing;
 					}
 				}
@@ -1187,25 +1261,28 @@
 		getText: function(keepUnits)
 		{
 			var $ = this.style;
-			if ($) {
-				if (keepUnits) {
+			if ($) 
+			{
+				if (keepUnits) 
+				{
 					return {
-						align:       $.textAlign,
-						decoration:  $.textDecoration,
+						align: $.textAlign,
+						decoration: $.textDecoration,
 						wordSpacing: $.wordSpacing,
-						whiteSpace:  $.whiteSpace,
-						indent:      $.textIndent,
-						transform:   $.textTransform
+						whiteSpace: $.whiteSpace,
+						indent: $.textIndent,
+						transform: $.textTransform
 					};
 				}
-				else {
+				else 
+				{
 					return {
-						align:       $.textAlign,
-						decoration:  $.textDecoration,
-						wordSpacing: parseFloat($.wordSpacing)||0,
-						whiteSpace:  $.whiteSpace,
-						indent:      parseFloat($.textIndent) ||0,
-						transform:   $.textTransform
+						align: $.textAlign,
+						decoration: $.textDecoration,
+						wordSpacing: parseFloat($.wordSpacing) || 0,
+						whiteSpace: $.whiteSpace,
+						indent: parseFloat($.textIndent) || 0,
+						transform: $.textTransform
 					};
 				}
 			}
@@ -1218,11 +1295,14 @@
 		setScroll: function(top, left)
 		{
 			var E = this.element;
-			if (E) {
-				if ('number'===typeof top) {
+			if (E) 
+			{
+				if ('number' === typeof top) 
+				{
 					E.scrollTop = top < 0 ? 0 : E.scrollHeight < top ? E.scrollHeight : top;
 				}
-				if ('number'===typeof left) {
+				if ('number' === typeof left) 
+				{
 					E.scrollLeft = left < 0 ? 0 : E.scrollWidth < left ? E.scrollWidth : left;
 				}
 			}
@@ -1231,12 +1311,13 @@
 		getScroll: function()
 		{
 			var E = this.element;
-			if (E) {
+			if (E) 
+			{
 				return {
-					top:    E.scrollTop,
-					left:   E.scrollLeft,
+					top: E.scrollTop,
+					left: E.scrollLeft,
 					height: E.scrollHeight,
-					width:  E.scrollWidth
+					width: E.scrollWidth
 				};
 			}
 			return null;
@@ -1244,35 +1325,41 @@
 		
 		
 		/* Opacity
-		 * FIXME: IE6 does not apply opacity on static elements if no dimension is set 
+		 * FIXME: IE6 does not apply opacity on static elements if no dimension is set
 		 */
 		setOpacity: function(opacity)
 		{
 			var $ = this.style;
-			if ($ && 'number' === typeof opacity) {
+			if ($ && 'number' === typeof opacity) 
+			{
 				opacity = opacity < 0 ? 0 : 1 < opacity ? 1 : opacity.toFixed(2);
-				if ($.opacity===undefined) // use IE 'filters'
+				if ($.opacity === undefined) // use IE 'filters'
 				{
-					$.filter = 'alpha(opacity=' +(opacity * 100) +')';
+					$.filter = 'alpha(opacity=' + (opacity * 100) + ')';
 				}
-				else {
+				else 
+				{
 					$.opacity = opacity;
 				}
 			}
 		},
-
+		
 		getOpacity: function()
 		{
 			var E = this.element;
-			if (E) {
+			if (E) 
+			{
 				var $ = E.style.opacity;
-				if ($===undefined) {
-					try {
-						$ = E.filters.alpha.opacity /100;
+				if ($ === undefined) 
+				{
+					try 
+					{
+						$ = E.filters.alpha.opacity / 100;
 						return $;
-					}
-					catch ($) { 
-						return ($ = (/opacity=(\d+)/i).exec(E.style.cssText)) ? $[1]/100 : 1;
+					} 
+					catch ($) 
+					{
+						return ($ = (/opacity=(\d+)/i).exec(E.style.cssText)) ? $[1] / 100 : 1;
 					}
 				}
 				return isNaN($ = parseFloat($)) ? 1 : $;
@@ -1285,10 +1372,13 @@
 		
 		createElement: function(tagName, id, x, y, z, width, height, positionType)
 		{
-			if ('string' === typeof tagName) {
+			if ('string' === typeof tagName) 
+			{
 				/* reusing var tagName */
-				if ((tagName = document.createElement(tagName))) {
-					if ('string' === typeof id) {
+				if ((tagName = document.createElement(tagName))) 
+				{
+					if ('string' === typeof id) 
+					{
 						tagName.id = id;
 					}
 					this.style = (this.element = tagName).style;
@@ -1300,9 +1390,9 @@
 		appendElement: function(parent)
 		{
 			var E = this.element;
-			if (E && !E.parentNode)
+			if (E && !E.parentNode) 
 			{
-				((parent && parent.nodeType ? parent : document.getElementById(parent))||document.body).appendChild(E);
+				((parent && parent.nodeType ? parent : document.getElementById(parent)) || document.body).appendChild(E);
 			}
 		},
 		
@@ -1310,7 +1400,8 @@
 		{
 			var E = this.element;
 			var p;
-			if (E && !E.parentNode && (node = this.core.getElement(node)) && (p = node.parentNode)) {
+			if (E && !E.parentNode && (node = this.core.getElement(node)) && (p = node.parentNode)) 
+			{
 				p.insertBefore(E, node);
 			}
 		},
@@ -1319,28 +1410,34 @@
 		{
 			var E = this.element;
 			var p;
-			if (E && !E.parentNode && (node = this.core.getElement(node)) && (p = node.parentNode)) {
+			if (E && !E.parentNode && (node = this.core.getElement(node)) && (p = node.parentNode)) 
+			{
 				if ((node = node.nextSibling)) 
 				{
 					p.insertBefore(E, node);
 				}
-				else {
+				else 
+				{
 					p.appendChild(E);
 				}
 			}
 		},
 		
-		insertAsFirst: function (parent) {
+		insertAsFirst: function(parent)
+		{
 			var E = this.element;
-			if (E && !E.parentNode)
+			if (E && !E.parentNode) 
 			{
-				if (!(parent && parent.nodeType)) {
-			  		parent = document.getElementById(parent)||document.body;
+				if (!(parent && parent.nodeType)) 
+				{
+					parent = document.getElementById(parent) || document.body;
 				}
-				if (parent.firstChild) {
+				if (parent.firstChild) 
+				{
 					parent.insertBefore(E, parent.firstChild);
 				}
-				else {
+				else 
+				{
 					parent.appendChild(E);
 				}
 			}
@@ -1349,9 +1446,11 @@
 		removeElement: function()
 		{
 			var E = this.element;
-			if (E) {
+			if (E) 
+			{
 				var P = E.parentNode;
-				if (P) {
+				if (P) 
+				{
 					P.removeChild(E);
 				}
 			}
@@ -1360,13 +1459,14 @@
 		cloneElement: function(cloneAttrAndChildren)
 		{
 			var E = this.element;
-			return E && E.cloneNode(!!cloneAttrAndChildren)||null;
+			return E && E.cloneNode(!!cloneAttrAndChildren) || null;
 		},
 		
 		purgeElement: function()
 		{
 			var E = this.element;
-			if (E) {
+			if (E) 
+			{
 				this.core.purgeElement(E);
 				this.removeElement(E);
 				this.element = (this.style = null);
@@ -1381,7 +1481,8 @@
 				e = e.firstChild;
 				while (e) 
 				{
-					if (e.nodeType === 1) {
+					if (e.nodeType === 1) 
+					{
 						return e;
 					}
 					e = e.nextSibling;
@@ -1394,10 +1495,11 @@
 		{
 			var e = this.element;
 			if (e) 
-			{	
+			{
 				while ((e = e.nextSibling)) 
 				{
-					if (e.nodeType === 1) {
+					if (e.nodeType === 1) 
+					{
 						return e;
 					}
 				}
@@ -1409,17 +1511,18 @@
 		{
 			var e = this.element;
 			if (e) 
-			{	
+			{
 				while ((e = e.previousSibling)) 
 				{
-					if (e.nodeType === 1) {
+					if (e.nodeType === 1) 
+					{
 						return e;
 					}
 				}
 			}
 			return null;
 		},
-
+		
 		getLast: function()
 		{
 			var e = this.element;
@@ -1428,7 +1531,8 @@
 				e = e.lastChild;
 				while (e) 
 				{
-					if (e.nodeType === 1) {
+					if (e.nodeType === 1) 
+					{
 						return e;
 					}
 					e = e.previousSibling;
@@ -1447,7 +1551,7 @@
 				e = e.firstChild;
 				while (e) 
 				{
-					if (e.nodeType===1) 
+					if (e.nodeType === 1) 
 					{
 						$[n++] = e;
 					}
@@ -1461,32 +1565,38 @@
 			return null;
 		},
 		
-		setChild: function (child) {
+		setChild: function(child)
+		{
 			var e = this.getChild(child);
 			this.style = (this.element = e) ? e.style : null;
 		},
 		
-		setParent: function () {
+		setParent: function()
+		{
 			var e = this.getParent();
 			this.style = (this.element = e) ? e.style : null;
 		},
 		
-		setFirst: function () {
+		setFirst: function()
+		{
 			var e = this.getFirst();
 			this.style = (this.element = e) ? e.style : null;
 		},
 		
-		setPrevious: function () {
+		setPrevious: function()
+		{
 			var e = this.getPrevious();
 			this.style = (this.element = e) ? e.style : null;
 		},
 		
-		setNext: function () {
+		setNext: function()
+		{
 			var e = this.getNext();
 			this.style = (this.element = e) ? e.style : null;
 		},
 		
-		setLast: function () {
+		setLast: function()
+		{
 			var e = this.getLast();
 			this.style = (this.element = e) ? e.style : null;
 		},
@@ -1494,27 +1604,29 @@
 		getChild: function(child)
 		{
 			var E = this.element;
-			return E.childNodes[child]||(child = this.core.getElement(child)) && E===child.parentNode && child||null;
+			return E.childNodes[child] || (child = this.core.getElement(child)) && E === child.parentNode && child || null;
 		},
 		
 		appendChild: function(childNode)
 		{
 			var E = this.element;
-			if (E && childNode && 'number'===typeof childNode.nodeType && !childNode.parentNode)
+			if (E && childNode && 'number' === typeof childNode.nodeType && !childNode.parentNode) 
 			{
 				E.appendChild(childNode);
-			} 
+			}
 		},
 		
 		appendChildren: function(childNodes)
 		{
 			var E = this.element;
 			var l;
-			if (E && childNodes && (l = childNodes.length)) {
+			if (E && childNodes && (l = childNodes.length)) 
+			{
 				var i = 0;
 				var k;
-				while (i < l) {
-					if (!(k = childNodes[i++]).parentNode && 'number'===typeof k.nodeType)
+				while (i < l) 
+				{
+					if (!(k = childNodes[i++]).parentNode && 'number' === typeof k.nodeType) 
 					{
 						E.appendChild(k);
 					}
@@ -1525,7 +1637,8 @@
 		removeChild: function(child)
 		{
 			var E = this.element;
-			if (E && (child = this.getChild(child))) {
+			if (E && (child = this.getChild(child))) 
+			{
 				E.removeChild(child);
 			}
 		},
@@ -1533,12 +1646,13 @@
 		removeChildren: function()
 		{
 			var E = this.element;
-			if (E)
+			if (E) 
 			{
 				var $ = E.childNodes;
 				var i = $.length;
 				var k;
-				while (i--) {
+				while (i--) 
+				{
 					E.removeChild($[i]);
 				}
 			}
@@ -1546,7 +1660,8 @@
 		
 		purgeChild: function(child)
 		{
-			if ((child = this.getChild(child))) {
+			if ((child = this.getChild(child))) 
+			{
 				this.core.purgeElement(child);
 				this.removeChild(child);
 			}
@@ -1555,9 +1670,11 @@
 		purgeChildren: function()
 		{
 			var E = this.element;
-			if (E) {
+			if (E) 
+			{
 				/* local purge function for best performance */
-				var P = function (o) {
+				var P = function(o)
+				{
 					var $ = o.attributes;
 					if ($) 
 					{
@@ -1583,7 +1700,8 @@
 				var $ = E.childNodes;
 				var i = $.length;
 				var k;
-				while (i--) {
+				while (i--) 
+				{
 					if ((k = $[i]).nodeType === 1) 
 					{
 						P(k);
@@ -1601,24 +1719,54 @@
 		getParent: function()
 		{
 			var E = this.element;
-			return E && E.parentNode||null;
+			return E && E.parentNode || null;
 		},
 		
 		hasCollision: function(collisorElement)
 		{
-			return this.core.hasCollision(this.element, this.core.getElement(collisorElement));
+			var e = this.element;
+			var o;
+			if ((o = e) && collisorElement) 
+			{
+				var B = document.body;
+				var eX = 0;
+				var eY = 0;
+				while (o !== B) 
+				{
+					eX += o.offsetLeft;
+					eY += o.offsetTop;
+					o = o.parentNode;
+				}
+				var cX = 0;
+				var cY = 0;
+				o = collisorElement;
+				while (o !== B) 
+				{
+					cX += o.offsetLeft;
+					cY += o.offsetTop;
+					o = o.parentNode;
+				}
+				if (!(eX < cX - e.offsetWidth || cX + collisorElement.offsetWidth < eX)) 
+				{
+					return !(eY < cY - e.offsetHeight || cY + collisorElement.offsetHeight < eY);
+				}
+			}
+			return false;
 		},
 		
-		setAttribute: function (attribute, value) {
+		setAttribute: function(attribute, value)
+		{
 			var E = this.element;
 			if (E && value !== undefined) 
 			{
 				if ('string' === typeof attribute) 
 				{
-					if ('style'===attribute && E.style.cssText!==undefined) {
+					if ('style' === attribute && E.style.cssText !== undefined) 
+					{
 						E.style.cssText = value;
 					}
-					else {
+					else 
+					{
 						E.setAttribute(attribute, value);
 					}
 				}
@@ -1626,11 +1774,12 @@
 				{
 					if ('number' === typeof attribute) 
 					{
-						if ('object'===typeof E.attributes[attribute])
+						if ('object' === typeof E.attributes[attribute]) 
 						{
 							E.attributes[attribute].nodeValue = value;
 						}
-						else {
+						else 
+						{
 							E.attributes[attribute] = value;
 						}
 					}
@@ -1638,16 +1787,18 @@
 			}
 		},
 		
-		getAttribute: function (attribute) {
+		getAttribute: function(attribute)
+		{
 			var o = this.element;
-			if (o && (o = o[attribute]||o.getAttribute(attribute)||o.attributes[attribute])) {
+			if (o && (o = o[attribute] || o.getAttribute(attribute) || o.attributes[attribute])) 
+			{
 				if ('style' === attribute && o.cssText !== undefined) 
 				{
 					return o.cssText.toLowerCase();
 				}
 				if ('object' === typeof o) 
 				{
-					return o.nodeValue||'';
+					return o.nodeValue || '';
 				}
 			}
 			if ('string' === typeof o) 
@@ -1656,7 +1807,7 @@
 			}
 			return null;
 		},
-
+		
 		/* Event */
 		addEvent: function(type, handlerFn)
 		{
@@ -1667,11 +1818,12 @@
 			this.core.removeEvent(this.element, type, handlerFn);
 		},
 		
-		dispatchEvent: function (type) {
+		dispatchEvent: function(type)
+		{
 			this.core.dispatchEvent(this.element, type);
 		}
 	};
-	leaf.DOMElement.prototype.core = leaf.DOM.core;	
-		
+	leaf.DOMElement.prototype.core = leaf.DOM.core;
+	
 	/* Aptana intellisense adjust */
 	leaf.DOMElement = leaf.DOMElement;

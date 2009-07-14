@@ -32,27 +32,21 @@
 	 *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	 */
 	
-	/* This ALPHA version implements:
-	 *
-	 * leaf.Array
-	 *     .Object
-	 *     .AJAX
-	 *     .Window
-	 *     .Document
-	 *     .Mouse
-	 *     .DOM        (core is a kind of "private" object, but it's public for advanced purpouses like extensions)
-	 *     .DOMElement (handles only elements, think in it as a box that you put some element inside and mod)
-	 */
 	
-	
-	/* check LEAF "namespace" */
+	// check LEAF "namespace"
 	if (!window.leaf) 
 	{
 		window.leaf = {};
 	}
 	
+	// no factory. Thanks to JavaScript quality tools, like JSLint (Aptana embed)
+	
+	
+/// CORE
+
 	leaf.core = {
-		requesterActiveXs: [
+		// createRequester
+		requesterActiveX: [
 			'Microsoft.XMLHTTP',
 			'MSXML2.XMLHTTP',
 			'MSXML2.XMLHTTP.3.0',
@@ -61,11 +55,15 @@
 			'MSXML2.XMLHTTP.6.0'
 		],
 		
-		getElement: function ($) {
+		// shortage
+		get: function ($) {
 			return $ ? $.nodeType ? $ : document.getElementById($) : null;
 		}
 	};
 	
+	
+/// ARRAY
+
 	leaf.each = function(array, itemHandler)
 	{
 		var l;
@@ -83,6 +81,9 @@
 		}
 	};
 
+
+/// OBJECT
+
 	leaf.extend = function(object, sourceObject, noOverride)
 	{
 		if (object && sourceObject) 
@@ -98,6 +99,9 @@
 		}
 	};
 	
+	
+/// AJAX
+
 	leaf.createRequester = function()
 	{
 		var W = window; // constant for optimization
@@ -108,10 +112,10 @@
 		// if no return
 		if (W.ActiveXObject) 
 		{
-			var A = this.core.requesterActiveXs; // ActiveX versions in this array
+			var A = this.core.requesterActiveX; // array of ActiveX versions
 			var i = A.length;
 			var o;
-			while (i--) // optimum
+			while (i--) // optimum iterator
  			{
 				try // try catch allow infinite versions
  				{
@@ -126,16 +130,20 @@
 		return null;
 	};
 		
-	leaf.requesterActiveXs = function()
+	leaf.listRequesterActiveX = function()
 	{
-		// return array with version list (ascending)
-		return this.core.requesterActiveXs;
+		// return array with versions for requester creation (ascending)
+		return this.core.requesterActiveX;
 	};
+
+
+/// MOUSE
 
 	leaf.getMousePosition = function(mouseEvent)
 	{
 		if ('object' === typeof(mouseEvent = mouseEvent || event)) 
 		{
+			// pageX/Y is the best case on most browsers
 			if ('number' === typeof mouseEvent.pageY) 
 			{
 				return {
@@ -145,21 +153,26 @@
 			}
 			var H = document.documentElement;
 			var B = document.body;
-			if (B) 
+			if (B) // needed
 			{
 				return {
+					 // clientLeft/Top IE adjust
 					x: mouseEvent.clientX + (H.scrollLeft || B.scrollLeft) - (H.clientLeft || 0),
 					y: mouseEvent.clientY + (H.scrollTop  || B.scrollTop)  - (H.clientTop  || 0)
 				};
 			}
 			return {
+				 // clientLeft/Top IE adjust
 				x: mouseEvent.clientX + H.scrollLeft - (H.clientLeft || 0),
 				y: mouseEvent.clientY + H.scrollTop  - (H.clientTop || 0)
 			};
 		}
 		return null;
 	};
-	
+
+
+/// GETTERS
+
 	leaf.getById = function(ids)
 	{
 		if (ids instanceof Array) 
@@ -177,15 +190,12 @@
 					$[n++] = o;
 				}
 			}
-			if (n) 
-			{
-				return $;
-			}
+			return n ? $ : null; // null if no match
 		}
 		return document.getElementById(ids);
 	};
 		
-	/* TODO: optimize */
+	// TODO: study optimization
 	leaf.getByTag = function(tagNames, rootNode)
 	{
 		rootNode = this.core.get(rootNode) || document;
@@ -207,15 +217,12 @@
 				}
 				j = 0;
 			}
-			if (n) 
-			{
-				return $;
-			}
+			return n ? $ : null; // null if no match
 		}
 		return rootNode.getElementsByTagName(tagNames);
 	};
 		
-	// BENCHMARKIT
+	// TODO: benchmark
 	leaf.getByClass = function(classNames, rootNode)
 	{
 		if ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array && classNames.length) 
@@ -223,7 +230,8 @@
 			var R = new RegExp('(?:\\s|^)(?:' + classNames.join('\|') + ')(?:\\s|$)');
 			var $ = [];
 			var n = 0;
-			/* Depth search */
+			
+			// depth search
 			var Q = function(o)
 			{
 				if (o.nodeType === 1 && R.test(o.className)) 
@@ -240,7 +248,8 @@
 				}
 			};
 			Q(this.core.get(rootNode) || document);
-			/* check if array is empty */
+			
+			// null if no match
 			if (n) 
 			{
 				return $;
@@ -249,110 +258,114 @@
 		return null;
 	};
 
-	leaf.addEvent = function(object, type, handlerFn)
+
+/// EVENT
+
+	leaf.addEvent = function(domObj, type, handlerFn)
 	{
-		if (object && (object.nodeType===1||object===window||object===document) && 'string' === typeof type && 'function' === typeof handlerFn) 
+		if (domObj && (domObj.nodeType===1||domObj===window||domObj===document) && 'string' === typeof type && 'function' === typeof handlerFn) 
 		{
-			/* base code by John Resig
-			 * uses hash name to fix IE problems
-			 */
-			if (object.addEventListener) 
+			// uses hash name to fix IE problems
+			// base code by John Resig of JQuery (Event Contest - www.quirksmode.com)
+			if (domObj.addEventListener) 
 			{
-				object.addEventListener(type, handlerFn, false);
+				domObj.addEventListener(type, handlerFn, false);
 			}
 			else 
 			{
-				if (object.attachEvent) 
+				if (domObj.attachEvent) 
 				{
 					var h = type + handlerFn;
-					object['e' + h] = handlerFn;
-					object.attachEvent('on' + type, (object[h] = function()
+					domObj['e' + h] = handlerFn;
+					domObj.attachEvent('on' + type, (domObj[h] = function()
 					{
-						object['e' + h](event);
+						domObj['e' + h](event);
 					}));
 				}
 			}
 		}
 	};
 			
-	leaf.removeEvent = function(object, type, handlerFn)
+	leaf.removeEvent = function(domObj, type, handlerFn)
 	{
-		if (object && (object.nodeType===1||object===window||object===document) && 'string' === typeof type && 'function' === typeof handlerFn) 
+		if (domObj && (domObj.nodeType===1||domObj===window||domObj===document) && 'string' === typeof type && 'function' === typeof handlerFn) 
 		{
-			/* base code by John Resig
-			 * uses hash to fix IE problems
-			 */
-			if (object.removeEventListener) 
+			// uses hash name to fix IE problems
+			// base code by John Resig of JQuery, (Event Contest - www.quirksmode.com)
+			if (domObj.removeEventListener) 
 			{
-				object.removeEventListener(type, handlerFn, false);
+				domObj.removeEventListener(type, handlerFn, false);
 			}
 			else 
 			{
-				if (object.detachEvent) 
+				if (domObj.detachEvent) 
 				{
-					object.detachEvent('on' + type, object[(type = type + handlerFn)]);
-					object[type] = null;
-					object['e' + type] = null;
+					domObj.detachEvent('on' + type, domObj[(type = type + handlerFn)]);
+					domObj[type] = null;
+					domObj['e' + type] = null;
 				}
 			}
 		}
 	};
 			
-	leaf.dispatchEvent = function(object, type)
+	leaf.dispatchEvent = function(domObj, type)
 	{
-		if (object && (object.nodeType===1||object===window||object===document) && 'string' === typeof type) 
+		if (domObj && (domObj.nodeType===1||domObj===window||domObj===document) && 'string' === typeof type) 
 		{
-			if (object.dispatchEvent) 
+			if (domObj.dispatchEvent) 
 			{
-				/* dispatch for firefox and others */
+				// dispatch for firefox and others
 				var $ = document.createEvent('HTMLEvents');
-				/* event type, bubbling, cancelable */
-				$.initEvent(type, true, true);
-				object.dispatchEvent($);
+				$.initEvent(type, true, true); // event type, bubbling, cancelable
+				domObj.dispatchEvent($);
 			}
 			else 
 			{
 				if (document.createEventObject) 
 				{
-					/* dispatch for IE */
-					object.fireEvent('on' + type, document.createEventObject());
+					// dispatch for IE
+					domObj.fireEvent('on' + type, document.createEventObject());
 				}
 			}
 		}
 	};
-			
-	leaf.purgeDOM = function(object)
+	
+
+/// FIX
+	
+	leaf.purgeDOM = function(domObj)
 	{
-		/* base code on crockford.com */
-		if (object) 
+		// base code: www.crockford.com
+		if (domObj) 
 		{
-			var $ = object.attributes;
+			var $ = domObj.attributes;
 			if ($) 
 			{
 				var i = $.length;
 				var n;
 				while (i--) 
 				{
-					if ('function' === typeof object[(n = $[i].name)]) 
+					if ('function' === typeof domObj[(n = $[i].name)]) 
 					{
-						object[n] = null;
+						domObj[n] = null;
 					}
 				}
 			}
-			if ((object = object.childNodes)) 
+			if ((domObj = domObj.childNodes)) 
 			{
-				$ = object.length;
+				$ = domObj.length;
 				while ($--) 
 				{
-					this.purgeDOM(object[$]);
+					this.purgeDOM(domObj[$]);
 				}
 			}
 		}
 	};
 	
 	
-	
-	// BENCHMARKIT
+/// CSS
+
+	// TODO: benchmark
 	leaf.setCSS = function(e, cssObj)
 	{
 		var s;
@@ -396,7 +409,10 @@
 		return null;
 	};	
 	
-	// BENCHMARKIT
+	
+/// CLASSES
+	
+	// TODO: benchmark
 	leaf.addClass = function(e, classNames)
 	{
 		if (e && e.nodeType===1 && ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array)) 
@@ -435,6 +451,9 @@
 		}
 	};	
 	
+	
+/// POSITION	
+
 	leaf.setPosition = function(e, x, y, z, type)
 	{
 		if ((e = e && e.style)) 
@@ -507,7 +526,6 @@
 		}
 	};
 	
-	
 	leaf.getPosition = function(e, keepUnits)
 	{
 		if ((e = e && e.style)) 
@@ -567,6 +585,9 @@
 		}
 	};	
 	
+	
+/// SIZE
+
 	leaf.setSize = function(e, width, height)
 	{
 		if ((e = e && e.style)) 
@@ -619,6 +640,8 @@
 	};	
 	
 
+/// AREA
+
 	leaf.setArea = function(e, x, y, z, width, height, positionType)
 	{
 		this.setPosition(e, x, y, z, positionType);
@@ -655,7 +678,9 @@
 		return null;
 	};	
 	
-	
+
+/// BACKGROUND
+
 	leaf.setBackground = function(e, color, src, x, y, repeat)
 	{
 		if ((e = e && e.style)) 
@@ -707,8 +732,10 @@
 		}
 		return null;
 	};	
+
 	
-	
+/// FONT
+
 	leaf.setFont = function(e, color, size, family, weight, style, spacing, lineHeight, useSmallCaps)
 	{
 		if ((e = e && e.style))  
@@ -804,7 +831,9 @@
 		return null;
 	};	
 	
-	
+
+/// BORDER
+
 	leaf.setBorder = function(e, color, width, style)
 	{
 		if ((e = e && e.style)) 
@@ -841,6 +870,8 @@
 		return null;
 	};	
 	
+
+/// PADDING
 
 	leaf.setPadding = function(e, top, right, bottom, left)
 	{
@@ -892,8 +923,7 @@
 			}
 		}
 	};	
-	
-	
+		
 	leaf.getPadding = function(e, keepUnits)
 	{
 		if ((e = e && e.style)) 
@@ -920,6 +950,8 @@
 		return null;
 	};	
 	
+
+/// MARGIN
 
 	leaf.setMargin = function(e, top, right, bottom, left)
 	{
@@ -998,7 +1030,9 @@
 		return null;
 	};	
 	
-	
+
+/// TEXT
+
 	leaf.setText = function(e, align, decoration, wordSpacing, whiteSpace, indent, transform)
 	{
 		if ((e = e && e.style)) 
@@ -1044,7 +1078,7 @@
 		}
 	};	
 	
-	leaf.getText = function(keepUnits)
+	leaf.getText = function(e, keepUnits)
 	{
 		if ((e = e && e.style)) 
 		{
@@ -1073,7 +1107,10 @@
 		}
 		return null;
 	};	
-	
+
+
+/// SCROLL
+
 	leaf.setScroll = function(e, top, left)
 	{
 		if (e && e.style) 
@@ -1103,15 +1140,19 @@
 		}
 		return null;
 	};	
-	
+
+
+/// OPACITY
+
 	// FIXME: IE6 does not apply opacity on static elements if no dimension is set
-	leaf.setOpacity = function(opacity)
+	leaf.setOpacity = function(e, opacity)
 	{
 		if ((e = e && e.style) && 'number'===typeof opacity) 
 		{
 			opacity = opacity < 0 ? 0 : 1 < opacity ? 1 : opacity.toFixed(2);
-			if (e.opacity === undefined) // use IE 'filters'
+			if (e.opacity === undefined)
 			{
+				// use IE filter
 				e.filter = 'alpha(opacity=' + (opacity * 100) + ')';
 			}
 			else 
@@ -1121,7 +1162,7 @@
 		}
 	};	
 	
-	leaf.getOpacity = function()
+	leaf.getOpacity = function(e)
 	{
 		var s;
 		if (e && (s = e.style)) 
@@ -1145,11 +1186,13 @@
 	};	
 	
 
+/// NODE
+
 	leaf.createElement = function(tagName, id, x, y, z, width, height, positionType)
 	{
 		if ('string' === typeof tagName) 
 		{
-			/* reusing var tagName */
+			// reuse tagName
 			if ((tagName = document.createElement(tagName))) 
 			{
 				if ('string' === typeof id) 
@@ -1163,15 +1206,14 @@
 		return null;
 	};	
 	
-	
-	leaf.appendElement = function(e, parent)
+	leaf.append = function(e, parent)
 	{
-		if (e && e.style && !e.parentNode) 
+		if (e && e.nodeType && !e.parentNode) 
 		{
 			((parent && parent.nodeType ? parent : document.getElementById(parent)) || document.body).appendChild(e);
 		}
-	};	
-	/*
+	};
+	/*	
 	leaf.insertBefore = function(e, node)
 	{
 		if (e && e.style && !e.parentNode && (node = this.core.get(node)) && node.parentNode) 

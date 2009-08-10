@@ -39,43 +39,23 @@
 		window.leaf = {};
 	}
 	
-	// no factory. Thanks to JavaScript quality tools, like JSLint (Aptana embed)
-	
-	
-/// CORE
-
-	leaf.core = {
-		// createRequester
-		requesterActiveX: [
-			'Microsoft.XMLHTTP',
-			'MSXML2.XMLHTTP',
-			'MSXML2.XMLHTTP.3.0',
-			'MSXML2.XMLHTTP.4.0',
-			'MSXML2.XMLHTTP.5.0',
-			'MSXML2.XMLHTTP.6.0'
-		],
-		
-		// shortage
-		get: function ($) {
-			return $ ? $.nodeType ? $ : document.getElementById($) : null;
-		}
-	};
-	
 	
 /// ARRAY
 
-	leaf.each = function(array, itemHandler)
-	{
-		var l;
-		if (array && !(array instanceof String) && 'function' === typeof itemHandler && (l = array.length)) 
+	leaf.Array = {
+		each: function(array, itemHandler)
 		{
-			var i = 0;
-			var k;
-			while (i < l) 
+			var l;
+			if (array && !(array instanceof String) && 'function' === typeof itemHandler && (l = array.length)) 
 			{
-				if ((k = array[i])) 
+				var i = 0;
+				var k;
+				while (i < l) 
 				{
-					itemHandler.call(k, i++);
+					if ((k = array[i])) 
+					{
+						itemHandler.call(k, i++);
+					}
 				}
 			}
 		}
@@ -84,284 +64,342 @@
 
 /// OBJECT
 
-	leaf.extend = function(object, sourceObject, noOverride)
-	{
-		if (object && sourceObject) 
+	leaf.Object = {
+		extend: function(object, sourceObject, noOverride)
 		{
-			for (var n in sourceObject) 
+			if (object && sourceObject) 
 			{
-				if (object[n] !== undefined && noOverride) 
+				for (var n in sourceObject) 
 				{
-					continue;
+					if (object[n] !== undefined && noOverride) 
+					{
+						continue;
+					}
+					object[n] = sourceObject[n];
 				}
-				object[n] = sourceObject[n];
 			}
 		}
 	};
 	
 	
+/// WINDOW
+
+	leaf.Window = {
+		addEvent: function(type, handlerFn) {
+			leaf.DOM.core.addEvent(window, type, handlerFn);
+		},
+		removeEvent: function(type, handlerFn) {
+			leaf.DOM.core.removeEvent(window, type, handlerFn);
+		},
+		dispatchEvent: function(type) {
+			leaf.DOM.core.addEvent(window, type);
+		}
+	};
+	
+	
+/// DOCUMENT
+
+	leaf.Document = {
+		addEvent: function(type, handlerFn) {
+			leaf.DOM.core.addEvent(document, type, handlerFn);
+		},
+		removeEvent: function(type, handlerFn) {
+			leaf.DOM.core.removeEvent(document, type, handlerFn);
+		},
+		dispatchEvent: function(type) {
+			leaf.DOM.core.addEvent(document, type);
+		}
+	};
+
+
+
 /// AJAX
 
-	leaf.createRequester = function()
-	{
-		var W = window; // constant for optimization
-		if (W.XMLHttpRequest) 
+	leaf.Ajax = {
+		createRequester: function()
 		{
-			return new W.XMLHttpRequest();
-		}
-		// if no return
-		if (W.ActiveXObject) 
-		{
-			var A = this.core.requesterActiveX; // array of ActiveX versions
-			var i = A.length;
-			var o;
-			while (i--) // optimum iterator
- 			{
-				try // try catch allow infinite versions
+			var W = window; // constant for optimization
+			if (W.XMLHttpRequest) 
+			{
+				return new W.XMLHttpRequest();
+			}
+			// if no return
+			if (W.ActiveXObject) 
+			{
+				var A = this.core.requesterActiveX; // array of ActiveX versions
+				var i = A.length;
+				var o;
+				while (i--) // optimum iterator
  				{
-					o = new W.ActiveXObject(A[i]);
-					return o;
-				} 
-				catch (o) 
-				{
+					try // try catch allow infinite versions
+ 					{
+						o = new W.ActiveXObject(A[i]);
+						return o;
+					} 
+					catch (o) 
+					{
+					}
 				}
 			}
-		}
-		return null;
-	};
+			return null;
+		},
 		
-	leaf.listRequesterActiveX = function()
-	{
-		// return array with versions for requester creation (ascending)
-		return this.core.requesterActiveX;
+		listRequesterActiveX: function()
+		{
+			// return array with versions for requester creation (ascending)
+			return this.core.requesterActiveX;
+		},
+		
+		core: {
+			requesterActiveX: [
+				'Microsoft.XMLHTTP',
+				'MSXML2.XMLHTTP',
+				'MSXML2.XMLHTTP.3.0',
+				'MSXML2.XMLHTTP.4.0',
+				'MSXML2.XMLHTTP.5.0',
+				'MSXML2.XMLHTTP.6.0'
+			]
+		}
 	};
-
+	
 
 /// MOUSE
 
-	leaf.getMousePosition = function(mouseEvent)
-	{
-		if ('object' === typeof(mouseEvent = mouseEvent || event)) 
+	leaf.Mouse = {
+		getPosition: function(mouseEvent)
 		{
-			// pageX/Y is the best case on most browsers
-			if ('number' === typeof mouseEvent.pageY) 
+			if ('object' === typeof(mouseEvent = mouseEvent || event)) 
 			{
+				// pageX/Y is the best case on most browsers
+				if ('number' === typeof mouseEvent.pageY) 
+				{
+					return {
+						x: mouseEvent.pageX,
+						y: mouseEvent.pageY
+					};
+				}
+				var H = document.documentElement;
+				var B = document.body;
+				if (B) // needed
+				{
+					return {
+						// clientLeft/Top IE adjust
+						x: mouseEvent.clientX + (H.scrollLeft || B.scrollLeft) - (H.clientLeft || 0),
+						y: mouseEvent.clientY + (H.scrollTop || B.scrollTop) - (H.clientTop || 0)
+					};
+				}
 				return {
-					x: mouseEvent.pageX,
-					y: mouseEvent.pageY
+					// clientLeft/Top IE adjust
+					x: mouseEvent.clientX + H.scrollLeft - (H.clientLeft || 0),
+					y: mouseEvent.clientY + H.scrollTop - (H.clientTop || 0)
 				};
 			}
-			var H = document.documentElement;
-			var B = document.body;
-			if (B) // needed
-			{
-				return {
-					 // clientLeft/Top IE adjust
-					x: mouseEvent.clientX + (H.scrollLeft || B.scrollLeft) - (H.clientLeft || 0),
-					y: mouseEvent.clientY + (H.scrollTop  || B.scrollTop)  - (H.clientTop  || 0)
-				};
-			}
-			return {
-				 // clientLeft/Top IE adjust
-				x: mouseEvent.clientX + H.scrollLeft - (H.clientLeft || 0),
-				y: mouseEvent.clientY + H.scrollTop  - (H.clientTop || 0)
-			};
+			return null;
 		}
-		return null;
 	};
 
 
-/// GETTERS
+/// DOM
 
-	leaf.getById = function(ids)
-	{
-		if (ids instanceof Array) 
+	leaf.DOM = {
+		getById: function(ids)
 		{
-			var d = document;
-			var L = ids.length;
-			var n = 0;
-			var i = 0;
-			var $ = [];
-			var o;
-			while (i < L) 
+			if (ids instanceof Array) 
 			{
-				if ((o = d.getElementById(ids[i++]))) 
+				var d = document;
+				var L = ids.length;
+				var n = 0;
+				var i = 0;
+				var $ = [];
+				var o;
+				while (i < L) 
 				{
-					$[n++] = o;
-				}
-			}
-			return n ? $ : null; // null if no match
-		}
-		return document.getElementById(ids);
-	};
-		
-	// TODO: study optimization
-	leaf.getByTag = function(tagNames, rootNode)
-	{
-		rootNode = this.core.get(rootNode) || document;
-		if (tagNames instanceof Array) 
-		{
-			var L = tagNames.length;
-			var n = 0;
-			var i = 0;
-			var j = 0;
-			var $ = [];
-			var k;
-			var o;
-			while (i < L) 
-			{
-				k = (o = rootNode.getElementsByTagName(tagNames[i++])).length;
-				while (j < k) 
-				{
-					$[n++] = o[j++];
-				}
-				j = 0;
-			}
-			return n ? $ : null; // null if no match
-		}
-		return rootNode.getElementsByTagName(tagNames);
-	};
-		
-	// TODO: benchmark
-	leaf.getByClass = function(classNames, rootNode)
-	{
-		if ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array && classNames.length) 
-		{
-			var R = new RegExp('(?:\\s|^)(?:' + classNames.join('\|') + ')(?:\\s|$)');
-			var $ = [];
-			var n = 0;
-			
-			// depth search
-			var Q = function(o)
-			{
-				if (o.nodeType === 1 && R.test(o.className)) 
-				{
-					$[n++] = o;
-				}
-				if ((o = o.childNodes)) 
-				{
-					var L = o.length;
-					for (var i = 0; i < L;) 
+					if ((o = d.getElementById(ids[i++]))) 
 					{
-						Q(o[i++]);
+						$[n++] = o;
 					}
 				}
-			};
-			Q(this.core.get(rootNode) || document);
-			
-			// null if no match
-			if (n) 
-			{
-				return $;
+				return n ? $ : null; // null if no match
 			}
-		}
-		return null;
-	};
-
-
-/// EVENT
-
-	leaf.addEvent = function(domObj, type, handlerFn)
-	{
-		if (domObj && (domObj.nodeType===1||domObj===window||domObj===document) && 'string' === typeof type && 'function' === typeof handlerFn) 
+			return document.getElementById(ids);
+		},
+		
+		// TODO: study optimization
+		getByTag: function(tagNames, rootNode)
 		{
-			// uses hash name to fix IE problems
-			// base code by John Resig of JQuery (Event Contest - www.quirksmode.com)
-			if (domObj.addEventListener) 
+			rootNode = this.core.getElement(rootNode) || document;
+			if (tagNames instanceof Array) 
 			{
-				domObj.addEventListener(type, handlerFn, false);
-			}
-			else 
-			{
-				if (domObj.attachEvent) 
+				var L = tagNames.length;
+				var n = 0;
+				var i = 0;
+				var j = 0;
+				var $ = [];
+				var k;
+				var o;
+				while (i < L) 
 				{
-					var h = type + handlerFn;
-					domObj['e' + h] = handlerFn;
-					domObj.attachEvent('on' + type, (domObj[h] = function()
+					k = (o = rootNode.getElementsByTagName(tagNames[i++])).length;
+					while (j < k) 
 					{
-						domObj['e' + h](event);
-					}));
+						$[n++] = o[j++];
+					}
+					j = 0;
 				}
+				return n ? $ : null; // null if no match
 			}
-		}
-	};
-			
-	leaf.removeEvent = function(domObj, type, handlerFn)
-	{
-		if (domObj && (domObj.nodeType===1||domObj===window||domObj===document) && 'string' === typeof type && 'function' === typeof handlerFn) 
+			return rootNode.getElementsByTagName(tagNames);
+		},
+		
+		// TODO: benchmark
+		getByClass: function(classNames, rootNode)
 		{
-			// uses hash name to fix IE problems
-			// base code by John Resig of JQuery, (Event Contest - www.quirksmode.com)
-			if (domObj.removeEventListener) 
+			if ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array && classNames.length) 
 			{
-				domObj.removeEventListener(type, handlerFn, false);
-			}
-			else 
-			{
-				if (domObj.detachEvent) 
+				var R = new RegExp('(?:\\s|^)(?:' + classNames.join('\|') + ')(?:\\s|$)');
+				var $ = [];
+				var n = 0;
+				
+				// depth search
+				var Q = function(o)
 				{
-					domObj.detachEvent('on' + type, domObj[(type = type + handlerFn)]);
-					domObj[type] = null;
-					domObj['e' + type] = null;
-				}
-			}
-		}
-	};
-			
-	leaf.dispatchEvent = function(domObj, type)
-	{
-		if (domObj && (domObj.nodeType===1||domObj===window||domObj===document) && 'string' === typeof type) 
-		{
-			if (domObj.dispatchEvent) 
-			{
-				// dispatch for firefox and others
-				var $ = document.createEvent('HTMLEvents');
-				$.initEvent(type, true, true); // event type, bubbling, cancelable
-				domObj.dispatchEvent($);
-			}
-			else 
-			{
-				if (document.createEventObject) 
-				{
-					// dispatch for IE
-					domObj.fireEvent('on' + type, document.createEventObject());
-				}
-			}
-		}
-	};
-	
-
-/// FIX
-	
-	leaf.purgeDOM = function(domObj)
-	{
-		// base code: www.crockford.com
-		if (domObj) 
-		{
-			var $ = domObj.attributes;
-			if ($) 
-			{
-				var i = $.length;
-				var n;
-				while (i--) 
-				{
-					if ('function' === typeof domObj[(n = $[i].name)]) 
+					if (o.nodeType === 1 && R.test(o.className)) 
 					{
-						domObj[n] = null;
+						$[n++] = o;
+					}
+					if ((o = o.childNodes)) 
+					{
+						var L = o.length;
+						for (var i = 0; i < L;) 
+						{
+							Q(o[i++]);
+						}
+					}
+				};
+				Q(this.core.getElement(rootNode) || document);
+				
+				// null if no match
+				if (n) 
+				{
+					return $;
+				}
+			}
+			return null;
+		},
+		
+		purgeDOM: function(domObj)
+		{
+			// base code: www.crockford.com
+			if (domObj) 
+			{
+				var $ = domObj.attributes;
+				if ($) 
+				{
+					var i = $.length;
+					var n;
+					while (i--) 
+					{
+						if ('function' === typeof domObj[(n = $[i].name)]) 
+						{
+							domObj[n] = null;
+						}
+					}
+				}
+				if ((domObj = domObj.childNodes)) 
+				{
+					$ = domObj.length;
+					while ($--) 
+					{
+						this.purgeDOM(domObj[$]);
 					}
 				}
 			}
-			if ((domObj = domObj.childNodes)) 
+		},
+		
+		core: {
+			
+			addEvent: function(o, t, f)
 			{
-				$ = domObj.length;
-				while ($--) 
+				if (o && 'string' === typeof t && 'function' === typeof f) 
 				{
-					this.purgeDOM(domObj[$]);
+					// uses hash name to fix IE problems
+					// base code by John Resig of JQuery (Event Contest - www.quirksmode.com)
+					if (o.addEventListener) 
+					{
+						o.addEventListener(t, f, false);
+					}
+					else 
+					{
+						if (o.attachEvent) 
+						{
+							var h = t + f;
+							o['e' + h] = f;
+							o.attachEvent('on' + t, (o[h] = function()
+							{
+								o['e' + h](event);
+							}));
+						}
+					}
 				}
+			},
+			
+			removeEvent: function(o, t, f)
+			{
+				if (o && 'string' === typeof t && 'function' === typeof f) 
+				{
+					// uses hash name to fix IE problems
+					// base code by John Resig of JQuery, (Event Contest - www.quirksmode.com)
+					if (o.removeEventListener) 
+					{
+						o.removeEventListener(t, f, false);
+					}
+					else 
+					{
+						if (o.detachEvent) 
+						{
+							o.detachEvent('on' + t, o[(t = t + f)]);
+							o[t] = null;
+							o['e' + t] = null;
+						}
+					}
+				}
+			},
+			
+			dispatchEvent: function(o, t)
+			{
+				var d = document;
+				if (o && 'string' === typeof t) 
+				{
+					if (o.dispatchEvent) 
+					{
+						// dispatch for firefox and others
+						var e = d.createEvent('HTMLEvents');
+						e.initEvent(t, true, true); // event type, bubbling, cancelable
+						o.dispatchEvent(e);
+					}
+					else 
+					{
+						if (d.createEventObject) 
+						{
+							// dispatch for IE
+							o.fireEvent('on' + t, d.createEventObject());
+						}
+					}
+				}
+			},
+			
+			getElement: function (e)
+			{
+				return e ? e.style ? e : document.getElementById(e) : null;
 			}
 		}
 	};
-	
+
+	leaf.DOMElement = function(element) {
+		if (this instanceof leaf.DOMElement) {
+			this.DOMElement(element);
+		}
+	};
 	
 /// CSS
 

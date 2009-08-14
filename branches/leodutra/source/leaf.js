@@ -16,7 +16,7 @@
 	 *        this list of conditions and the following disclaimer in the documentation
 	 *        and/or other materials provided with the distribution.
 	 *
-	 *      * Neither the name of Leonardo Dutra nor the names of its
+	 *      * Neither the name of Leonardo Dutra nor the names of LEAF and its
 	 *        contributors may be used to endorse or promote products derived from this
 	 *        software without specific prior written permission.
 	 *
@@ -69,13 +69,13 @@
 		{
 			if (object && sourceObject) 
 			{
+				noOverride = !noOverride;
 				for (var n in sourceObject) 
 				{
-					if (object[n] !== undefined && noOverride) 
+					if (object[n] === undefined || noOverride) 
 					{
-						continue;
+						object[n] = sourceObject[n];
 					}
-					object[n] = sourceObject[n];
 				}
 			}
 		}
@@ -124,16 +124,17 @@
 				return new W.XMLHttpRequest();
 			}
 			// if no return
-			if (W.ActiveXObject) 
+			var A = W.ActiveXObject;
+			if (A) 
 			{
-				var A = this.core.requesterActiveX; // array of ActiveX versions
-				var i = A.length;
+				var V = this.core.requesterActiveXs; // array of ActiveX versions
+				var i = V.length;
 				var o;
 				while (i--) // optimum iterator
  				{
 					try // try catch allow infinite versions
  					{
-						o = new W.ActiveXObject(A[i]);
+						o = new A(V[i]);
 						return o;
 					} 
 					catch (o) 
@@ -147,11 +148,11 @@
 		listRequesterActiveX: function()
 		{
 			// return array with versions for requester creation (ascending)
-			return this.core.requesterActiveX;
+			return this.core.requesterActiveXs;
 		},
 		
 		core: {
-			requesterActiveX: [
+			requesterActiveXs: [
 				'Microsoft.XMLHTTP',
 				'MSXML2.XMLHTTP',
 				'MSXML2.XMLHTTP.3.0',
@@ -185,13 +186,13 @@
 					return {
 						// clientLeft/Top IE adjust
 						x: mouseEvent.clientX + (H.scrollLeft || B.scrollLeft) - (H.clientLeft || 0),
-						y: mouseEvent.clientY + (H.scrollTop || B.scrollTop) - (H.clientTop || 0)
+						y: mouseEvent.clientY + (H.scrollTop  || B.scrollTop)  - (H.clientTop  || 0)
 					};
 				}
 				return {
 					// clientLeft/Top IE adjust
 					x: mouseEvent.clientX + H.scrollLeft - (H.clientLeft || 0),
-					y: mouseEvent.clientY + H.scrollTop - (H.clientTop || 0)
+					y: mouseEvent.clientY + H.scrollTop  - (H.clientTop  || 0)
 				};
 			}
 			return null;
@@ -210,16 +211,16 @@
 				var L = ids.length;
 				var n = 0;
 				var i = 0;
-				var $ = [];
+				var k = [];
 				var o;
 				while (i < L) 
 				{
 					if ((o = d.getElementById(ids[i++]))) 
 					{
-						$[n++] = o;
+						k[n++] = o;
 					}
 				}
-				return n ? $ : null; // null if no match
+				return n ? k : null; // null if no match
 			}
 			return document.getElementById(ids);
 		},
@@ -234,19 +235,19 @@
 				var n = 0;
 				var i = 0;
 				var j = 0;
-				var $ = [];
-				var k;
+				var k = [];
+				var l;
 				var o;
 				while (i < L) 
 				{
-					k = (o = rootNode.getElementsByTagName(tagNames[i++])).length;
-					while (j < k) 
+					l = (o = rootNode.getElementsByTagName(tagNames[i++])).length;
+					while (j < l) 
 					{
-						$[n++] = o[j++];
+						k[n++] = o[j++];
 					}
 					j = 0;
 				}
-				return n ? $ : null; // null if no match
+				return n ? k : null; // null if no match
 			}
 			return rootNode.getElementsByTagName(tagNames);
 		},
@@ -256,8 +257,8 @@
 		{
 			if ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array && classNames.length) 
 			{
-				var R = new RegExp('(?:\\s|^)(?:' + classNames.join('\|') + ')(?:\\s|$)');
-				var $ = [];
+				var R = new RegExp('\\b(?:' + classNames.join('\|') + ')\\b');
+				var k = [];
 				var n = 0;
 				
 				// depth search
@@ -265,7 +266,7 @@
 				{
 					if (o.nodeType === 1 && R.test(o.className)) 
 					{
-						$[n++] = o;
+						k[n++] = o;
 					}
 					if ((o = o.childNodes)) 
 					{
@@ -281,7 +282,7 @@
 				// null if no match
 				if (n) 
 				{
-					return $;
+					return k;
 				}
 			}
 			return null;
@@ -292,14 +293,14 @@
 			// base code: www.crockford.com
 			if (domObj) 
 			{
-				var $ = domObj.attributes;
-				if ($) 
+				var a = domObj.attributes;
+				if (a) 
 				{
-					var i = $.length;
+					var i = a.length;
 					var n;
 					while (i--) 
 					{
-						if ('function' === typeof domObj[(n = $[i].name)]) 
+						if ('function' === typeof domObj[(n = a[i].name)]) 
 						{
 							domObj[n] = null;
 						}
@@ -307,10 +308,10 @@
 				}
 				if ((domObj = domObj.childNodes)) 
 				{
-					$ = domObj.length;
-					while ($--) 
+					a = domObj.length;
+					while (a--) 
 					{
-						this.purgeDOM(domObj[$]);
+						this.purgeDOM(domObj[a]);
 					}
 				}
 			}
@@ -395,518 +396,488 @@
 		}
 	};
 
+
+/// DOMELEMENT
+
 	leaf.DOMElement = function(element) {
 		if (this instanceof leaf.DOMElement) {
 			this.DOMElement(element);
 		}
 	};
 	
-/// CSS
-
-	// TODO: benchmark
-	leaf.setCSS = function(e, cssObj)
-	{
-		var s;
-		if (e && (s = e.style) && cssObj instanceof Object) 
-		{
-			var $ = [];
-			var n = 0;
-			var c;
-			for (c in cssObj) 
-			{
-				$[n++] = c + ': ' + cssObj[c] + '\; ';
-			}
-			if (s.cssText === undefined) 
-			{
-				e.setAttribute('style', (e.getAttribute('style') || '') + $.join(''));
-			}
-			else 
-			{
-				s.cssText = ((c = s.cssText) && (c.charAt(c.length - 1) === '\;' ? c : c + '; ') || '') + $.join('');
-			}
-		}
-	};
+	leaf.DOMElement.prototype = {
 	
-	leaf.getCSS = function(e, property)
-	{
-		var s;
-		if (e && (s = e.style) && 'string' === typeof property) 
+	/// CLASSES
+		
+		// TODO: benchmark
+		addClass: function(classNames)
 		{
-			if ((e = s.cssText === undefined ? e.getAttribute('style') : s.cssText)) 
+			var e = this.element;
+			if (e && ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array)) 
 			{
-				/* RegExp does not 'compile' on AIR 1.0
-				 * This code is a little more faster than using pure RegExp
-				 */
-				if (-1 < (i = e.search(new RegExp('(?:\\\;|\\s|^)' + property + '\\\:', 'i')))) 
+				var c = e.className;
+				if ('string' === typeof c) 
 				{
-					return e.substring((i = e.indexOf(':', i) + 2), (i = e.indexOf('\;', i)) === -1 ? e.length : i);
+					var R = new RegExp('\\b' + c.replace(/(?:^\s+|\s+$)/g, '').replace(/\s+/g, '\|') + '\\b');
+					var L = classNames.length;
+					var k = [];
+					var n = 0;
+					var i = 0;
+					while (i < L) 
+					{
+						// test avoids residual className problem
+						if (R.test((c = classNames[i++]))) 
+						{
+							continue;
+						}
+						k[n++] = c;
+					}
+					e.className += ' ' + k.join(' ').replace(/\s{2,}/g, ' ');
+				}
+			}
+		},
+		
+		removeClass: function(classNames)
+		{
+			var e = this.element;
+			if (e && ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array)) 
+			{
+				var C = e.className;
+				if ('string' === typeof C) 
+				{
+					e.className = C.replace(new RegExp('\\b(?:' + classNames.join('\|') + ')\\b', 'g'), '');
+				}
+			}
+		},
+		
+		
+	/// POSITION	
+	
+		setPosition: function(x, y, z, type)
+		{
+			var s = this.style;
+			if (s) 
+			{
+				s.position = 'string' === typeof type ? type : s.position || 'absolute';
+				
+				if ('number' === typeof x) 
+				{
+					if (s.right) 
+					{
+						s.left = '';
+						s.right = x + 'px';
+					}
+					else 
+					{
+						s.left = x + 'px';
+						s.right = '';
+					}
+				}
+				else 
+				{
+					if ('string' === typeof x) 
+					{
+						if (s.right) 
+						{
+							s.left = '';
+							s.right = x;
+						}
+						else 
+						{
+							s.left = x;
+							s.right = '';
+						}
+					}
+				}
+				if ('number' === typeof y) 
+				{
+					if (s.bottom) 
+					{
+						s.top = '';
+						s.bottom = y + 'px';
+					}
+					else 
+					{
+						s.top = y + 'px';
+						s.bottom = '';
+					}
+				}
+				else 
+				{
+					if ('string' === typeof y) 
+					{
+						if (s.bottom) 
+						{
+							s.top = '';
+							s.bottom = y;
+						}
+						else 
+						{
+							s.top = y;
+							s.bottom = '';
+						}
+					}
+				}
+				if ('number' === typeof z) 
+				{
+					s.zIndex = parseInt(z, 10);
+				}
+			}
+		},
+	
+		getPosition: function(keepUnits)
+		{
+			var s = this.style;
+			if (s) 
+			{
+				if (keepUnits) 
+				{
+					return {
+						x: s.left || s.right,
+						y: s.top  || s.bottom,
+						z: s.zIndex,
+						position: s.position
+					};
+				}
+				else 
+				{
+					return {
+						x: parseFloat(s.left || s.right)  || 0,
+						y: parseFloat(s.top  || s.bottom) || 0,
+						z: s.zIndex,
+						position: s.position
+					};
+				}
+			}
+			return null;
+		},
+	
+		invertXY: function(x, y)
+		{
+			var s = this.style;
+			if (s) 
+			{
+				if (x) 
+				{
+					if (s.right) 
+					{
+						s.left = s.right;
+						s.right = '';
+					}
+					else 
+					{
+						s.right = s.left;
+						s.left = '';
+					}
+				}
+				if (y) 
+				{
+					if (s.bottom) 
+					{
+						s.top = s.bottom;
+						s.bottom = '';
+					}
+					else 
+					{
+						s.bottom = s.top;
+						s.top = '';
+					}
+				}
+			}
+		},
+	
+		
+	/// SIZE
+	
+		setSize: function(width, height)
+		{
+			var s = this.style;
+			if (s) 
+			{
+				if ('number' === typeof width) 
+				{
+					s.width = width + 'px';
+				}
+				else 
+				{
+					if ('string' === typeof width) 
+					{
+						s.width = width;
+					}
+				}
+				if ('number' === typeof height) 
+				{
+					s.height = height + 'px';
+				}
+				else 
+				{
+					if ('string' === typeof height) 
+					{
+						s.height = height;
+					}
+				}
+			}
+		},
+	
+		getSize: function(keepUnits)
+		{
+			var s = this.style;
+			if (s) 
+			{
+				if (keepUnits) 
+				{
+					return {
+						width:  s.width,
+						height: s.height
+					};
+				}
+				else 
+				{
+					return {
+						width:  parseFloat(s.width)  || 0,
+						height: parseFloat(s.height) || 0
+					};
+				}
+			}
+			return null;
+		},	
+	
+
+	/// AREA
+	
+		setArea: function(x, y, z, width, height, positionType)
+		{
+			this.setPosition(x, y, z, positionType);
+			this.setSize(width, height);
+		},
+		
+		getArea: function(keepUnits)
+		{
+			var s = this.style;
+			if (s) 
+			{
+				if (keepUnits) 
+				{
+					return {
+						x: s.left || s.right,
+						y: s.top  || s.bottom,
+						z: s.zIndex,
+						width: s.width,
+						height: s.height,
+						position: s.position
+					};
+				}
+				else 
+				{
+					return {
+						x: parseFloat(s.left || s.right) || 0,
+						y: parseFloat(s.top  || s.bottom) || 0,
+						z: s.zIndex,
+						width:  parseFloat(s.width)  || 0,
+						height: parseFloat(s.height) || 0,
+						position: s.position
+					};
+				}
+			}
+			return null;
+		},
+		
+	
+	/// BACKGROUND
+	
+		setBackground: function(color, src, x, y, repeat)
+		{
+			var s = this.style;
+			if (s) 
+			{
+				if ('string' === typeof color) 
+				{
+					s.backgroundColor = color;
+				}
+				
+				if ('string' === typeof src) 
+				{
+					s.backgroundImage = 'url(\'' + src + '\')';
+				}
+				
+				src = s.backgroundPosition.split(' '); // outside of logical sequence
+				s.backgroundPosition = ('number' === typeof x ? x + 'px' : 'string' === typeof x ? x : (src[0] || '50%')) + ' ' +
+				('number' === typeof y ? y + 'px' : 'string' === typeof y ? y : (src[1] || '50%'));
+				
+				s.backgroundRepeat = repeat ? repeat : 'no-repeat';
+			}
+		},
+		
+		getBackground: function(keepUnits)
+		{
+			var s = this.style;
+			if (s) 
+			{
+				var P = s.backgroundPosition.split(' ');
+				if (keepUnits) 
+				{
+					return {
+						x: P[0] || '',
+						y: P[1] || '',
+						color: s.backgroundColor,
+						src: s.backgroundImage,
+						repeat: s.backgroundRepeat
+					};
+				}
+				else 
+				{
+					return {
+						x: parseFloat(P[0]) || 0,
+						y: parseFloat(P[1]) || 0,
+						color: s.backgroundColor,
+						src: s.backgroundImage,
+						repeat: s.backgroundRepeat
+					};
+				}
+			}
+			return null;
+		},
+
+	
+	/// FONT
+	
+		setFont: function(color, size, family, weight, style, spacing, lineHeight, useSmallCaps)
+		{
+			var s = this.style;
+			if (s)  
+			{
+				if ('string' === typeof color) 
+				{
+					s.color = color;
+				}
+				if ('string' === typeof family) 
+				{
+					s.fontFamily = family;
+				}
+				if ('string' === typeof style) 
+				{
+					s.fontStyle = style;
+				}
+				if ('string' === typeof weight || 'number' === typeof weight) 
+				{
+					s.fontWeight = weight;
+				}
+				if ('number' === typeof size) 
+				{
+					s.fontSize = size + 'pt';
+				}
+				else 
+				{
+					if ('string' === typeof size) 
+					{
+						s.fontSize = size;
+					}
+				}
+				if ('number' === typeof spacing) 
+				{
+					s.letterSpacing = spacing + 'px';
+				}
+				else 
+				{
+					if ('string' === typeof spacing) 
+					{
+						s.letterSpacing = spacing;
+					}
+				}
+				if ('number' === typeof lineHeight) 
+				{
+					s.lineHeight = lineHeight + 'px';
+				}
+				else 
+				{
+					if ('string' === typeof lineHeight) 
+					{
+						s.lineHeight = lineHeight;
+					}
+				}
+				if (useSmallCaps !== null && useSmallCaps !== undefined) 
+				{
+					s.fontVariant = useSmallCaps ? 'small-caps' : 'normal';
+				}
+			}
+		},	
+		
+		getFont: function(keepUnits)
+		{
+			var s = this.style;
+			if (s)  
+			{
+				if (keepUnits) 
+				{
+					return {
+						color: s.color,
+						size: s.fontSize,
+						family: s.fontFamily,
+						weight: s.fontWeight,
+						style: s.fontStyle,
+						spacing: s.letterSpacing,
+						lineHeight: s.lineHeight,
+						variant: s.fontVariant
+					};
+				}
+				else 
+				{
+					return {
+						color: s.color,
+						size: parseFloat(s.fontSize) || 0,
+						family: s.fontFamily,
+						weight: s.fontWeight,
+						style: s.fontStyle,
+						spacing: parseFloat(s.letterSpacing) || 0,
+						lineHeight: parseFloat(s.lineHeight) || 0,
+						variant: s.fontVariant
+					};
 				}
 				
 			}
-		}
-		return null;
-	};	
-	
-	
-/// CLASSES
-	
-	// TODO: benchmark
-	leaf.addClass = function(e, classNames)
-	{
-		if (e && e.nodeType===1 && ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array)) 
-		{
-			var k = e.className;
-			if ('string' === typeof k) 
-			{
-				var R = new RegExp('(?:\\s|^)' + k.replace(/(?:^\s+|\s+$)/g, '').replace(/\s+/g, '\|') + '(?:\\s|$)');
-				var L = classNames.length;
-				var $ = [];
-				var n = 0;
-				var i = 0;
-				while (i < L) 
-				{
-					// test avoids residual className problem
-					if (R.test((k = classNames[i++]))) 
-					{
-						continue;
-					}
-					$[n++] = k;
-				}
-				e.className += ' ' + $.join(' ').replace(/\s{2,}/g, ' ');
-			}
-		}
-	};	
-	
-	leaf.removeClass = function(e, classNames)
-	{
-		if (e && e.nodeType===1 && ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array)) 
-		{
-			var C = e.className;
-			if ('string' === typeof C) 
-			{
-				e.className = C.replace(new RegExp('(?:\\s|\\b)(?:' + classNames.join('\|') + ')(?:\\s|$)', 'gi'), '');
-			}
-		}
-	};	
-	
-	
-/// POSITION	
-
-	leaf.setPosition = function(e, x, y, z, type)
-	{
-		if ((e = e && e.style)) 
-		{
+			return null;
+		},
 		
-			e.position = 'string' === typeof type ? type : e.position || 'absolute';
-			
-			if ('number' === typeof x) 
+	
+	/// BORDER
+	
+		setBorder: function(color, width, style)
+		{
+			var s = this.style;
+			if (s) 
 			{
-				if (e.right) 
+				if ('string' === typeof color) 
 				{
-					e.left = '';
-					e.right = x + 'px';
+					s.borderColor = color;
+				}
+				if ('number' === typeof width) 
+				{
+					s.borderWidth = width + 'px';
 				}
 				else 
 				{
-					e.left = x + 'px';
-					e.right = '';
-				}
-			}
-			else 
-			{
-				if ('string' === typeof x) 
-				{
-					if (e.right) 
+					if ('string' === typeof width) 
 					{
-						e.left = '';
-						e.right = x;
-					}
-					else 
-					{
-						e.left = x;
-						e.right = '';
+						s.borderWidth = width;
 					}
 				}
+				s.borderStyle = 'string' === typeof style ? style : s.borderStyle || 'solid';
 			}
-			if ('number' === typeof y) 
-			{
-				if (e.bottom) 
-				{
-					e.top = '';
-					e.bottom = y + 'px';
-				}
-				else 
-				{
-					e.top = y + 'px';
-					e.bottom = '';
-				}
-			}
-			else 
-			{
-				if ('string' === typeof y) 
-				{
-					if (e.bottom) 
-					{
-						e.top = '';
-						e.bottom = y;
-					}
-					else 
-					{
-						e.top = y;
-						e.bottom = '';
-					}
-				}
-			}
-			if ('number' === typeof z) 
-			{
-				e.zIndex = parseInt(z, 10);
-			}
-		}
-	};
-	
-	leaf.getPosition = function(e, keepUnits)
-	{
-		if ((e = e && e.style)) 
+		},
+		
+		getBorder: function(keepUnits)
 		{
-			if (keepUnits) 
+			var s = this.style;
+			if (s) 
 			{
 				return {
-					x: e.left || e.right,
-					y: e.top || e.bottom,
-					z: e.zIndex,
-					position: e.position
+					color: s.borderColor,
+					width: keepUnits ? s.borderWidth : parseFloat(s.borderWidth),
+					style: s.borderStyle
 				};
 			}
-			else 
-			{
-				return {
-					x: parseFloat(e.left || e.right)  || 0,
-					y: parseFloat(e.top  || e.bottom) || 0,
-					z: e.zIndex,
-					position: e.position
-				};
-			}
-		}
-		return null;
-	};	
-	
-	leaf.invertXY = function(e, x, y)
-	{
-		if ((e = e && e.style)) 
-		{
-			if (x) 
-			{
-				if (e.right) 
-				{
-					e.left = e.right;
-					e.right = '';
-				}
-				else 
-				{
-					e.right = e.left;
-					e.left = '';
-				}
-			}
-			if (y) 
-			{
-				if (e.bottom) 
-				{
-					e.top = e.bottom;
-					e.bottom = '';
-				}
-				else 
-				{
-					e.bottom = e.top;
-					e.top = '';
-				}
-			}
-		}
-	};	
-	
-	
-/// SIZE
-
-	leaf.setSize = function(e, width, height)
-	{
-		if ((e = e && e.style)) 
-		{
-			if ('number' === typeof width) 
-			{
-				e.width = width + 'px';
-			}
-			else 
-			{
-				if ('string' === typeof width) 
-				{
-					e.width = width;
-				}
-			}
-			if ('number' === typeof height) 
-			{
-				e.height = height + 'px';
-			}
-			else 
-			{
-				if ('string' === typeof height) 
-				{
-					e.height = height;
-				}
-			}
-		}
-	};	
-	
-	leaf.getSize = function(e, keepUnits)
-	{
-		if ((e = e && e.style)) 
-		{
-			if (keepUnits) 
-			{
-				return {
-					width: e.width,
-					height: e.height
-				};
-			}
-			else 
-			{
-				return {
-					width:  parseFloat(e.width)  || 0,
-					height: parseFloat(e.height) || 0
-				};
-			}
-		}
-		return null;
-	};	
-	
-
-/// AREA
-
-	leaf.setArea = function(e, x, y, z, width, height, positionType)
-	{
-		this.setPosition(e, x, y, z, positionType);
-		this.setSize(e, width, height);
-	};	
-	
-	leaf.getArea = function(e, keepUnits)
-	{
-		if ((e = e && e.style)) 
-		{
-			if (keepUnits) 
-			{
-				return {
-					x: e.left || e.right,
-					y: e.top || e.bottom,
-					z: e.zIndex,
-					width: e.width,
-					height: e.height,
-					position: e.position
-				};
-			}
-			else 
-			{
-				return {
-					x: parseFloat(e.left || e.right) || 0,
-					y: parseFloat(e.top || e.bottom) || 0,
-					z: e.zIndex,
-					width:  parseFloat(e.width)  || 0,
-					height: parseFloat(e.height) || 0,
-					position: e.position
-				};
-			}
-		}
-		return null;
-	};	
-	
-
-/// BACKGROUND
-
-	leaf.setBackground = function(e, color, src, x, y, repeat)
-	{
-		if ((e = e && e.style)) 
-		{
-			if ('string' === typeof color) 
-			{
-				e.backgroundColor = color;
-			}
-			
-			if ('string' === typeof src) 
-			{
-				e.backgroundImage = 'url(\'' + src + '\')';
-			}
-			
-			/* reusing var */
-			src = e.backgroundPosition.split(' ');
-			e.backgroundPosition = ('number' === typeof x ? x + 'px' : 'string' === typeof x ? x : (src[0] || '50%')) + ' ' +
-			('number' === typeof y ? y + 'px' : 'string' === typeof y ? y : (src[1] || '50%'));
-			
-			e.backgroundRepeat = repeat ? repeat : 'no-repeat';
-		}
-	};	
-	
-	leaf.getBackground = function(e, keepUnits)
-	{
-		if ((e = e && e.style)) 
-		{
-			var P = e.backgroundPosition.split(' ');
-			if (keepUnits) 
-			{
-				return {
-					x: P[0] || '',
-					y: P[1] || '',
-					color: e.backgroundColor,
-					src: e.backgroundImage,
-					repeat: e.backgroundRepeat
-				};
-			}
-			else 
-			{
-				return {
-					x: parseFloat(P[0]) || 0,
-					y: parseFloat(P[1]) || 0,
-					color: e.backgroundColor,
-					src: e.backgroundImage,
-					repeat: e.backgroundRepeat
-				};
-			}
-		}
-		return null;
-	};	
-
-	
-/// FONT
-
-	leaf.setFont = function(e, color, size, family, weight, style, spacing, lineHeight, useSmallCaps)
-	{
-		if ((e = e && e.style))  
-		{
-			if ('string' === typeof color) 
-			{
-				e.color = color;
-			}
-			if ('string' === typeof family) 
-			{
-				e.fontFamily = family;
-			}
-			if ('string' === typeof style) 
-			{
-				e.fontStyle = style;
-			}
-			if ('string' === typeof weight || 'number' === typeof weight) 
-			{
-				e.fontWeight = weight;
-			}
-			if ('number' === typeof size) 
-			{
-				e.fontSize = size + 'pt';
-			}
-			else 
-			{
-				if ('string' === typeof size) 
-				{
-					e.fontSize = size;
-				}
-			}
-			if ('number' === typeof spacing) 
-			{
-				e.letterSpacing = spacing + 'px';
-			}
-			else 
-			{
-				if ('string' === typeof spacing) 
-				{
-					e.letterSpacing = spacing;
-				}
-			}
-			if ('number' === typeof lineHeight) 
-			{
-				e.lineHeight = lineHeight + 'px';
-			}
-			else 
-			{
-				if ('string' === typeof lineHeight) 
-				{
-					e.lineHeight = lineHeight;
-				}
-			}
-			if (useSmallCaps !== null && useSmallCaps !== undefined) 
-			{
-				e.fontVariant = useSmallCaps ? 'small-caps' : 'normal';
-			}
-		}
-	};	
-	
-	leaf.getFont = function(e, keepUnits)
-	{
-		if ((e = e && e.style))  
-		{
-			if (keepUnits) 
-			{
-				return {
-					color: e.color,
-					size: e.fontSize,
-					family: e.fontFamily,
-					weight: e.fontWeight,
-					style: e.fontStyle,
-					spacing: e.letterSpacing,
-					lineHeight: e.lineHeight,
-					variant: e.fontVariant
-				};
-			}
-			else 
-			{
-				return {
-					color: e.color,
-					size: parseFloat(e.fontSize) || 0,
-					family: e.fontFamily,
-					weight: e.fontWeight,
-					style: e.fontStyle,
-					spacing: parseFloat(e.letterSpacing) || 0,
-					lineHeight: parseFloat(e.lineHeight) || 0,
-					variant: e.fontVariant
-				};
-			}
-			
-		}
-		return null;
-	};	
-	
-
-/// BORDER
-
-	leaf.setBorder = function(e, color, width, style)
-	{
-		if ((e = e && e.style)) 
-		{
-			if ('string' === typeof color) 
-			{
-				e.borderColor = color;
-			}
-			if ('number' === typeof width) 
-			{
-				e.borderWidth = width + 'px';
-			}
-			else 
-			{
-				if ('string' === typeof width) 
-				{
-					e.borderWidth = width;
-				}
-			}
-			e.borderStyle = 'string' === typeof style ? style : e.borderStyle || 'solid';
-		}
-	};	
-	
-	leaf.getBorder = function(e, keepUnits)
-	{
-		if ((e = e && e.style)) 
-		{
-			return {
-				color: e.borderColor,
-				width: keepUnits ? e.borderWidth : parseFloat(e.borderWidth),
-				style: e.borderStyle
-			};
-		}
-		return null;
-	};	
+			return null;
+		},
 	
 
 /// PADDING
@@ -1619,3 +1590,48 @@
 	};
 	
 	*/
+	
+};
+
+leaf.setCSS: function(e, cssObj)
+	{
+		var s;
+		if (e && (s = e.style) && cssObj instanceof Object) 
+		{
+			var $ = [];
+			var n = 0;
+			var c;
+			for (c in cssObj) 
+			{
+				$[n++] = c + ': ' + cssObj[c] + '\; ';
+			}
+			if (s.cssText === undefined) 
+			{
+				e.setAttribute('style', (e.getAttribute('style') || '') + $.join(''));
+			}
+			else 
+			{
+				s.cssText = ((c = s.cssText) && (c.charAt(c.length - 1) === '\;' ? c : c + '; ') || '') + $.join('');
+			}
+		}
+	};
+	
+	leaf.getCSS = function(e, property)
+	{
+		var s;
+		if (e && (s = e.style) && 'string' === typeof property) 
+		{
+			if ((e = s.cssText === undefined ? e.getAttribute('style') : s.cssText)) 
+			{
+				/* RegExp does not 'compile' on AIR 1.0
+				 * This code is a little more faster than using pure RegExp
+				 */
+				if (-1 < (i = e.search(new RegExp('(?:\\\;|\\s|^)' + property + '\\\:', 'i')))) 
+				{
+					return e.substring((i = e.indexOf(':', i) + 2), (i = e.indexOf('\;', i)) === -1 ? e.length : i);
+				}
+				
+			}
+		}
+		return null;
+	};	

@@ -1,0 +1,71 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"  lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+		<title>...</title>
+		<style type="text/css">
+			
+			html, body { 
+				padding: 0px;
+				margin: 0px;
+				width: 100%;
+				height: 2000px;
+			}
+			
+			
+		</style>
+		<script type="text/javascript" src="http://leaf.googlecode.com/svn/tags/leaf/0.7.090712/0.7.090712.js"></script>
+		<script type="text/javascript">
+			
+			var e;
+			window.onload = function ()
+			{
+				var d = new leaf.DOMElement();
+				d.createElement('div', null, 0,0,0,40,40);
+				d.setBorder('red',1);
+				d.setBackground('silver');
+				leaf.Document.addEvent('mousemove', function(e){
+					var p = leaf.Mouse.getPosition(e);
+					d.setPosition(p.x);
+				});
+				d.appendElement();
+			};
+			
+			function captureMouse(mouseEvent)
+			{
+				if ('object' === typeof(mouseEvent = mouseEvent || event)) 
+				{
+					// pageX/Y is the best case on most browsers
+					if ('number' === typeof mouseEvent.pageY) 
+					{
+						return {
+							x: mouseEvent.pageX,
+							y: mouseEvent.pageY
+						};
+					}
+					var H = document.documentElement;
+					var B = document.body;
+					if (B) // needed
+					{
+						return {
+							// clientLeft/Top IE adjust
+							x: mouseEvent.clientX + (H.scrollLeft || B.scrollLeft) - (H.clientLeft || 0),
+							y: mouseEvent.clientY + (H.scrollTop || B.scrollTop) - (H.clientTop || 0)
+						};
+					}
+					return {
+						// clientLeft/Top IE adjust
+						x: mouseEvent.clientX + H.scrollLeft - (H.clientLeft || 0),
+						y: mouseEvent.clientY + H.scrollTop - (H.clientTop || 0)
+					};
+				}
+				return null;
+			}
+			
+
+		</script>
+	</head>
+	<body>
+	</body>
+</html>

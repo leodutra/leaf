@@ -54,18 +54,19 @@
 	/// ARRAY
 	
 	leaf.Array = {
+
 		each: function(array, itemHandler)
 		{
-			var l;
-			if (array && !(array instanceof String) && 'function' === typeof itemHandler && (l = array.length)) 
+			if (array && !(array instanceof String) && 'function' === typeof itemHandler) 
 			{
+				var l = array.length;
 				var i = 0;
 				var k;
 				while (i < l) 
 				{
 					if ((k = array[i])) 
 					{
-						itemHandler.call(k, i++);
+						itemHandler.call(array, k, i++);
 					}
 				}
 			}
@@ -129,7 +130,6 @@
 	};
 	
 	
-	
 	/// AJAX
 	
 	leaf.Ajax = {
@@ -137,7 +137,7 @@
 		{
 			if (window.XMLHttpRequest) 
 			{
-				return new window.XMLHttpRequest();
+				return new XMLHttpRequest();
 			}
 			
 			// if no return, is IE like
@@ -170,7 +170,14 @@
 		
 		core: {
 			// used in descending iteration
-			requesterActiveXs: ['Microsoft.XMLHTTP', 'MSXML2.XMLHTTP', 'MSXML2.XMLHTTP.3.0', 'MSXML2.XMLHTTP.4.0', 'MSXML2.XMLHTTP.5.0', 'MSXML2.XMLHTTP.6.0']
+			requesterActiveXs: [
+				'Microsoft.XMLHTTP',
+				'MSXML2.XMLHTTP',
+				'MSXML2.XMLHTTP.3.0',
+				'MSXML2.XMLHTTP.4.0',
+				'MSXML2.XMLHTTP.5.0',
+				'MSXML2.XMLHTTP.6.0'
+			]
 		}
 	};
 	
@@ -214,6 +221,7 @@
 	/// DOM
 	
 	leaf.DOM = {
+		
 		getById: function(ids)
 		{
 			if (ids instanceof Array) 
@@ -302,31 +310,9 @@
 		
 		purgeDOM: function(domObj)
 		{
-			// base code: www.crockford.com
 			if (domObj) 
 			{
-				var a = domObj.attributes;
-				if (a) 
-				{
-					var i = a.length;
-					var n;
-					while (i--) 
-					{
-						if ('function' === typeof domObj[(n = a[i].name)]) 
-						{
-							domObj[n] = null;
-						}
-					}
-				}
-				if ((domObj = domObj.childNodes)) 
-				{
-					var o = this; // private is faster than this
-					a = domObj.length;
-					while (a--) 
-					{
-						o.purgeDOM(domObj[a]);
-					}
-				}
+				this.core.purgeDOM(domObj);
 			}
 		},
 		
@@ -397,6 +383,34 @@
 							// dispatch for IE
 							o.fireEvent('on' + t, document.createEventObject());
 						}
+					}
+				}
+			},
+			
+			// TODO: verify if arguments.callee leaks. If leaks, review all purge use
+			purgeDOM:  function(o)
+			{
+				// base code: www.crockford.com
+				var a = o.attributes;
+				if (a) 
+				{
+					var i = a.length;
+					var n;
+					while (i--) 
+					{
+						if ('function' === typeof o[(n = a[i].name)]) 
+						{
+							o[n] = null;
+						}
+					}
+				}
+				if ((o = o.childNodes)) 
+				{
+					var p = arguments.callee; // does it leaks ? 
+					a = o.length;
+					while (a--) 
+					{
+						p(o[a]);
 					}
 				}
 			},
@@ -1338,7 +1352,7 @@
 		insertBefore: function(node)
 		{
 			var E = this.element;
-			if (E && !E.parentNode && (node = this.core.get(node)) && node.parentNode) 
+			if (E && !E.parentNode && (node = this.core.getElement(node)) && node.parentNode) 
 			{
 				node.parentNode.insertBefore(e, node);
 			}
@@ -1347,7 +1361,7 @@
 		insertAfter: function(e, node)
 		{
 			var p;
-			if (e && e.style && !e.parentNode && (node = this.core.get(node)) && (p = node.parentNode)) 
+			if (e && e.style && !e.parentNode && (node = this.core.getElement(node)) && (p = node.parentNode)) 
 			{
 				if ((node = this.getNext(e))) 
 				{
@@ -1466,20 +1480,20 @@
 			var e = this.element;
 			if (e) 
 			{
-				var k = [];
+				var K = [];
 				var n = 0;
 				e = e.firstChild; // cannot be inside while question
 				while (e) 
 				{
 					if (e.nodeType === 1) 
 					{
-						k[n++] = e;
+						K[n++] = e;
 					}
 					e = e.nextSibling;
 				}
 				if (n) 
 				{
-					return k;
+					return K;
 				}
 			}
 			return null;
@@ -1487,50 +1501,44 @@
 		
 		setChild: function(child)
 		{
-			var e = this.getChild(child);
-			this.style = (this.element = e) ? e.style : null;
+			this.setElement(this.getChild(child));
 		},
 		
 		setParent: function()
 		{
-			var e = this.getParent();
-			this.style = (this.element = e) ? e.style : null;
+			this.setElement(this.getParent());
 		},
 		
 		setFirst: function()
 		{
-			var e = this.getFirst();
-			this.style = (this.element = e) ? e.style : null;
+			this.setElement(this.getFirst());
 		},
 		
 		setPrevious: function()
 		{
-			var e = this.getPrevious();
-			this.style = (this.element = e) ? e.style : null;
+			this.setElement(this.getPrevious());
 		},
 		
 		setNext: function()
 		{
-			var e = this.getNext();
-			this.style = (this.element = e) ? e.style : null;
+			this.setElement(this.getNext());
 		},
 		
 		setLast: function()
 		{
-			var e = this.getLast();
-			this.style = (this.element = e) ? e.style : null;
+			this.setElement(this.getLast());
 		},
 		
 		getChild: function(child)
 		{
 			var E = this.element;
-			return E.childNodes[child] || (child = this.core.get(child)) && E === child.parentNode && child || null;
+			return E.childNodes[child] || (child = this.core.getElement(child)) && E === child.parentNode && child || null;
 		},
 		
 		appendChild: function(childNode)
 		{
 			var E = this.element;
-			if (E && childNode && 'number' === typeof childNode.nodeType && !childNode.parentNode) 
+			if (E && childNode && !childNode.parentNode && childNode.nodeType) 
 			{
 				E.appendChild(childNode);
 			}
@@ -1546,7 +1554,7 @@
 				var k;
 				while (i < l) 
 				{
-					if (!(k = childNodes[i++]).parentNode && 'number' === typeof k.nodeType) 
+					if (!(k = childNodes[i++]).parentNode && k.nodeType) 
 					{
 						E.appendChild(k);
 					}
@@ -1568,21 +1576,26 @@
 			var E = this.element;
 			if (E) 
 			{
-				var $ = E.childNodes;
-				var i = $.length;
-				var k;
+				var K = E.childNodes;
+				var i = K.length;
 				while (i--) 
 				{
-					E.removeChild($[i]);
+					E.removeChild(K[i]);
 				}
 			}
+		},
+		
+		purgeElement: function ()
+		{
+			this.core.purgeDOM(this.element);
+			this.removeElement();
 		},
 		
 		purgeChild: function(child)
 		{
 			if ((child = this.getChild(child))) 
 			{
-				this.purgeDOM(child);
+				this.core.purgeDOM(child);
 				this.removeChild(child);
 			}
 		},
@@ -1592,41 +1605,18 @@
 			var E = this.element;
 			if (E) 
 			{
-				// local purge function for best performance
-				var P = function(o)
-				{
-					var $ = o.attributes;
-					if ($) 
-					{
-						var i = $.length;
-						var n;
-						while (i--) 
-						{
-							if ('function' === typeof o[(n = $[i].name)]) 
-							{
-								o[n] = null;
-							}
-						}
-					}
-					if ((o = o.childNodes)) 
-					{
-						$ = o.length;
-						while ($--) 
-						{
-							P(o[$]);
-						}
-					}
-				};
-				var $ = E.childNodes;
-				var i = $.length;
+				// local purge for best performance
+				var p = this.core.purgeDOM;
+				var C = E.childNodes;
+				var i = C.length;
 				var k;
 				while (i--) 
 				{
-					if ((k = $[i]).nodeType === 1) 
+					if ((k = C[i]).nodeType === 1) 
 					{
-						P(k);
+						p(k);
 					}
-					E.remove(k);
+					E.removeChild(k);
 				}
 			}
 		},
@@ -1642,10 +1632,10 @@
 			var o;
 			if ((o = E) && collisorElement && collisorElement.style && collisorElement.parentNode) 
 			{
-				var B = document.body;
+				var R = document.documentElement;
 				var eX = 0;
 				var eY = 0;
-				while (o !== B) 
+				while (o !== R) 
 				{
 					eX += o.offsetLeft;
 					eY += o.offsetTop;
@@ -1654,7 +1644,7 @@
 				var cX = 0;
 				var cY = 0;
 				o = collisorElement;
-				while (o !== B) 
+				while (o !== R) 
 				{
 					cX += o.offsetLeft;
 					cY += o.offsetTop;

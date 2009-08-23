@@ -530,7 +530,10 @@
 			var S = this.style;
 			if (S) 
 			{
-				S.position = 'string' === typeof type ? type : S.position || 'absolute';
+				if ('string' === typeof type)
+				{
+					S.position = type;
+				}
 				
 				if ('number' === typeof x) 
 				{
@@ -1342,7 +1345,7 @@
 		
 		append: function(parent)
 		{
-		
+			var E = this.element;
 			if (E && !E.parentNode) 
 			{
 				(this.core.getElement(parent) || document.body).appendChild(E);
@@ -1786,4 +1789,6 @@
 				return null;
 			};
 		}
-	})();
+	})(); 
+
+	leaf.DOMElement.prototype.core = leaf.DOM.core;

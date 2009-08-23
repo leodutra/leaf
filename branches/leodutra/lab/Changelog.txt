@@ -1,3 +1,0 @@
-LEAF v0.8.js
-
-* Minor optimization in Object.extend;

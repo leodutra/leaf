@@ -77,6 +77,7 @@
 	/// OBJECT
 	
 	leaf.Object = {
+		
 		extend: function(object, sourceObject, noOverride)
 		{
 			if (object && sourceObject) 
@@ -97,6 +98,7 @@
 	/// WINDOW
 	
 	leaf.Window = {
+	
 		addListener: function(type, handlerFn)
 		{
 			leaf.DOM.core.addListener(window, type, handlerFn);
@@ -115,6 +117,7 @@
 	/// DOCUMENT
 	
 	leaf.Document = {
+		
 		addListener: function(type, handlerFn)
 		{
 			leaf.DOM.core.addListener(document, type, handlerFn);
@@ -133,6 +136,7 @@
 	/// AJAX
 	
 	leaf.Ajax = {
+		
 		createRequester: function()
 		{
 			if (window.XMLHttpRequest) 
@@ -185,6 +189,7 @@
 	/// MOUSE
 	
 	leaf.Mouse = {
+		
 		getPosition: function(mouseEvent)
 		{
 			if ('object' === typeof(mouseEvent = mouseEvent || event)) 
@@ -276,7 +281,7 @@
 		{
 			if ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array && classNames.length) 
 			{
-				var R = new RegExp('\\b(?:' + classNames.join('\|') + ')\\b');
+				var R = new RegExp('(?:\\s|^)(?:' + classNames.join('\|') + ')(?:\\s|$)');
 				var K = [];
 				var n = 0;
 				
@@ -313,6 +318,9 @@
 			if (domObj) 
 			{
 				this.core.purgeDOM(domObj);
+				if (domObj.parentNode) {
+					domObj.parentNode.removeChild(domObj);
+				}
 			}
 		},
 		
@@ -324,9 +332,9 @@
 				{
 					// uses hash name to fix IE problems
 					// base code by John Resig of JQuery (Event Contest - www.quirksmode.com)
-					if (o.addListenerListener) 
+					if (o.addEventListener) 
 					{
-						o.addListenerListener(t, f, false);
+						o.addEventListener(t, f, false);
 					}
 					else 
 					{
@@ -349,9 +357,9 @@
 				{
 					// uses hash name to fix IE problems
 					// base code by John Resig of JQuery, (Event Contest - www.quirksmode.com)
-					if (o.removeListenerListener) 
+					if (o.removeEventListener) 
 					{
-						o.removeListenerListener(t, f, false);
+						o.removeEventListener(t, f, false);
 					}
 					else 
 					{
@@ -478,6 +486,53 @@
 			this.core.dispatchEvent(this.element, type);
 		},
 		
+		setCSS: function(cssObj)
+		{
+			var E = this.element;
+			if (E && cssObj instanceof Object) 
+			{
+				var S = E.style;
+				var K = [];
+				var n = 0;
+				var c;
+				for (c in cssObj) 
+				{
+					K[n++] = c + ': ' + cssObj[c] + '\; ';
+				}
+				if (S.cssText === undefined) 
+				{
+					E.setAttribute('style', (E.getAttribute('style') || '') + K.join(''));
+				}
+				else 
+				{
+					S.cssText = ((c = S.cssText) && (c.charAt(c.length - 1) === '\;' ? c : c + '; ') || '') + K.join('');
+				}
+			}
+		},
+		
+		getCSS: function(property)
+		{
+			if ('string' === typeof property) 
+			{
+				var o = this.element;
+				if (o) 
+				{
+					if ((o = o.style.cssText === undefined ? o.getAttribute('style') : o.style.cssText)) 
+					{
+						/* RegExp does not 'compile' on AIR 1.0
+						 * This code is a little more faster than using pure RegExp
+						 */
+						if (-1 < (i = o.search(new RegExp('(?:\\\;|\\s|^)' + property + '\\\:', 'i')))) 
+						{
+							return o.substring((i = o.indexOf(':', i) + 2), (i = o.indexOf('\;', i)) === -1 ? o.length : i);
+						}
+						
+					}
+				}
+			}
+			return null;
+		},
+		
 		
 		/// CLASS
 		
@@ -490,7 +545,7 @@
 				var c = E.className;
 				if ('string' === typeof c) 
 				{
-					var R = new RegExp('\\b' + c.replace(/(?:^\s+|\s+$)/g, '').replace(/\s+/g, '\|') + '\\b');
+					var R = new RegExp('(?:\\s|^)' + k.replace(/(?:^\s+|\s+$)/g, '').replace(/\s+/g, '\|') + '(?:\\s|$)');
 					var L = classNames.length;
 					var K = [];
 					var n = 0;
@@ -504,7 +559,7 @@
 						}
 						K[n++] = c;
 					}
-					E.className += ' ' + K.join(' ').replace(/\s{2,}/g, ' ');
+					E.className += ' ' + K.join(' ');
 				}
 			}
 		},
@@ -517,7 +572,7 @@
 				var C = E.className;
 				if ('string' === typeof C) 
 				{
-					E.className = C.replace(new RegExp('\\b(?:' + classNames.join('\|') + ')\\b', 'g'), '');
+					E.className = C.replace(new RegExp('(?:\\s+|^)(?:' + classNames.join('\|') + ')(?:\\s+|$)', 'gi'), ' ');
 				}
 			}
 		},
@@ -1265,6 +1320,7 @@
 		
 		getScroll: function()
 		{
+			var E = this.element;
 			if (E) 
 			{
 				return {
@@ -1283,14 +1339,13 @@
 		// FIXME: IE6 does not apply opacity on static elements if no dimension is set
 		setOpacity: function(opacity)
 		{
-			var S = this.element;
+			var S = this.style;
 			if (S && 'number' === typeof opacity) 
 			{
 				opacity = opacity < 0 ? 0 : 1 < opacity ? 1 : opacity.toFixed(2);
 				if (S.opacity === undefined) 
 				{
-					// use IE filter
-					S.filter = 'alpha(opacity=' + (opacity * 100) + ')';
+					S.filter = 'alpha(opacity=' + (opacity * 100) + ')'; // use IE filter
 				}
 				else 
 				{
@@ -1336,11 +1391,10 @@
 					{
 						tagName.id = id;
 					}
-					this.setArea(tagName, width, height, x, y, z, positionType);
-					return tagName;
+					this.style = (this.element = tagName).style;
+					this.setArea(width, height, x, y, z, positionType);
 				}
 			}
-			return null;
 		},
 		
 		append: function(parent)
@@ -1715,80 +1769,5 @@
 			return null;
 		}
 	};
-	
-	(function()
-	{
-	
-		if (document.createElement('div').style.cssText === undefined) 
-		{
-		
-			leaf.DOMElement.prototype.setCSS = function(cssObj)
-			{
-				var E = this.element;
-				if (E && cssObj instanceof Object) 
-				{
-					var K = [];
-					var n = 0;
-					var c;
-					for (c in cssObj) 
-					{
-						K[n++] = c + ': ' + cssObj[c] + '\; ';
-					}
-					E.setAttribute('style', (E.getAttribute('style') || '') + K.join(''));
-				}
-			};
-			
-			leaf.getCSS = function(property)
-			{
-				var o = this.element;
-				if (o && 'string' === typeof property && (o = o.getAttribute('style'))) 
-				{
-					/* RegExp does not 'compile' on AIR 1.0
-					 * This code is a little more faster than using pure RegExp
-					 */
-					if (-1 < (i = o.search(new RegExp('(?:\\\;|\\s|^)' + property + '\\\:', 'i')))) 
-					{
-						return o.substring((i = o.indexOf(':', i) + 2), (i = o.indexOf('\;', i)) === -1 ? o.length : i);
-					}
-				}
-				return null;
-			};
-		}
-		else 
-		{
-		
-			leaf.setCSS = function(cssObj)
-			{
-				var S = this.style;
-				if (S && cssObj instanceof Object) 
-				{
-					var K = [];
-					var n = 0;
-					var c;
-					for (c in cssObj) 
-					{
-						K[n++] = c + ': ' + cssObj[c] + '\; ';
-					}
-					S.cssText = (((c = S.cssText) && (c.charAt(c.length - 1) === '\;' ? c : c + '; ')) || '') + K.join('');
-				}
-			};
-			
-			leaf.getCSS = function(property)
-			{
-				var S = this.style;
-				if (S && 'string' === typeof property && (S = S.cssText)) 
-				{
-					/* RegExp does not 'compile' on AIR 1.0
-					 * This code is a little more faster than using pure RegExp
-					 */
-					if (-1 < (i = S.search(new RegExp('(?:\\\;|\\s|^)' + property + '\\\:', 'i')))) 
-					{
-						return S.substring((i = S.indexOf(':', i) + 2), (i = S.indexOf('\;', i)) === -1 ? S.length : i);
-					}
-				}
-				return null;
-			};
-		}
-	})(); 
 
 	leaf.DOMElement.prototype.core = leaf.DOM.core;

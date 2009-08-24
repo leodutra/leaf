@@ -78,19 +78,20 @@
 	
 	leaf.Object = {
 		
-		extend: function(object, sourceObject, noOverride)
+		extend: function(superObject, extension)
 		{
-			if (object && sourceObject) 
+			if (superObject && extension)
 			{
-				noOverride = !noOverride;
-				for (var n in sourceObject) 
+				var o = function () {};
+				o.prototype = superObject;
+				o = new o();
+				for (var n in extension) 
 				{
-					if (object[n] === undefined || noOverride) 
-					{
-						object[n] = sourceObject[n];
-					}
+					o[n] = extension[n];
 				}
+				return o;
 			}
+			return null;
 		}
 	};
 	

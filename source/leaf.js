@@ -1,7 +1,7 @@
 	
 	/*  LEAF JavaScript Library
 	 *  Leonardo Dutra
-	 *  v0.7.XXXXXXa
+	 *  v0.8.0a
 	 *
 	 *  Copyright (c) 2009, Leonardo Dutra Constâncio.
 	 *  All rights reserved.
@@ -35,13 +35,13 @@
 	/* This ALPHA version implements:
 	 *
 	 * leaf.Array
-	 *     .Object
-	 *     .AJAX
+	 *     .Object     
+	 *     .AJAX       (in reseach for more)
 	 *     .Window
-	 *     .Document
+	 *     .Document   (in reseach for more)
 	 *     .Mouse
-	 *     .DOM        (its core is a object that wraps private vars and common functions, making then public for possible extensions)
-	 *     .DOMElement (handles only elements, a box you put some element inside and mod using DOM)
+	 *     .DOM        (util functions)
+	 *     .DOMElement (handles any node of type element with an amazing performance. For group operations, use inside Array.each in a array of elements)
 	 */
 	
 	// check LEAF "namespace"
@@ -541,27 +541,26 @@
 		addClass: function(classNames)
 		{
 			var E = this.element;
-			if (E && ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array)) 
+			if (E && 'string' === typeof E.className && ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array)) 
 			{
-				var c = E.className;
-				if ('string' === typeof c) 
+				var R = new RegExp('(?:\\s|^)' + E.className.replace(/(?:^\s+|\s+$)/g, '').replace(/\s+/g, '\|') + '(?:\\s|$)', '');
+				var L = classNames.length;
+				var K = [];
+				var n = 0;
+				var i = 0;
+				while (i < L) 
 				{
-					var R = new RegExp('(?:\\s|^)' + k.replace(/(?:^\s+|\s+$)/g, '').replace(/\s+/g, '\|') + '(?:\\s|$)');
-					var L = classNames.length;
-					var K = [];
-					var n = 0;
-					var i = 0;
-					while (i < L) 
+				// test avoids residual className problem
+					if (R.test(classNames[i])) 
 					{
-						// test avoids residual className problem
-						if (R.test((c = classNames[i++]))) 
-						{
-							continue;
-						}
-						K[n++] = c;
+						i += 1;
 					}
-					E.className += ' ' + K.join(' ');
+					else 
+					{
+						K[n++] = classNames[i++];
+					}
 				}
+				E.className += ' ' + K.join(' ');
 			}
 		},
 		
@@ -570,10 +569,26 @@
 			var E = this.element;
 			if (E && ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array)) 
 			{
-				var C = E.className;
-				if ('string' === typeof C) 
+				var c = E.className;
+				if (c) 
 				{
-					E.className = C.replace(new RegExp('(?:\\s+|^)(?:' + classNames.join('\|') + ')(?:\\s+|$)', 'gi'), ' ');
+					var R = new RegExp('(:?\\s|^)(?:' + classNames.join('\|') + ')(?:\\s|$)', '');
+					var L = (c = c.split(/\s+/)).length;
+					var K = [];
+					var n = 0;
+					var i = 0;
+					while (i < L) 
+					{
+						if (R.test(c[i])) 
+						{
+							i += 1;	
+						}
+						else
+						{
+							K[n++] = c[i++];
+						}
+					}
+					E.className = K.join(' ');
 				}
 			}
 		},
@@ -1687,12 +1702,12 @@
 		hasCollision: function(collisorElement)
 		{
 			var E = this.element;
-			var o;
-			if ((o = E) && collisorElement && collisorElement.style && collisorElement.parentNode) 
+			if (E && collisorElement && collisorElement.style) 
 			{
 				var R = document.documentElement;
 				var eX = 0;
 				var eY = 0;
+				var o = E;
 				while (o !== R) 
 				{
 					eX += o.offsetLeft;

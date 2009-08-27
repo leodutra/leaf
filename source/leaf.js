@@ -41,7 +41,7 @@
 	 *     .Document   (in reseach for more)
 	 *     .Mouse
 	 *     .DOM        (util functions)
-	 *     .ElementHandler (handles any node of type element with an amazing performance. For group operations, use inside Array.each in a array of elements)
+	 *     .ElementHandler (handles any node of type element with an amazing performance. For group operations use inside of Array.each)
 	 */
 	
 	// check LEAF "namespace"

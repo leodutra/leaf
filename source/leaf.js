@@ -1,7 +1,7 @@
 	
 	/*  LEAF JavaScript Library
 	 *  Leonardo Dutra
-	 *  v0.8.0a
+	 *  v0.8.1a
 	 *
 	 *  Copyright (c) 2009, Leonardo Dutra Constâncio.
 	 *  All rights reserved.
@@ -41,7 +41,7 @@
 	 *     .Document   (in reseach for more)
 	 *     .Mouse
 	 *     .DOM        (util functions)
-	 *     .DOMElement (handles any node of type element with an amazing performance. For group operations, use inside Array.each in a array of elements)
+	 *     .ElementHandler (handles any node of type element with an amazing performance. For group operations, use inside Array.each in a array of elements)
 	 */
 	
 	// check LEAF "namespace"
@@ -432,24 +432,24 @@
 	};
 	
 	
-	/// DOMELEMENT
+	/// ElementHandler
 	
-	leaf.DOMElement = function(element)
+	leaf.ElementHandler = function(element)
 	{
-		if (this instanceof leaf.DOMElement) 
+		if (this instanceof leaf.ElementHandler) 
 		{
-			this.DOMElement(element);
+			this.ElementHandler(element);
 		}
 	};
 	
-	leaf.DOMElement.prototype = {
+	leaf.ElementHandler.prototype = {
 	
 		// internal vars
 		element: null,
 		style:   null,
 		core:    null, // used later on code
 		
-		DOMElement: function(element)
+		ElementHandler: function(element)
 		{
 			this.setElement(element);
 		},
@@ -1786,4 +1786,4 @@
 		}
 	};
 
-	leaf.DOMElement.prototype.core = leaf.DOM.core;
+	leaf.ElementHandler.prototype.core = leaf.DOM.core;

@@ -316,7 +316,7 @@
 		},
 		
 		core: {
-		
+
 			addListener: function(o, t, f)
 			{
 				if (o && 'string' === typeof t && 'function' === typeof f) 
@@ -1408,6 +1408,7 @@
 			var E = this.element;
 			if (E && !E.parentNode) 
 			{
+				// optimum if for parent
 				if (parent ? 'string' === typeof parent ? parent = document.getElementById(parent) :
 				(parent.nodeType === 1 || parent.nodeType === 11) : parent = document.body) 
 				{
@@ -1446,6 +1447,7 @@
 			var E = this.element;
 			if (E && !E.parentNode) 
 			{	
+				// optimum if for parent
 				if (parent ? 'string' === typeof parent ? parent = document.getElementById(parent) :
 				(parent.nodeType === 1 || parent.nodeType === 11) : parent = document.body) 
 				{
@@ -1549,7 +1551,7 @@
 			{
 				var K = [];
 				var n = 0;
-				e = e.firstChild; // cannot be inside while question
+				e = e.firstChild; // cannot be inside of while question
 				while (e) 
 				{
 					if (e.nodeType === 1) 
@@ -1606,44 +1608,45 @@
 			return this.element && node && node.parentNode === this.element || false;		
 		},
 		
-		getChildElement: function(index)
+		getChildElement: function(elementIndex)
 		{
 			var e = this.element;
-			if (e && 'number' === typeof index)
+			if (e && 'number' === typeof elementIndex)
 			{
 				var K = [];
 				var n = 0;
-				e = e.firstChild; // cannot be inside while question
+				e = e.firstChild; // cannot be inside of while question
 				while (e) 
 				{
-					if (e.nodeType === 1 && n++ === index) 
+					if (e.nodeType === 1 && n++ === elementIndex) 
 					{
 						return e;
 					}
+					e = e.nextSibling;
 				}
+				return null;
 			}
 		},
 		
 		appendChild: function(childNode)
 		{
-			var E = this.element;
-			if (E && childNode && !childNode.parentNode && childNode.nodeType) 
+			if (this.element && childNode && !childNode.parentNode && childNode.nodeType) 
 			{
-				E.appendChild(childNode);
+				this.element.appendChild(childNode);
 			}
 		},
 		
 		appendChildren: function(childNodes)
 		{
 			var E = this.element;
-			var l;
-			if (E && childNodes && (l = childNodes.length)) 
+			if (E && childNodes) 
 			{
+				var l = childNodes.length;
 				var i = 0;
 				var k;
 				while (i < l) 
 				{
-					if (!(k = childNodes[i++]).parentNode && k.nodeType) 
+					if ((k = childNodes[i++]) && !k.parentNode && k.nodeType) 
 					{
 						E.appendChild(k);
 					}
@@ -1653,19 +1656,17 @@
 		
 		removeChild: function(child)
 		{
-			var E = this.element;
-			if (E && (child = this.getChild(child))) 
+			if (this.element && (child = this.getChild(child))) 
 			{
-				E.removeChild(child);
+				this.element.removeChild(child);
 			}
 		},
 		
-		removeChildElement: function(child)
+		removeChildElement: function(elementIndex)
 		{
-			var E = this.element;
-			if (E && (child = this.getChild(child))) 
+			if (this.element && (child = this.getChildElement(elementIndex))) 
 			{
-				E.removeChild(child);
+				this.element.removeChild(child);
 			}
 		},
 		
@@ -1722,6 +1723,11 @@
 		cloneChild: function(index, cloneAttrAndChilds)
 		{
 			return (child = this.getChild(index)) ? child.cloneNode(!!cloneAttrAndChilds) : null;
+		},
+		
+		cloneChildElement: function(elementIndex, cloneAttrAndChilds)
+		{
+			return (child = this.getChildElement(elementIndex)) ? child.cloneNode(!!cloneAttrAndChilds) : null;
 		},
 		
 		hasCollision: function(collisorElement)

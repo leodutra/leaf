@@ -1,7 +1,7 @@
 	
 	/*  LEAF JavaScript Library
 	 *  Leonardo Dutra
-	 *  v0.8.1a
+	 *  v0.8.2a
 	 *
 	 *  Copyright (c) 2009, Leonardo Dutra Constâncio.
 	 *  All rights reserved.
@@ -145,12 +145,20 @@
 				return new XMLHttpRequest();
 			}
 			
-			// if no return, is IE like
+			// if no return, fix for IE
 			var A = window.ActiveXObject; // cache
 			if (A) 
 			{
-				var V = this.core.requesterActiveXs; // array of ActiveX versions
-				var i = V.length;
+				// array of ActiveX versions
+				var V = [
+					'Microsoft.XMLHTTP',
+					'MSXML2.XMLHTTP',
+					'MSXML2.XMLHTTP.3.0',
+					'MSXML2.XMLHTTP.4.0',
+					'MSXML2.XMLHTTP.5.0',
+					'MSXML2.XMLHTTP.6.0'
+				]; 
+				var i = 6;
 				var o;
 				while (i--) // optimum JavaScript iterator
 	 			{
@@ -165,24 +173,6 @@
 				}
 			}
 			return null;
-		},
-		
-		listRequesterActiveX: function()
-		{
-			// return array with versions for requester creation (ascending)
-			return this.core.requesterActiveXs;
-		},
-		
-		core: {
-			// used in descending iteration
-			requesterActiveXs: [
-				'Microsoft.XMLHTTP',
-				'MSXML2.XMLHTTP',
-				'MSXML2.XMLHTTP.3.0',
-				'MSXML2.XMLHTTP.4.0',
-				'MSXML2.XMLHTTP.5.0',
-				'MSXML2.XMLHTTP.6.0'
-			]
 		}
 	};
 	
@@ -326,7 +316,7 @@
 		},
 		
 		core: {
-		
+
 			addListener: function(o, t, f)
 			{
 				if (o && 'string' === typeof t && 'function' === typeof f) 
@@ -671,12 +661,12 @@
 			}
 		},
 		
-		getPosition: function(keepUnits)
+		getPosition: function(keepAsValues)
 		{
 			var S = this.style;
 			if (S) 
 			{
-				if (keepUnits) 
+				if (keepAsValues) 
 				{
 					return {
 						x: S.left || S.right,
@@ -781,12 +771,12 @@
 			}
 		},
 		
-		getSize: function(keepUnits)
+		getSize: function(keepAsValues)
 		{
 			var S = this.style;
 			if (S) 
 			{
-				if (keepUnits) 
+				if (keepAsValues) 
 				{
 					return {
 						width: S.width,
@@ -813,12 +803,12 @@
 			this.setPosition(x, y, z, positionType);
 		},
 		
-		getArea: function(keepUnits)
+		getArea: function(keepAsValues)
 		{
 			var S = this.style;
 			if (S) 
 			{
-				if (keepUnits) 
+				if (keepAsValues) 
 				{
 					return {
 						x: S.left || S.right,
@@ -899,13 +889,13 @@
 			}
 		},
 		
-		getBackground: function(keepUnits)
+		getBackground: function(keepAsValues)
 		{
 			var S = this.style;
 			if (S) 
 			{
 				var P = S.backgroundPosition.split(' ');
-				if (keepUnits) 
+				if (keepAsValues) 
 				{
 					return {
 						x: P[0] || '',
@@ -993,12 +983,12 @@
 			}
 		},
 		
-		getFont: function(keepUnits)
+		getFont: function(keepAsValues)
 		{
 			var S = this.style;
 			if (S) 
 			{
-				if (keepUnits) 
+				if (keepAsValues) 
 				{
 					return {
 						color: S.color,
@@ -1056,14 +1046,14 @@
 			}
 		},
 		
-		getBorder: function(keepUnits)
+		getBorder: function(keepAsValues)
 		{
 			var S = this.style;
 			if (S) 
 			{
 				return {
 					color: S.borderColor,
-					width: keepUnits ? S.borderWidth : parseFloat(S.borderWidth),
+					width: keepAsValues ? S.borderWidth : parseFloat(S.borderWidth),
 					style: S.borderStyle
 				};
 			}
@@ -1125,12 +1115,12 @@
 			}
 		},
 		
-		getPadding: function(keepUnits)
+		getPadding: function(keepAsValues)
 		{
 			var S = this.style;
 			if (S) 
 			{
-				if (keepUnits) 
+				if (keepAsValues) 
 				{
 					return {
 						top: S.paddingTop,
@@ -1207,12 +1197,12 @@
 			}
 		},
 		
-		getMargin: function(keepUnits)
+		getMargin: function(keepAsValues)
 		{
 			var S = this.style;
 			if (S) 
 			{
-				if (keepUnits) 
+				if (keepAsValues) 
 				{
 					return {
 						top: S.marginTop,
@@ -1283,12 +1273,12 @@
 			}
 		},
 		
-		getText: function(keepUnits)
+		getText: function(keepAsValues)
 		{
 			var S = this.style;
 			if (S) 
 			{
-				if (keepUnits) 
+				if (keepAsValues) 
 				{
 					return {
 						align: S.textAlign,
@@ -1418,51 +1408,57 @@
 			var E = this.element;
 			if (E && !E.parentNode) 
 			{
-				(this.core.getElement(parent) || document.body).appendChild(E);
+				// optimum if for parent
+				if (parent ? 'string' === typeof parent ? parent = document.getElementById(parent) :
+				(parent.nodeType === 1 || parent.nodeType === 11) : parent = document.body) 
+				{
+					parent.appendChild(E);
+				}
 			}
 		},
 		
 		insertBefore: function(node)
 		{
 			var E = this.element;
-			if (E && !E.parentNode && (node = this.core.getElement(node)) && node.parentNode) 
+			if (E && !E.parentNode && (node.nodeType && node.parentNode ||(node = document.getElementById(node)))) 
 			{
-				node.parentNode.insertBefore(e, node);
+				node.parentNode.insertBefore(E, node);
 			}
 		},
 		
-		insertAfter: function(e, node)
+		insertAfter: function(node)
 		{
-			var p;
-			if (e && e.style && !e.parentNode && (node = this.core.getElement(node)) && (p = node.parentNode)) 
+			var E = this.element;
+			if (E && !E.parentNode && (node.nodeType && node.parentNode ||(node = document.getElementById(node)))) 
 			{
-				if ((node = this.getNext(e))) 
+				if (node.nextSibling) 
 				{
-					p.insertBefore(e, node);
+					node.parentNode.insertBefore(E, node.nextSibling);
 				}
 				else 
 				{
-					p.appendChild(e);
+					node.parentNode.appendChild(E);
 				}
 			}
 		},
 		
-		insertAsFirst: function(e, parent)
+		insertAsFirst: function(parent)
 		{
 			var E = this.element;
 			if (E && !E.parentNode) 
-			{
-				if (!(parent && parent.nodeType)) 
+			{	
+				// optimum if for parent
+				if (parent ? 'string' === typeof parent ? parent = document.getElementById(parent) :
+				(parent.nodeType === 1 || parent.nodeType === 11) : parent = document.body) 
 				{
-					parent = document.getElementById(parent) || document.body;
-				}
-				if (parent.firstChild) 
-				{
-					parent.insertBefore(E, parent.firstChild);
-				}
-				else 
-				{
-					parent.appendChild(E);
+					if (parent.firstChild) 
+					{
+						parent.insertBefore(E, parent.firstChild);
+					}
+					else 
+					{
+						parent.appendChild(E);
+					}
 				}
 			}
 		},
@@ -1555,7 +1551,7 @@
 			{
 				var K = [];
 				var n = 0;
-				e = e.firstChild; // cannot be inside while question
+				e = e.firstChild; // cannot be inside of while question
 				while (e) 
 				{
 					if (e.nodeType === 1) 
@@ -1602,32 +1598,55 @@
 			this.setElement(this.getLast());
 		},
 		
-		getChild: function(child)
+		getChild: function(index)
 		{
-			var E = this.element;
-			return E.childNodes[child] || (child = this.core.getElement(child)) && E === child.parentNode && child || null;
+			return this.element && this.element.childNodes[child] || null;
+		},
+		
+		isChild: function(node)
+		{
+			return this.element && node && node.parentNode === this.element || false;		
+		},
+		
+		getChildElement: function(elementIndex)
+		{
+			var e = this.element;
+			if (e && 'number' === typeof elementIndex)
+			{
+				var K = [];
+				var n = 0;
+				e = e.firstChild; // cannot be inside of while question
+				while (e) 
+				{
+					if (e.nodeType === 1 && n++ === elementIndex) 
+					{
+						return e;
+					}
+					e = e.nextSibling;
+				}
+				return null;
+			}
 		},
 		
 		appendChild: function(childNode)
 		{
-			var E = this.element;
-			if (E && childNode && !childNode.parentNode && childNode.nodeType) 
+			if (this.element && childNode && !childNode.parentNode && childNode.nodeType) 
 			{
-				E.appendChild(childNode);
+				this.element.appendChild(childNode);
 			}
 		},
 		
 		appendChildren: function(childNodes)
 		{
 			var E = this.element;
-			var l;
-			if (E && childNodes && (l = childNodes.length)) 
+			if (E && childNodes) 
 			{
+				var l = childNodes.length;
 				var i = 0;
 				var k;
 				while (i < l) 
 				{
-					if (!(k = childNodes[i++]).parentNode && k.nodeType) 
+					if ((k = childNodes[i++]) && !k.parentNode && k.nodeType) 
 					{
 						E.appendChild(k);
 					}
@@ -1637,10 +1656,17 @@
 		
 		removeChild: function(child)
 		{
-			var E = this.element;
-			if (E && (child = this.getChild(child))) 
+			if (this.element && (child = this.getChild(child))) 
 			{
-				E.removeChild(child);
+				this.element.removeChild(child);
+			}
+		},
+		
+		removeChildElement: function(elementIndex)
+		{
+			if (this.element && (child = this.getChildElement(elementIndex))) 
+			{
+				this.element.removeChild(child);
 			}
 		},
 		
@@ -1694,9 +1720,14 @@
 			}
 		},
 		
-		cloneChild: function(child, cloneAttrAndChilds)
+		cloneChild: function(index, cloneAttrAndChilds)
 		{
-			return (child = this.getChild(child)) ? child.cloneNode(!!cloneAttrAndChilds) : null;
+			return (child = this.getChild(index)) ? child.cloneNode(!!cloneAttrAndChilds) : null;
+		},
+		
+		cloneChildElement: function(elementIndex, cloneAttrAndChilds)
+		{
+			return (child = this.getChildElement(elementIndex)) ? child.cloneNode(!!cloneAttrAndChilds) : null;
 		},
 		
 		hasCollision: function(collisorElement)

@@ -1,7 +1,7 @@
 	
 	/*  LEAF JavaScript Library
 	 *  Leonardo Dutra
-	 *  v0.8.2a
+	 *  v0.8.3a
 	 *
 	 *  Copyright (c) 2009, Leonardo Dutra Constâncio.
 	 *  All rights reserved.
@@ -193,14 +193,14 @@
 						y: mouseEvent.pageY
 					};
 				}
-				var H = document.documentElement;
-				var B = document.body;
-				if (B) // needed sometimes depending on browser and version since body can have a 1px rounder
+				var o = document;
+				var H = o.documentElement;
+				if ((o = o.body)) // needed sometimes depending on browser and version since body can have a 1px rounder
 				{
 					return {
 						// clientLeft/Top IE adjust
-						x: mouseEvent.clientX + (H.scrollLeft || B.scrollLeft) - (H.clientLeft || 0),
-						y: mouseEvent.clientY + (H.scrollTop || B.scrollTop) - (H.clientTop || 0)
+						x: mouseEvent.clientX + (H.scrollLeft || o.scrollLeft) - (H.clientLeft || 0),
+						y: mouseEvent.clientY + (H.scrollTop || o.scrollTop) - (H.clientTop || 0)
 					};
 				}
 				return {
@@ -1403,6 +1403,25 @@
 			}
 		},
 		
+		createChildElement: function (tagName, id, cssObj, content)
+		{
+			if (this.element && 'string' === typeof tagName) 
+			{
+				// reuse tagName
+				if ((tagName = document.createElement(tagName))) 
+				{
+					if ('string' === typeof id) 
+					{
+						tagName.id = id;
+					}
+					tagName = new leaf.ElementHandler(tagName);
+					tagName.setCSS(cssObj);
+					tagName.append(this.element);
+					tagName.setContent(content);
+				}
+			}
+		},
+		
 		append: function(parent)
 		{
 			var E = this.element;
@@ -1463,17 +1482,21 @@
 			}
 		},
 		
-		removeElement: function()
+		remove: function()
 		{
 			var E = this.element;
 			if (E) 
 			{
-				var P = E.parentNode;
-				if (P) 
+				if (E.parentNode)
 				{
-					P.removeChild(E);
+					E.parentNode.removeChild(E);
 				}
 			}
+		},
+		
+		getParent: function ()
+		{
+			return this.element && this.element.parentNode || null;
 		},
 		
 		getFirst: function()
@@ -1544,6 +1567,16 @@
 			return null;
 		},
 		
+		getChild: function(index)
+		{
+			return this.element && this.element.childNodes[index] || null;
+		},
+		
+		isChild: function(node)
+		{
+			return this.element && node && node.parentNode === this.element || false;		
+		},
+		
 		getChildElements: function()
 		{
 			var e = this.element;
@@ -1568,9 +1601,29 @@
 			return null;
 		},
 		
-		setChild: function(child)
+		getChildElement: function(elementIndex)
 		{
-			this.setElement(this.getChild(child));
+			var e = this.element;
+			if (e && 'number' === typeof elementIndex)
+			{
+				var K = [];
+				var n = 0;
+				e = e.firstChild; // cannot be inside of while question
+				while (e) 
+				{
+					if (e.nodeType === 1 && n++ === elementIndex) 
+					{
+						return e;
+					}
+					e = e.nextSibling;
+				}
+				return null;
+			}
+		},
+		
+		setChildElement: function(elementIndex)
+		{
+			this.setElement(this.getChildElement(elementIndex));
 		},
 		
 		setParent: function()
@@ -1596,36 +1649,6 @@
 		setLast: function()
 		{
 			this.setElement(this.getLast());
-		},
-		
-		getChild: function(index)
-		{
-			return this.element && this.element.childNodes[child] || null;
-		},
-		
-		isChild: function(node)
-		{
-			return this.element && node && node.parentNode === this.element || false;		
-		},
-		
-		getChildElement: function(elementIndex)
-		{
-			var e = this.element;
-			if (e && 'number' === typeof elementIndex)
-			{
-				var K = [];
-				var n = 0;
-				e = e.firstChild; // cannot be inside of while question
-				while (e) 
-				{
-					if (e.nodeType === 1 && n++ === elementIndex) 
-					{
-						return e;
-					}
-					e = e.nextSibling;
-				}
-				return null;
-			}
 		},
 		
 		appendChild: function(childNode)
@@ -1654,19 +1677,19 @@
 			}
 		},
 		
-		removeChild: function(child)
+		removeChild: function(index)
 		{
-			if (this.element && (child = this.getChild(child))) 
+			if (this.element && (index = this.getChild(index))) 
 			{
-				this.element.removeChild(child);
+				this.element.removeChild(index);
 			}
 		},
 		
 		removeChildElement: function(elementIndex)
 		{
-			if (this.element && (child = this.getChildElement(elementIndex))) 
+			if (this.element && (elementIndex = this.getChildElement(elementIndex))) 
 			{
-				this.element.removeChild(child);
+				this.element.removeChild(elementIndex);
 			}
 		},
 		
@@ -1684,18 +1707,18 @@
 			}
 		},
 		
-		purgeElement: function ()
+		purge: function ()
 		{
 			this.core.purgeDOM(this.element);
 			this.removeElement();
 		},
 		
-		purgeChild: function(child)
+		purgeChildElement: function(elementIndex)
 		{
-			if ((child = this.getChild(child))) 
+			if ((elementIndex = this.getChildElement(elementIndex))) 
 			{
-				this.core.purgeDOM(child);
-				this.removeChild(child);
+				this.core.purgeDOM(elementIndex);
+				this.removeChild(elementIndex);
 			}
 		},
 		
@@ -1722,12 +1745,12 @@
 		
 		cloneChild: function(index, cloneAttrAndChilds)
 		{
-			return (child = this.getChild(index)) ? child.cloneNode(!!cloneAttrAndChilds) : null;
+			return (index = this.getChild(index)) ? index.cloneNode(!!cloneAttrAndChilds) : null;
 		},
 		
 		cloneChildElement: function(elementIndex, cloneAttrAndChilds)
 		{
-			return (child = this.getChildElement(elementIndex)) ? child.cloneNode(!!cloneAttrAndChilds) : null;
+			return (elementIndex = this.getChildElement(elementIndex)) ? elementIndex.cloneNode(!!cloneAttrAndChilds) : null;
 		},
 		
 		hasCollision: function(collisorElement)

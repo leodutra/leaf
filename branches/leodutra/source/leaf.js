@@ -1,7 +1,7 @@
 	
 	/*  LEAF JavaScript Library
 	 *  Leonardo Dutra
-	 *  v0.8.2a
+	 *  v0.8.3a
 	 *
 	 *  Copyright (c) 2009, Leonardo Dutra Constâncio.
 	 *  All rights reserved.
@@ -193,14 +193,14 @@
 						y: mouseEvent.pageY
 					};
 				}
-				var H = document.documentElement;
-				var B = document.body;
-				if (B) // needed sometimes depending on browser and version since body can have a 1px rounder
+				var o = document;
+				var H = o.documentElement;
+				if ((o = o.body)) // needed sometimes depending on browser and version since body can have a 1px rounder
 				{
 					return {
 						// clientLeft/Top IE adjust
-						x: mouseEvent.clientX + (H.scrollLeft || B.scrollLeft) - (H.clientLeft || 0),
-						y: mouseEvent.clientY + (H.scrollTop || B.scrollTop) - (H.clientTop || 0)
+						x: mouseEvent.clientX + (H.scrollLeft || o.scrollLeft) - (H.clientLeft || 0),
+						y: mouseEvent.clientY + (H.scrollTop || o.scrollTop) - (H.clientTop || 0)
 					};
 				}
 				return {

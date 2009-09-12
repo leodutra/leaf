@@ -1,7 +1,7 @@
 	
 	/*  LEAF JavaScript Library
 	 *  Leonardo Dutra
-	 *  v0.8.3a
+	 *  v0.8.4a
 	 *
 	 *  Copyright (c) 2009, Leonardo Dutra Constâncio.
 	 *  All rights reserved.
@@ -102,15 +102,15 @@
 	
 		addListener: function(type, handlerFn)
 		{
-			leaf.DOM.core.addListener(window, type, handlerFn);
+			leaf.Util.core.addListener(window, type, handlerFn);
 		},
 		removeListener: function(type, handlerFn)
 		{
-			leaf.DOM.core.removeListener(window, type, handlerFn);
+			leaf.Util.core.removeListener(window, type, handlerFn);
 		},
 		dispatchEvent: function(type)
 		{
-			leaf.DOM.core.addListener(window, type);
+			leaf.Util.core.addListener(window, type);
 		}
 	};
 	
@@ -121,60 +121,64 @@
 		
 		addListener: function(type, handlerFn)
 		{
-			leaf.DOM.core.addListener(document, type, handlerFn);
+			leaf.Util.core.addListener(document, type, handlerFn);
 		},
 		removeListener: function(type, handlerFn)
 		{
-			leaf.DOM.core.removeListener(document, type, handlerFn);
+			leaf.Util.core.removeListener(document, type, handlerFn);
 		},
 		dispatchEvent: function(type)
 		{
-			leaf.DOM.core.addListener(document, type);
+			leaf.Util.core.addListener(document, type);
 		}
 	};
 	
 	
 	/// AJAX
 	
-	leaf.Ajax = {
-		
-		createRequester: function()
-		{
-			if (window.XMLHttpRequest) 
-			{
-				return new XMLHttpRequest();
-			}
-			
-			// if no return, fix for IE
-			var A = window.ActiveXObject; // cache
-			if (A) 
-			{
-				// array of ActiveX versions
-				var V = [
-					'Microsoft.XMLHTTP',
-					'MSXML2.XMLHTTP',
-					'MSXML2.XMLHTTP.3.0',
-					'MSXML2.XMLHTTP.4.0',
-					'MSXML2.XMLHTTP.5.0',
-					'MSXML2.XMLHTTP.6.0'
-				]; 
-				var i = 6;
-				var o;
-				while (i--) // optimum JavaScript iterator
-	 			{
-					try // try catch allow iteration thru versions
-	 				{
-						o = new A(V[i]);
-						return o;
-					} 
-					catch (o) 
-					{
-					}
-				}
-			}
-			return null;
-		}
+	leaf.Ajax = {};
+	
+if (window.XMLHttpRequest) {
+	
+	leaf.Ajax.createRequester = function()
+	{
+		return new XMLHttpRequest();
 	};
+}
+else if (window.ActiveXObject) {
+	
+	leaf.Ajax.createRequester = function()
+	{	
+		// if no return, fix for IE
+		var A = ActiveXObject; // cache
+		// array of ActiveX versions
+		var V = [
+			'Microsoft.XMLHTTP',
+			'MSXML2.XMLHTTP',
+			'MSXML2.XMLHTTP.3.0',
+			'MSXML2.XMLHTTP.4.0',
+			'MSXML2.XMLHTTP.5.0',
+			'MSXML2.XMLHTTP.6.0'
+		]; 
+		var i = 6;
+		var o;
+		while (i--) // optimum JavaScript iterator
+			{
+			try // try catch allow iteration thru versions
+				{
+				o = new A(V[i]);
+				return o;
+			} 
+			catch (o) 
+			{
+			}
+		}
+		return null;
+	};
+}
+else {
+	leaf.Ajax.createRequester = function() { return null; };
+}
 	
 	
 	/// MOUSE
@@ -216,7 +220,7 @@
 	
 	/// DOM
 	
-	leaf.DOM = {
+	leaf.Util = {
 		
 		getById: function(ids)
 		{
@@ -316,75 +320,6 @@
 		},
 		
 		core: {
-
-			addListener: function(o, t, f)
-			{
-				if (o && 'string' === typeof t && 'function' === typeof f) 
-				{
-					// uses hash name to fix IE problems
-					// base code by John Resig of JQuery (Event Contest - www.quirksmode.com)
-					if (o.addEventListener) 
-					{
-						o.addEventListener(t, f, false);
-					}
-					else 
-					{
-						if (o.attachEvent) 
-						{
-							var h = t + f;
-							o['e' + h] = f;
-							o.attachEvent('on' + t, (o[h] = function()
-							{
-								o['e' + h](event);
-							}));
-						}
-					}
-				}
-			},
-			
-			removeListener: function(o, t, f)
-			{
-				if (o && 'string' === typeof t && 'function' === typeof f) 
-				{
-					// uses hash name to fix IE problems
-					// base code by John Resig of JQuery, (Event Contest - www.quirksmode.com)
-					if (o.removeEventListener) 
-					{
-						o.removeEventListener(t, f, false);
-					}
-					else 
-					{
-						if (o.detachEvent) 
-						{
-							o.detachEvent('on' + t, o[(t = t + f)]);
-							o[t] = null;
-							o['e' + t] = null;
-						}
-					}
-				}
-			},
-			
-			dispatchEvent: function(o, t)
-			{
-				if (o && 'string' === typeof t) 
-				{
-					if (o.dispatchEvent) 
-					{
-						// dispatch for firefox and others
-						var e = document.createEvent('HTMLEvents');
-						e.initEvent(t, true, true); // event type, bubbling, cancelable
-						o.dispatchEvent(e);
-					}
-					else 
-					{
-						if (document.createEventObject) 
-						{
-							// dispatch for IE
-							o.fireEvent('on' + t, document.createEventObject());
-						}
-					}
-				}
-			},
 			
 			// TODO: verify if arguments.callee leaks. If leaks, review all purge use
 			purgeDOM:  function(o)
@@ -420,7 +355,82 @@
 			}
 		}
 	};
+
+if (window.addEventListener) 
+{
+
+	leaf.Util.core.addListener = function(o, t, f)
+	{
+		if (o && 'string' === typeof t && 'function' === typeof f) 
+		{
+			o.addEventListener(t, f, false);
+		}
+	};
 	
+	leaf.Util.core.removeListener = function(o, t, f)
+	{
+		if (o && 'string' === typeof t && 'function' === typeof f) 
+		{
+			o.removeEventListener(t, f, false);
+		}
+	};
+	
+	leaf.Util.core.dispatchEvent = function(o, t)
+	{
+		if (o && 'string' === typeof t) 
+		{
+			var e = document.createEvent('HTMLEvents');
+			e.initEvent(t, true, true); // event type, bubbling, cancelable
+			o.dispatchEvent(e);
+		}
+	};
+	
+}
+else if (window.attachEvent) 
+{
+
+	leaf.Util.core.addListener = function(o, t, f)
+	{
+		if (o && 'string' === typeof t && 'function' === typeof f) 
+		{
+			// uses hash name to fix IE problems
+			// base code by John Resig of JQuery (Event Contest - www.quirksmode.com)
+			var h = t + f;
+			o['e' + h] = f;
+			o.attachEvent('on' + t, (o[h] = function()
+			{
+				o['e' + h](event);
+			}));
+		}
+	};
+	
+	leaf.Util.core.removeListener = function(o, t, f)
+	{
+		if (o && 'string' === typeof t && 'function' === typeof f) 
+		{
+			// uses hash name to fix IE problems
+			// base code by John Resig of JQuery, (Event Contest - www.quirksmode.com)
+			o.detachEvent('on' + t, o[(t = t + f)]);
+			o[t] = null;
+			o['e' + t] = null;
+		}
+	};
+	
+	leaf.Util.core.dispatchEvent = function(o, t)
+	{
+		if (o && 'string' === typeof t) 
+		{
+			// dispatch for IE
+			o.fireEvent('on' + t, document.createEventObject());
+		}
+	};
+}
+else {
+	leaf.Util.core.addListener = function(o, t, f) {};
+	leaf.Util.core.removeListener = function(o, t, f) {};
+	leaf.Util.core.dispatchEvent = function(o, t) {};
+}
+
 	
 	/// ElementHandler
 	
@@ -586,7 +596,7 @@
 		
 		/// POSITION	
 		
-		setPosition: function(x, y, z, type)
+		setPosition: function(top, right, bottom, left, zIndex, type)
 		{
 			var S = this.style;
 			if (S) 
@@ -596,6 +606,105 @@
 					S.position = type;
 				}
 				
+				if ('number' === typeof top) 
+				{
+					S.top = top +'px';
+					bottom = '';
+				}
+				else 
+				{
+					if ('string' === typeof top) 
+					{
+						S.top = top;
+						bottom = '';
+					}
+				}
+				
+				if ('number' === typeof bottom) 
+				{
+					S.bottom = bottom +'px';
+					S.top = '';
+				}
+				else 
+				{
+					if ('string' === typeof bottom) 
+					{
+						S.bottom = bottom;
+						S.top = '';
+					}
+				}
+				
+				if ('number' === typeof left) 
+				{
+					S.left = left +'px';
+					right = '';
+				}
+				else 
+				{
+					if ('string' === typeof left) 
+					{
+						S.left = left;
+						right = '';
+					}
+				}
+				
+				if ('number' === typeof right) 
+				{
+					S.right = right +'px';
+					S.left = '';
+				}
+				else 
+				{
+					if ('string' === typeof right) 
+					{
+						S.right = right;
+						S.left = '';
+					}
+				}
+				
+				if ('number' === typeof zIndex) 
+				{
+					S.zIndex = parseInt(zIndex, 10);
+				}
+			}
+		},
+		
+		getPosition: function(keepAsValues)
+		{
+			var S = this.style;
+			if (S) 
+			{
+				if (keepAsValues) 
+				{
+					return {
+						top: S.top,
+						right: S.right,
+						bottom: S.bottom,
+						left: S.left,
+						z: S.zIndex,
+						position: S.position
+					};
+				}
+				else 
+				{
+					return {
+						top: parseFloat(S.top)||0,
+						right: parseFloat(S.right)||0,
+						bottom: parseFloat(S.bottom)||0,
+						left: parseFloat(S.left)||0,
+						z: S.zIndex,
+						position: S.position
+					};
+				}
+			}
+			return null;
+		},
+		
+		setXY: function (x, y)
+		{
+			var S = this.style;
+			if (S) 
+			{
 				if ('number' === typeof x) 
 				{
 					if (S.right) 
@@ -654,14 +763,10 @@
 						}
 					}
 				}
-				if ('number' === typeof z) 
-				{
-					S.zIndex = parseInt(z, 10);
-				}
 			}
 		},
 		
-		getPosition: function(keepAsValues)
+		getXY: function (keepAsValues)
 		{
 			var S = this.style;
 			if (S) 
@@ -670,18 +775,14 @@
 				{
 					return {
 						x: S.left || S.right,
-						y: S.top || S.bottom,
-						z: S.zIndex,
-						position: S.position
+						y: S.top || S.bottom
 					};
 				}
 				else 
 				{
 					return {
 						x: parseFloat(S.left || S.right) || 0,
-						y: parseFloat(S.top || S.bottom) || 0,
-						z: S.zIndex,
-						position: S.position
+						y: parseFloat(S.top || S.bottom) || 0
 					};
 				}
 			}
@@ -704,7 +805,7 @@
 			return null;
 		},
 		
-		invertXYAxis: function(x, y)
+		invertXY: function(x, y)
 		{
 			var S = this.style;
 			if (S) 
@@ -797,10 +898,10 @@
 		
 		/// AREA
 		
-		setArea: function(width, height, x, y, z, positionType)
+		setArea: function(width, height, x, y)
 		{
 			this.setSize(width, height);
-			this.setPosition(x, y, z, positionType);
+			this.setXY(x, y);
 		},
 		
 		getArea: function(keepAsValues)
@@ -813,10 +914,8 @@
 					return {
 						x: S.left || S.right,
 						y: S.top || S.bottom,
-						z: S.zIndex,
 						width: S.width,
-						height: S.height,
-						position: S.position
+						height: S.height
 					};
 				}
 				else 
@@ -824,10 +923,8 @@
 					return {
 						x: parseFloat(S.left || S.right) || 0,
 						y: parseFloat(S.top || S.bottom) || 0,
-						z: S.zIndex,
 						width: parseFloat(S.width) || 0,
-						height: parseFloat(S.height) || 0,
-						position: S.position
+						height: parseFloat(S.height) || 0
 					};
 				}
 			}
@@ -1386,7 +1483,7 @@
 		
 		/// NODE
 		
-		createElement: function(tagName, id, width, height, x, y, z, positionType)
+		createElement: function(tagName, id, width, height, top, left, bottom, right, zIndex, positionType)
 		{
 			if ('string' === typeof tagName) 
 			{
@@ -1398,7 +1495,8 @@
 						tagName.id = id;
 					}
 					this.style = (this.element = tagName).style;
-					this.setArea(width, height, x, y, z, positionType);
+					this.setPosition(top, right, bottom, left, zIndex, positionType);
+					this.setSize(width, height);
 				}
 			}
 		},
@@ -1840,4 +1938,4 @@
 		}
 	};
 
-	leaf.ElementHandler.prototype.core = leaf.DOM.core;
+	leaf.ElementHandler.prototype.core = leaf.Util.core;

@@ -163,7 +163,7 @@ else if (window.ActiveXObject) {
 		var i = 6;
 		var o;
 		while (i--) // optimum JavaScript iterator
-			{
+		{
 			try // try catch allow iteration thru versions
 				{
 				o = new A(V[i]);
@@ -681,7 +681,7 @@ else {
 						right: S.right,
 						bottom: S.bottom,
 						left: S.left,
-						z: S.zIndex,
+						zIndex: S.zIndex,
 						position: S.position
 					};
 				}
@@ -692,7 +692,7 @@ else {
 						right: parseFloat(S.right)||0,
 						bottom: parseFloat(S.bottom)||0,
 						left: parseFloat(S.left)||0,
-						z: S.zIndex,
+						zIndex: S.zIndex,
 						position: S.position
 					};
 				}
@@ -789,22 +789,7 @@ else {
 			return null;
 		},
 		
-		getOffset: function()
-		{
-			var E = this.element;
-			if (E) 
-			{
-				return {
-					x: E.offsetLeft,
-					y: E.offsetTop,
-					width: E.offsetWidth,
-					height: E.offsetHeight,
-					parent: E.offsetParent
-				};
-			}
-			return null;
-		},
-		
+				
 		invertXY: function(x, y)
 		{
 			var S = this.style;
@@ -837,6 +822,22 @@ else {
 					}
 				}
 			}
+		},
+		
+		getOffset: function()
+		{
+			var E = this.element;
+			if (E) 
+			{
+				return {
+					x: E.offsetLeft,
+					y: E.offsetTop,
+					width: E.offsetWidth,
+					height: E.offsetHeight,
+					parent: E.offsetParent
+				};
+			}
+			return null;
 		},
 		
 		

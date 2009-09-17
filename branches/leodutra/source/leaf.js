@@ -1777,9 +1777,9 @@ else
 					cY += o.offsetTop;
 					o = o.parentNode;
 				}
-				if (!(eX < cX - e.offsetWidth || cX + collisorElement.offsetWidth < eX)) 
+				if (!(eX < cX - E.offsetWidth || cX + collisorElement.offsetWidth < eX)) 
 				{
-					return !(eY < cY - e.offsetHeight || cY + collisorElement.offsetHeight < eY);
+					return !(eY < cY - E.offsetHeight || cY + collisorElement.offsetHeight < eY);
 				}
 			}
 			return false;

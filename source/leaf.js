@@ -393,10 +393,10 @@ else
 			// uses hash name to fix IE problems
 			// base code by John Resig of JQuery (Event Contest - www.quirksmode.com)
 			var h = t + f;
-			o['e' + h] = f;
+			o['on' + h] = f;
 			o.attachEvent('on' + t, (o[h] = function()
 			{
-				o['e' + h](event);
+				o['on' + h](event);
 			}));
 		}
 	};
@@ -407,9 +407,9 @@ else
 		{
 			// uses hash name to fix IE problems
 			// base code by John Resig of JQuery, (Event Contest - www.quirksmode.com)
-			o.detachEvent('on' + t, o[(t = t + f)]);
+			o.detachEvent('on' + t, o[(t += f)]);
 			o[t] = null;
-			o['e' + t] = null;
+			o['on' + t] = null;
 		}
 	};
 	

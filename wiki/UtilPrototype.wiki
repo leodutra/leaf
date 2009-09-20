@@ -1,7 +1,7 @@
 #summary Util prototype has common methods and fixes.
 #labels Reference
 ----
-= leaf.Util =
+= leaf.Util (static) =
 == Description ==
 Util has common DOM methods, like getById, new methods (getByClass) and fixes.
 

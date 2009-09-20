@@ -6,4 +6,4 @@ Object prototype wraps methods for common operations. LEAF does not change the n
 
 == Methods ==
 || *Name* || *Arguments* || *Return* || *Description* ||
-||extend||Object, Object||Object||Creates a object that uses the first passed object as prototype then extends, that, with the properties and methods of the second argume
+||extend||Object, Object||Object||Creates a object that uses the first passed object as prototype then extends, that, with the properties and methods of the second argument||

@@ -1,0 +1,10 @@
+#summary Mouse prototype wraps methods for mouse data.
+#labels Reference
+----
+= leaf.Mouse =
+== Description ==
+Mouse prototype provides cross-browser functions for mouse event handling.
+
+== Methods ==
+|| *Name* || *Arguments* || *Return* || *Description* ||
+||getXY||MouseEvent||{x:Number, y:Number}||returns mouse position from the given mouse event object||

@@ -1,4 +1,4 @@
-#summary Array prototype
+#summary Array prototype eases array manipulation.
 #labels Phase-Implementation
 
 == About ==

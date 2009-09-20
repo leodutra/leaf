@@ -1,8 +1,6 @@
 #summary Ajax prototype eases the use of the great Ajax.
 #labels Reference
-
 ----
-
 = leaf.Ajax =
 == Description ==
 Ajax prototype is not complete yet. Now it has only a fix for the "XMLHttpRequest (XHR) problem".

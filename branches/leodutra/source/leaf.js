@@ -1,7 +1,7 @@
 	
 	/*  LEAF JavaScript Library
 	 *  Leonardo Dutra
-	 *  v0.8.5a
+	 *  v0.8.6a
 	 *
 	 *  Copyright (c) 2009, Leonardo Dutra Constâncio.
 	 *  All rights reserved.
@@ -182,7 +182,7 @@ else {
 	
 	leaf.Mouse = {
 		
-		getPosition: function(mouseEvent)
+		getXY: function(mouseEvent)
 		{
 			if ('object' === typeof(mouseEvent = mouseEvent || event)) 
 			{
@@ -627,7 +627,7 @@ else
 						bottom: S.bottom,
 						left: S.left,
 						zIndex: S.zIndex,
-						position: S.position
+						type: S.position
 					};
 				}
 				else 
@@ -638,7 +638,7 @@ else
 						bottom: parseFloat(S.bottom)||0,
 						left: parseFloat(S.left)||0,
 						zIndex: S.zIndex,
-						position: S.position
+						type: S.position
 					};
 				}
 			}
@@ -1399,6 +1399,7 @@ else
 					this.style = (this.element = tagName).style;
 					this.addClass(classNames);
 					this.setCSS(cssObj);
+					// setContent when fixed for before append
 				}
 			}
 		},

@@ -1,5 +1,5 @@
 #summary Array prototype eases array manipulation.
-#labels Phase-Implementation
+#labels Reference
 ----
 == Description ==
 Array prototype wraps methods for common array operations. LEAF does not change the native Array prototype, since this could impact in other libs and works.

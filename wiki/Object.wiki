@@ -1,4 +1,4 @@
-#summary Object prototype eases Object operations.
+#summary Object prototype wraps methods for objects.
 #labels Reference
 ----
 == Description ==

@@ -1,7 +1,7 @@
 #summary Window prototype fixes window native object.
 #labels Reference
 ----
-= leaf.Window =
+= leaf.Window (static) =
 == Description ==
 Window prototype fixes problems with the native window object. LEAF does not change the native prototype, since this could impact in other libs and works.
 

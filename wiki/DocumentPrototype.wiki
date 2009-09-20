@@ -1,7 +1,7 @@
 #summary Document prototype fixes Document native object.
 #labels Reference
 ----
-= leaf.Document =
+= leaf.Document (static) =
 == Description ==
 Document prototype fixes problems with the native document object. LEAF does not change the native prototype, since this could impact in other libs and works.
 

@@ -2,6 +2,9 @@
 #labels Phase-Implementation
 LEAF does not change the native Array prototype, since this could impact in other libs and works.
 
+=== Description === 
+Array prototype wraps methods for common array operations. LEAF does not change the native Array prototype, since this could impact in other libs and works.
+
 ----
 == Methods ==
 || *Name* || *Arguments* || *Return* || *Description* ||

@@ -1,8 +1,6 @@
 #summary Array prototype eases array manipulation.
 #labels Phase-Implementation
-
-=== Description ===
-Array is a static prototype that wraps methods for arrays. LEAF does not change the native Array prototype, since this could impact in other libs and works.
+LEAF does not change the native Array prototype, since this could impact in other libs and works.
 
 ----
 == Methods ==

@@ -1,9 +1,7 @@
-#summary Object prototype wraps methods for objects.
 #labels Reference
+= leaf.Object =
+#summary Object prototype wraps methods for objects.
 ----
-*leaf.Object*
-
-
 == Description ==
 Object prototype wraps methods for common operations. LEAF does not change the native Object prototype, since this could impact in other libs and works.
 

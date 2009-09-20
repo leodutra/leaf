@@ -1,7 +1,7 @@
 #summary Mouse prototype wraps methods for mouse data.
 #labels Reference
 ----
-= leaf.Mouse =
+= leaf.Mouse (static) =
 == Description ==
 Mouse prototype provides cross-browser functions for mouse event handling.
 

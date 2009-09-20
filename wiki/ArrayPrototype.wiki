@@ -6,4 +6,4 @@ Array prototype wraps methods for common array operations. LEAF does not change 
 
 == Methods ==
 || *Name* || *Arguments* || *Return* || *Description* ||
-||each||Array, Function||void||Calls the function to handle each array item. The function will receive as argument: item, index; and any "this" inside function will be a pointer to the iterated array.||
+||each||Array, Function||void||Calls the function to handle each array item. The function will receive as argument: item, index; and any "this" inside function will be a pointer to the iterated array||

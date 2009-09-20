@@ -2,6 +2,7 @@
 #labels Reference
 ----
 == Description ==
+*leaf.Object*
 Object prototype wraps methods for common operations. LEAF does not change the native Object prototype, since this could impact in other libs and works.
 
 == Methods ==

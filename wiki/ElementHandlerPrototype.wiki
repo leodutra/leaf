@@ -22,4 +22,5 @@ Handles HTML Elements fixing compatibility problems. It's a real JavaScript prot
 ||getXY||void||{x:CSSValue, y:CSSValue}||||
 ||invertXY||x:boolean, y:boolean||void||||
 ||getOffset||void||{x:Number, y:Number, width:Number, height:Number, parent:Node}||||
-* More soon... * 
+
+*More soon...* 

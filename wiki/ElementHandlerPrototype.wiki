@@ -7,19 +7,19 @@ Handles HTMLElements fixing compatibility problems. It's a real JavaScript proto
 
 == Methods ==
 || *Name* || *Arguments* || *Return* || *Description* ||
-ElementHandler (constructor)||element:HTMLElement or String(id)||void||||
-setElement||element:HTMLElement or String(id)||void||||
-getElement||void||HTMLElement||||
-getStyle||void||HTMLStyleObject||||
-addListener
-removeListener
-dispatchEvent
-addClass||Array or String||void||||
-removeClass||Array or String||void||||
-setPosition||top:CSSValue, right:CSSValue, bottom:CSSValue, left:CSSValue, type:CSSValue||void||||
-getPosition||void||{top:CSSValue, right:CSSValue, bottom:CSSValue, left:CSSValue, type:CSSValue}||||
-setXY||x:CSSValue, y:CSSValue||void||||
-getXY||void||x:CSSValue, y:CSSValue||||
-invertXY||x:boolean, y:boolean||void||||
-getOffset||void||{x:Number, y:Number, width:Number, height:Number, parent:Node}||||
+||ElementHandler (constructor)||element:HTMLElement or String(id)||void||||
+||setElement||element:HTMLElement or String(id)||void||||
+||getElement||void||HTMLElement||||
+||getStyle||void||HTMLStyleObject||||
+||addListener
+||removeListener
+||dispatchEvent
+||addClass||Array or String||void||||
+||removeClass||Array or String||void||||
+||setPosition||top:CSSValue, right:CSSValue, bottom:CSSValue, left:CSSValue, type:CSSValue||void||||
+||getPosition||void||{top:CSSValue, right:CSSValue, bottom:CSSValue, left:CSSValue, type:CSSValue}||||
+||setXY||x:CSSValue, y:CSSValue||void||||
+||getXY||void||x:CSSValue, y:CSSValue||||
+||invertXY||x:boolean, y:boolean||void||||
+||getOffset||void||{x:Number, y:Number, width:Number, height:Number, parent:Node}||||
 *More soon...*

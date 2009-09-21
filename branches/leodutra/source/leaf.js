@@ -1,7 +1,7 @@
 	
 	/*  LEAF JavaScript Library
 	 *  Leonardo Dutra
-	 *  v0.8.7a
+	 *  v0.8.8a
 	 *
 	 *  Copyright (c) 2009, Leonardo Dutra Constâncio.
 	 *  All rights reserved.
@@ -1383,7 +1383,7 @@ else
 		
 		/// NODE
 		
-		createElement: function(tagName, id, classNames, cssObj)
+		createElement: function(tagName, id, classNames, cssObj, content)
 		{
 			if ('string' === typeof tagName) 
 			{
@@ -1397,7 +1397,7 @@ else
 					this.style = (this.element = tagName).style;
 					this.addClass(classNames);
 					this.setCSS(cssObj);
-					// setContent when fixed for before append
+					this.setContent(content);
 				}
 			}
 		},

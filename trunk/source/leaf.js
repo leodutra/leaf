@@ -1,7 +1,7 @@
 	
 	/*  LEAF JavaScript Library
 	 *  Leonardo Dutra
-	 *  v0.8.6a
+	 *  v0.8.7a
 	 *
 	 *  Copyright (c) 2009, Leonardo Dutra Constâncio.
 	 *  All rights reserved.
@@ -880,29 +880,27 @@ else
 		
 		/// CONTENT
 		
-		setContent: function(value)
+		setContent: function(content)
 		{
-			/* FIXME: IE6 dont allow changes to innerHTML when element was not appended yet */
-			var E = this.element;
-			if (E && !(value === null && value === undefined)) 
+			// !: IE sets parentNode as fragment when innerHTML or text is inserted before element append  
+			if (this.element) 
 			{
-				E.innerHTML = value;
+				this.element.innerHTML = content === null || content === undefined ? '' : content;
 			}
 		},
 		
 		getContent: function()
 		{
-			var E = this.element;
-			return E && E.innerHTML || '';
+			return this.element && this.element.innerHTML || '';
 		},
 		
-		addContent: function(value)
+		addContent: function(content)
 		{
-			/* FIXME: IE6 dont allow changes to innerHTML when element was not appended yet */
+			// !: IE sets parentNode as fragment when innerHTML or text is inserted before element append
 			var E = this.element;
-			if (E && !(value === null && value === undefined)) 
+			if (E && !(content === null || content === undefined)) 
 			{
-				E.innerHTML += value;
+				E.innerHTML = (E.innerHTML||'') +content;
 			}
 		},
 		
@@ -1426,7 +1424,7 @@ else
 		append: function(parent)
 		{
 			var E = this.element;
-			if (E && !E.parentNode) 
+			if (E && (!E.parentNode||E.parentNode.nodeType===11)) // when content is changed before append, parentNode on IE is a fragment
 			{
 				// optimum if for parent
 				if (parent ? 'string' === typeof parent ? parent = document.getElementById(parent) :
@@ -1440,7 +1438,8 @@ else
 		insertBefore: function(node)
 		{
 			var E = this.element;
-			if (E && !E.parentNode && (node.nodeType && node.parentNode ||(node = document.getElementById(node)))) 
+			 // when content is changed before append, parentNode on IE is a fragment
+			if (E && (!E.parentNode||E.parentNode.nodeType===11) && (node.nodeType && node.parentNode ||(node = document.getElementById(node)))) 
 			{
 				node.parentNode.insertBefore(E, node);
 			}
@@ -1449,7 +1448,8 @@ else
 		insertAfter: function(node)
 		{
 			var E = this.element;
-			if (E && !E.parentNode && (node.nodeType && node.parentNode ||(node = document.getElementById(node)))) 
+			 // when content is changed before append, parentNode on IE is a fragment
+			if (E && (!E.parentNode||E.parentNode.nodeType===11) && (node.nodeType && node.parentNode ||(node = document.getElementById(node)))) 
 			{
 				if (node.nextSibling) 
 				{
@@ -1465,7 +1465,7 @@ else
 		insertAsFirst: function(parent)
 		{
 			var E = this.element;
-			if (E && !E.parentNode) 
+			if (E && (!E.parentNode||E.parentNode.nodeType===11)) // when content is changed before append, parentNode on IE is a fragment
 			{	
 				// optimum if for parent
 				if (parent ? 'string' === typeof parent ? parent = document.getElementById(parent) :
@@ -1573,7 +1573,7 @@ else
 			return this.element && this.element.childNodes[index] || null;
 		},
 		
-		isChild: function(node)
+		hasChild: function(node)
 		{
 			return this.element && node && node.parentNode === this.element || false;		
 		},

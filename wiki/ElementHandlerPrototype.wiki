@@ -11,9 +11,10 @@ Handles HTMLElements fixing compatibility problems. It's a real JavaScript proto
 ||setElement||element:HTMLElement or String(id)||void||||
 ||getElement||void||HTMLElement||||
 ||getStyle||void||HTMLStyleObject||||
-||addListener
-||removeListener
-||dispatchEvent
+||addListener||EventType, Function||void||Attempt to use "element.addEventListener". If no success, fixes IE removeEvent problem (removeEvent does not remove using native method)||
+||removeListener||EventType, Function||void||Attempt to use "element.removeEventListener". If no success, fixes IE removeEvent problem (removeEvent does not remove using native method. Fix will work only if the listener was attached using LEAF "addListener")||
+tive method)||
+||dispatchEvent||EventType||void||Dispatch an event call (cross-browser)||
 ||addClass||Array or String||void||||
 ||removeClass||Array or String||void||||
 ||setPosition||top:CSSValue, right:CSSValue, bottom:CSSValue, left:CSSValue, type:CSSValue||void||||

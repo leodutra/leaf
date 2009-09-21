@@ -3,7 +3,7 @@
 ----
 = leaf.ElementHandler =
 == Description ==
-Handles HTML Elements fixing compatibility problems. It's a real JavaScript prototype, so will save memory. The ElementHandler provides nice methods to ease style control with an amazing performance.
+Handles HTML Elements fixing compatibility problems. It's a real JavaScript prototype, so will save memory. The ElementHandler provides lots of methods to ease style control and elements manipulation with an amazing performance.
 
 == Methods ==
 || *Name* || *Arguments* || *Return* || *Description* ||

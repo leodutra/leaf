@@ -1,7 +1,7 @@
 	
 	/*  LEAF JavaScript Library
 	 *  Leonardo Dutra
-	 *  v0.8.8a
+	 *  v0.8.9a
 	 *
 	 *  Copyright (c) 2009, Leonardo Dutra Constâncio.
 	 *  All rights reserved.
@@ -110,7 +110,7 @@
 		},
 		dispatchEvent: function(type)
 		{
-			leaf.Util.core.addListener(window, type);
+			leaf.Util.core.dispatchEvent(window, type);
 		}
 	};
 	
@@ -129,7 +129,7 @@
 		},
 		dispatchEvent: function(type)
 		{
-			leaf.Util.core.addListener(document, type);
+			leaf.Util.core.dispatchEvent(document, type);
 		}
 	};
 	

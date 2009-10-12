@@ -1,7 +1,7 @@
 	
 	/*  LEAF JavaScript Library
 	 *  Leonardo Dutra
-	 *  v0.8.9a
+	 *  v0.8.10a
 	 *
 	 *  Copyright (c) 2009, Leonardo Dutra Constâncio.
 	 *  All rights reserved.
@@ -35,7 +35,7 @@
 	/* This ALPHA version implements:
 	 *
 	 * leaf.Array
-	 *     .Object     
+	 *     .Object
 	 *     .AJAX       (in reseach for more)
 	 *     .Window
 	 *     .Document   (in reseach for more)
@@ -54,7 +54,7 @@
 	/// ARRAY
 	
 	leaf.Array = {
-
+	
 		each: function(array, itemHandler)
 		{
 			if (array instanceof Array && 'function' === typeof itemHandler) 
@@ -77,15 +77,34 @@
 	/// OBJECT
 	
 	leaf.Object = {
-		
+	
 		extend: function(superObject, extension)
 		{
-			if (superObject && extension)
+			if (superObject && extension && superObject !== extension) 
 			{
-				var o = function () {};
-				o.prototype = superObject;
-				o = new o();
-				for (var n in extension) 
+				var o;
+				var n;
+				if (superObject.constructor)
+				{
+					(o = function(){}).prototype = superObject;
+					o = new o();
+				}
+				// else, is an IE internal behaving as an object
+				else 
+				{
+					o = {};
+					var e; // exception holder
+					for (n in superObject) 
+					{
+						// try is slow inside iterations but avoid API failures in this case
+						try 
+						{
+							o[n] = superObject[n];
+						}
+						catch (e) {}
+					}
+				}
+				for (n in extension) 
 				{
 					o[n] = extension[n];
 				}
@@ -118,7 +137,7 @@
 	/// DOCUMENT
 	
 	leaf.Document = {
-		
+	
 		addListener: function(type, handlerFn)
 		{
 			leaf.Util.core.addListener(document, type, handlerFn);
@@ -138,50 +157,50 @@
 	
 	leaf.Ajax = {};
 	
-if (window.XMLHttpRequest) {
-	
-	leaf.Ajax.createRequester = function()
+	if (window.XMLHttpRequest) 
 	{
-		return new XMLHttpRequest();
-	};
-}
-else {
-	
-	leaf.Ajax.createRequester = function()
-	{	
-		// if no return, fix for IE
-		var A = ActiveXObject; // cache
-		// array of ActiveX versions
-		var V = [
-			'Microsoft.XMLHTTP',
-			'MSXML2.XMLHTTP',
-			'MSXML2.XMLHTTP.3.0',
-			'MSXML2.XMLHTTP.4.0',
-			'MSXML2.XMLHTTP.5.0',
-			'MSXML2.XMLHTTP.6.0'
-		]; 
-		var i = 6;
-		var o;
-		while (i--) // optimum JavaScript iterator
+		leaf.Ajax.createRequester = function()
 		{
-			try // try catch allow iteration thru versions
+			return new XMLHttpRequest();
+		};
+	}
+	else 
+	{
+		leaf.Ajax.createRequester = function()
+		{
+			// if no return, fix for IE
+			var A = ActiveXObject; // cache
+			// array of ActiveX versions
+			var V = [
+				'Microsoft.XMLHTTP', 
+				'MSXML2.XMLHTTP', 
+				'MSXML2.XMLHTTP.3.0', 
+				'MSXML2.XMLHTTP.4.0', 
+				'MSXML2.XMLHTTP.5.0', 
+				'MSXML2.XMLHTTP.6.0'
+			];
+			var i = 6;
+			var o;
+			while (i--) // optimum JavaScript iterator
+	 		{
+				try // try catch allow iteration thru versions
+	 			{
+					o = new A(V[i]);
+					return o;
+				} 
+				catch (o) 
 				{
-				o = new A(V[i]);
-				return o;
-			} 
-			catch (o) 
-			{
+				}
 			}
-		}
-		return null;
-	};
-}
+			return null;
+		};
+	}
 	
 	
 	/// MOUSE
 	
 	leaf.Mouse = {
-		
+	
 		getXY: function(mouseEvent)
 		{
 			if ('object' === typeof(mouseEvent = mouseEvent || event)) 
@@ -218,7 +237,7 @@ else {
 	/// DOM
 	
 	leaf.Util = {
-		
+	
 		getById: function(ids)
 		{
 			if (ids instanceof Array) 
@@ -310,16 +329,17 @@ else {
 			if (domObj) 
 			{
 				this.core.purgeDOM(domObj);
-				if (domObj.parentNode) {
+				if (domObj.parentNode) 
+				{
 					domObj.parentNode.removeChild(domObj);
 				}
 			}
 		},
 		
 		core: {
-			
+		
 			// TODO: verify if arguments.callee leaks. If leaks, review all purge use
-			purgeDOM:  function(o)
+			purgeDOM: function(o)
 			{
 				// base code: www.crockford.com
 				var a = o.attributes;
@@ -352,77 +372,77 @@ else {
 			}
 		}
 	};
-
-if (window.addEventListener) 
-{
-
-	leaf.Util.core.addListener = function(o, t, f)
-	{
-		if (o && 'string' === typeof t && 'function' === typeof f) 
-		{
-			o.addEventListener(t, f, false);
-		}
-	};
 	
-	leaf.Util.core.removeListener = function(o, t, f)
+	if (window.addEventListener) 
 	{
-		if (o && 'string' === typeof t && 'function' === typeof f) 
-		{
-			o.removeEventListener(t, f, false);
-		}
-	};
 	
-	leaf.Util.core.dispatchEvent = function(o, t)
-	{
-		if (o && 'string' === typeof t) 
+		leaf.Util.core.addListener = function(o, t, f)
 		{
-			var e = document.createEvent('HTMLEvents');
-			e.initEvent(t, true, true); // event type, bubbling, cancelable
-			o.dispatchEvent(e);
-		}
-	};
-	
-}
-else
-{
-
-	leaf.Util.core.addListener = function(o, t, f)
-	{
-		if (o && 'string' === typeof t && 'function' === typeof f) 
-		{
-			// uses hash name to fix IE problems
-			// base code by John Resig of JQuery (Event Contest - www.quirksmode.com)
-			var h = t + f;
-			o['on' + h] = f;
-			o.attachEvent('on' + t, (o[h] = function()
+			if (o && 'string' === typeof t && 'function' === typeof f) 
 			{
-				o['on' + h](event);
-			}));
-		}
-	};
-	
-	leaf.Util.core.removeListener = function(o, t, f)
-	{
-		if (o && 'string' === typeof t && 'function' === typeof f) 
+				o.addEventListener(t, f, false);
+			}
+		};
+		
+		leaf.Util.core.removeListener = function(o, t, f)
 		{
-			// uses hash name to fix IE problems
-			// base code by John Resig of JQuery, (Event Contest - www.quirksmode.com)
-			o.detachEvent('on' + t, o[(t += f)]);
-			o[t] = null;
-			o['on' + t] = null;
-		}
-	};
-	
-	leaf.Util.core.dispatchEvent = function(o, t)
-	{
-		if (o && 'string' === typeof t) 
+			if (o && 'string' === typeof t && 'function' === typeof f) 
+			{
+				o.removeEventListener(t, f, false);
+			}
+		};
+		
+		leaf.Util.core.dispatchEvent = function(o, t)
 		{
-			// dispatch for IE
-			o.fireEvent('on' + t, document.createEventObject());
-		}
-	};
-}
-
+			if (o && 'string' === typeof t) 
+			{
+				var e = document.createEvent('HTMLEvents');
+				e.initEvent(t, true, true); // event type, bubbling, cancelable
+				o.dispatchEvent(e);
+			}
+		};
+		
+	}
+	else 
+	{
+	
+		leaf.Util.core.addListener = function(o, t, f)
+		{
+			if (o && 'string' === typeof t && 'function' === typeof f) 
+			{
+				// uses hash name to fix IE problems
+				// base code by John Resig of JQuery (Event Contest - www.quirksmode.com)
+				var h = t + f;
+				o['on' + h] = f;
+				o.attachEvent('on' + t, (o[h] = function()
+				{
+					o['on' + h](event);
+				}));
+			}
+		};
+		
+		leaf.Util.core.removeListener = function(o, t, f)
+		{
+			if (o && 'string' === typeof t && 'function' === typeof f) 
+			{
+				// uses hash name to fix IE problems
+				// base code by John Resig of JQuery, (Event Contest - www.quirksmode.com)
+				o.detachEvent('on' + t, o[(t += f)]);
+				o[t] = null;
+				o['on' + t] = null;
+			}
+		};
+		
+		leaf.Util.core.dispatchEvent = function(o, t)
+		{
+			if (o && 'string' === typeof t) 
+			{
+				// dispatch for IE
+				o.fireEvent('on' + t, document.createEventObject());
+			}
+		};
+	}
+	
 	
 	/// ElementHandler
 	
@@ -438,9 +458,8 @@ else
 	
 		// internal vars
 		element: null,
-		style:   null,
-		core:    null, // used later on code
-		
+		style: null,
+		core: null, // used later on code
 		ElementHandler: function(element)
 		{
 			this.setElement(element);
@@ -495,7 +514,7 @@ else
 				var i = 0;
 				while (i < L) 
 				{
-				// test avoids residual className problem
+					// test avoids residual className problem
 					if (R.test(classNames[i])) 
 					{
 						i += 1;
@@ -526,9 +545,9 @@ else
 					{
 						if (R.test(c[i])) 
 						{
-							i += 1;	
+							i += 1;
 						}
-						else
+						else 
 						{
 							K[n++] = c[i++];
 						}
@@ -546,14 +565,14 @@ else
 			var S = this.style;
 			if (S) 
 			{
-				if ('string' === typeof type)
+				if ('string' === typeof type) 
 				{
 					S.position = type;
 				}
 				
 				if ('number' === typeof top) 
 				{
-					S.top = top +'px';
+					S.top = top + 'px';
 					bottom = '';
 				}
 				else 
@@ -567,7 +586,7 @@ else
 				
 				if ('number' === typeof bottom) 
 				{
-					S.bottom = bottom +'px';
+					S.bottom = bottom + 'px';
 					S.top = '';
 				}
 				else 
@@ -581,7 +600,7 @@ else
 				
 				if ('number' === typeof left) 
 				{
-					S.left = left +'px';
+					S.left = left + 'px';
 					right = '';
 				}
 				else 
@@ -595,7 +614,7 @@ else
 				
 				if ('number' === typeof right) 
 				{
-					S.right = right +'px';
+					S.right = right + 'px';
 					S.left = '';
 				}
 				else 
@@ -633,10 +652,10 @@ else
 				else 
 				{
 					return {
-						top: parseFloat(S.top)||0,
-						right: parseFloat(S.right)||0,
-						bottom: parseFloat(S.bottom)||0,
-						left: parseFloat(S.left)||0,
+						top: parseFloat(S.top) || 0,
+						right: parseFloat(S.right) || 0,
+						bottom: parseFloat(S.bottom) || 0,
+						left: parseFloat(S.left) || 0,
 						zIndex: S.zIndex,
 						type: S.position
 					};
@@ -645,7 +664,7 @@ else
 			return null;
 		},
 		
-		setXY: function (x, y)
+		setXY: function(x, y)
 		{
 			var S = this.style;
 			if (S) 
@@ -711,7 +730,7 @@ else
 			}
 		},
 		
-		getXY: function (keepAsValues)
+		getXY: function(keepAsValues)
 		{
 			var S = this.style;
 			if (S) 
@@ -734,7 +753,7 @@ else
 			return null;
 		},
 		
-				
+		
 		invertXY: function(x, y)
 		{
 			var S = this.style;
@@ -900,7 +919,7 @@ else
 			var E = this.element;
 			if (E && !(content === null || content === undefined)) 
 			{
-				E.innerHTML = (E.innerHTML||'') +content;
+				E.innerHTML = (E.innerHTML || '') + content;
 			}
 		},
 		
@@ -1402,7 +1421,7 @@ else
 			}
 		},
 		
-		createChildElement: function (tagName, id, cssObj, content)
+		createChildElement: function(tagName, id, cssObj, content)
 		{
 			if (this.element && 'string' === typeof tagName) 
 			{
@@ -1424,11 +1443,10 @@ else
 		append: function(parent)
 		{
 			var E = this.element;
-			if (E && (!E.parentNode||E.parentNode.nodeType===11)) // when content is changed before append, parentNode on IE is a fragment
+			if (E && (!E.parentNode || E.parentNode.nodeType === 11)) // when content is changed before append, parentNode on IE is a fragment
 			{
 				// optimum if for parent
-				if (parent ? 'string' === typeof parent ? parent = document.getElementById(parent) :
-				(parent.nodeType === 1 || parent.nodeType === 11) : parent = document.body) 
+				if (parent ? 'string' === typeof parent ? parent = document.getElementById(parent) : (parent.nodeType === 1 || parent.nodeType === 11) : parent = document.body) 
 				{
 					parent.appendChild(E);
 				}
@@ -1438,8 +1456,8 @@ else
 		insertBefore: function(node)
 		{
 			var E = this.element;
-			 // when content is changed before append, parentNode on IE is a fragment
-			if (E && (!E.parentNode||E.parentNode.nodeType===11) && (node.nodeType && node.parentNode ||(node = document.getElementById(node)))) 
+			// when content is changed before append, parentNode on IE is a fragment
+			if (E && (!E.parentNode || E.parentNode.nodeType === 11) && (node.nodeType && node.parentNode || (node = document.getElementById(node)))) 
 			{
 				node.parentNode.insertBefore(E, node);
 			}
@@ -1448,8 +1466,8 @@ else
 		insertAfter: function(node)
 		{
 			var E = this.element;
-			 // when content is changed before append, parentNode on IE is a fragment
-			if (E && (!E.parentNode||E.parentNode.nodeType===11) && (node.nodeType && node.parentNode ||(node = document.getElementById(node)))) 
+			// when content is changed before append, parentNode on IE is a fragment
+			if (E && (!E.parentNode || E.parentNode.nodeType === 11) && (node.nodeType && node.parentNode || (node = document.getElementById(node)))) 
 			{
 				if (node.nextSibling) 
 				{
@@ -1465,11 +1483,10 @@ else
 		insertAsFirst: function(parent)
 		{
 			var E = this.element;
-			if (E && (!E.parentNode||E.parentNode.nodeType===11)) // when content is changed before append, parentNode on IE is a fragment
-			{	
+			if (E && (!E.parentNode || E.parentNode.nodeType === 11)) // when content is changed before append, parentNode on IE is a fragment
+			{
 				// optimum if for parent
-				if (parent ? 'string' === typeof parent ? parent = document.getElementById(parent) :
-				(parent.nodeType === 1 || parent.nodeType === 11) : parent = document.body) 
+				if (parent ? 'string' === typeof parent ? parent = document.getElementById(parent) : (parent.nodeType === 1 || parent.nodeType === 11) : parent = document.body) 
 				{
 					if (parent.firstChild) 
 					{
@@ -1488,14 +1505,14 @@ else
 			var E = this.element;
 			if (E) 
 			{
-				if (E.parentNode)
+				if (E.parentNode) 
 				{
 					E.parentNode.removeChild(E);
 				}
 			}
 		},
 		
-		getParent: function ()
+		getParent: function()
 		{
 			return this.element && this.element.parentNode || null;
 		},
@@ -1575,7 +1592,7 @@ else
 		
 		hasChild: function(node)
 		{
-			return this.element && node && node.parentNode === this.element || false;		
+			return this.element && node && node.parentNode === this.element || false;
 		},
 		
 		getChildElements: function()
@@ -1605,7 +1622,7 @@ else
 		getChildElement: function(elementIndex)
 		{
 			var e = this.element;
-			if (e && 'number' === typeof elementIndex)
+			if (e && 'number' === typeof elementIndex) 
 			{
 				var K = [];
 				var n = 0;
@@ -1708,7 +1725,7 @@ else
 			}
 		},
 		
-		purge: function ()
+		purge: function()
 		{
 			this.core.purgeDOM(this.element);
 			this.removeElement();
@@ -1842,134 +1859,135 @@ else
 	};
 	
 	
-(function ()
-{	
-	var S = document.documentElement.style;
-	
-	
-	/// OPACITY
-	
-	if (S.opacity===undefined)
+	(function()
 	{
-		leaf.ElementHandler.prototype.setOpacity = function(opacity)
-		{
-			if (this.style && 'number' === typeof opacity) 
-			{
-				this.style.filter ='alpha(opacity=' +
-				(opacity < 0 ? 0 : 1 < opacity ? 1 : opacity.toFixed(2) * 100) + ')'; // use IE filter
-			}
-		};
+		var S = document.documentElement.style;
 		
-		leaf.ElementHandler.prototype.getOpacity = function()
+		
+		/// OPACITY
+		
+		if (S.opacity === undefined) 
 		{
-			if (this.element) 
+			leaf.ElementHandler.prototype.setOpacity = function(opacity)
 			{
-				var o;
-				try 
+				if (this.style && 'number' === typeof opacity) 
 				{
-					o = this.element.filters.alpha.opacity / 100;
-					return o;
-				} 
-				catch (o) 
-				{
-					return (o = (/opacity=(\d+)/i).exec(this.style.cssText)) ? o[1] / 100 : 1;
+					this.style.filter = 'alpha(opacity=' +
+					(opacity < 0 ? 0 : 1 < opacity ? 1 : opacity.toFixed(2) * 100) +
+					')'; // use IE filter
 				}
-			}
-			return null;
-		};
-	}
-	else
-	{
-		leaf.ElementHandler.prototype.setOpacity = function(opacity)
-		{
-			if (this.style && 'number' === typeof opacity) 
+			};
+			
+			leaf.ElementHandler.prototype.getOpacity = function()
 			{
-				this.style.opacity = opacity < 0 ? 0 : 1 < opacity ? 1 : opacity.toFixed(2);
-			}
-		};
+				if (this.element) 
+				{
+					var o;
+					try 
+					{
+						o = this.element.filters.alpha.opacity / 100;
+						return o;
+					} 
+					catch (o) 
+					{
+						return (o = (/opacity=(\d+)/i).exec(this.style.cssText)) ? o[1] / 100 : 1;
+					}
+				}
+				return null;
+			};
+		}
+		else 
+		{
+			leaf.ElementHandler.prototype.setOpacity = function(opacity)
+			{
+				if (this.style && 'number' === typeof opacity) 
+				{
+					this.style.opacity = opacity < 0 ? 0 : 1 < opacity ? 1 : opacity.toFixed(2);
+				}
+			};
+			
+			leaf.ElementHandler.prototype.getOpacity = function()
+			{
+				var o = this.style;
+				if (o) 
+				{
+					return isNaN(o = parseFloat(o.opacity)) ? 1 : o;
+				}
+				return null;
+			};
+		}
 		
-		leaf.ElementHandler.prototype.getOpacity = function()
+		
+		/// CSS
+		
+		if (S.cssText === undefined) 
 		{
-			var o = this.style;
-			if (o) 
+			leaf.ElementHandler.prototype.setCSS = function(cssObj)
 			{
-				return isNaN(o = parseFloat(o.opacity)) ? 1 : o;
-			}
-			return null;
-		};
-	}
+				var E = this.element;
+				if (E && cssObj instanceof Object) 
+				{
+					var K = [];
+					var n = 0;
+					var c;
+					for (c in cssObj) 
+					{
+						K[n++] = c + ': ' + cssObj[c] + '\; ';
+					}
+					E.setAttribute('style', (E.getAttribute('style') || '') + K.join(''));
+				}
+			};
+			
+			leaf.ElementHandler.prototype.getCSS = function(property)
+			{
+				var o = this.element;
+				if (o && (o = o.getAttribute('style')) && 'string' === typeof property) 
+				{
+					/* RegExp does not 'compile' on AIR 1.0
+					 * This code is a little more faster than using pure RegExp
+					 */
+					if (-1 < (i = o.search(new RegExp('(?:\\\;|\\s|^)' + property + '\\\:', 'i')))) 
+					{
+						return o.substring((i = o.indexOf(':', i) + 2), (i = o.indexOf('\;', i)) === -1 ? o.length : i);
+					}
+				}
+				return null;
+			};
+		}
+		else 
+		{
+			leaf.ElementHandler.prototype.setCSS = function(cssObj)
+			{
+				var S = this.style;
+				if (S && cssObj instanceof Object) 
+				{
+					var K = [];
+					var n = 0;
+					var c;
+					for (c in cssObj) 
+					{
+						K[n++] = c + ': ' + cssObj[c] + '\; ';
+					}
+					S.cssText = ((c = S.cssText) && (c.charAt(c.length - 1) === '\;' ? c : c + '; ') || '') + K.join('');
+				}
+			};
+			
+			leaf.ElementHandler.prototype.getCSS = function(property)
+			{
+				var o = this.style;
+				if (o && (o = o.cssText) && 'string' === typeof property) 
+				{
+					/* RegExp does not 'compile' on AIR 1.0
+					 * This code is a little more faster than using pure RegExp
+					 */
+					if (-1 < (i = o.search(new RegExp('(?:\\\;|\\s|^)' + property + '\\\:', 'i')))) 
+					{
+						return o.substring((i = o.indexOf(':', i) + 2), (i = o.indexOf('\;', i)) === -1 ? o.length : i);
+					}
+				}
+				return null;
+			};
+		}
+	})();
 	
-	
-	/// CSS
-	
-	if (S.cssText===undefined)
-	{
-		leaf.ElementHandler.prototype.setCSS = function(cssObj)
-		{
-			var E = this.element;
-			if (E && cssObj instanceof Object) 
-			{
-				var K = [];
-				var n = 0;
-				var c;
-				for (c in cssObj) 
-				{
-					K[n++] = c + ': ' + cssObj[c] + '\; ';
-				}
-				E.setAttribute('style', (E.getAttribute('style') || '') + K.join(''));
-			}
-		};
-		
-		leaf.ElementHandler.prototype.getCSS = function(property)
-		{
-			var o = this.element;
-			if (o && (o = o.getAttribute('style')) && 'string' === typeof property) 
-			{
-				/* RegExp does not 'compile' on AIR 1.0
-				 * This code is a little more faster than using pure RegExp
-				 */
-				if (-1 < (i = o.search(new RegExp('(?:\\\;|\\s|^)' + property + '\\\:', 'i')))) 
-				{
-					return o.substring((i = o.indexOf(':', i) + 2), (i = o.indexOf('\;', i)) === -1 ? o.length : i);
-				}
-			}
-			return null;
-		};
-	}
-	else
-	{
-		leaf.ElementHandler.prototype.setCSS = function(cssObj)
-		{
-			var S = this.style;
-			if (S && cssObj instanceof Object) 
-			{
-				var K = [];
-				var n = 0;
-				var c;
-				for (c in cssObj) 
-				{
-					K[n++] = c + ': ' + cssObj[c] + '\; ';
-				}
-				S.cssText = ((c = S.cssText) && (c.charAt(c.length - 1) === '\;' ? c : c + '; ') || '') + K.join('');
-			}
-		};
-		
-		leaf.ElementHandler.prototype.getCSS = function(property)
-		{
-			var o = this.style;
-			if (o && (o = o.cssText) && 'string' === typeof property) 
-			{
-				/* RegExp does not 'compile' on AIR 1.0
-				 * This code is a little more faster than using pure RegExp
-				 */
-				if (-1 < (i = o.search(new RegExp('(?:\\\;|\\s|^)' + property + '\\\:', 'i')))) 
-				{
-					return o.substring((i = o.indexOf(':', i) + 2), (i = o.indexOf('\;', i)) === -1 ? o.length : i);
-				}
-			}
-			return null;
-		};
-	}
-})();
-
 	leaf.ElementHandler.prototype.core = leaf.Util.core;

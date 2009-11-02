@@ -234,7 +234,7 @@
 	};
 	
 	
-	/// DOM
+	/// UTIL
 	
 	leaf.Util = {
 	
@@ -480,9 +480,6 @@
 			return this.style;
 		},
 		
-		
-		/// EVENT
-		
 		addListener: function(type, handlerFn)
 		{
 			this.core.addListener(this.element, type, handlerFn);
@@ -497,9 +494,6 @@
 		{
 			this.core.dispatchEvent(this.element, type);
 		},
-		
-		
-		/// CLASS
 		
 		// TODO: benchmark
 		addClass: function(classNames)
@@ -556,9 +550,6 @@
 				}
 			}
 		},
-		
-		
-		/// POSITION	
 		
 		setPosition: function(top, right, bottom, left, zIndex, type)
 		{
@@ -804,9 +795,6 @@
 			return null;
 		},
 		
-		
-		/// SIZE
-		
 		setSize: function(width, height)
 		{
 			var S = this.style;
@@ -860,9 +848,6 @@
 			return null;
 		},
 		
-		
-		/// AREA
-		
 		setArea: function(width, height, x, y)
 		{
 			this.setSize(width, height);
@@ -896,9 +881,6 @@
 			return null;
 		},
 		
-		
-		/// CONTENT
-		
 		setContent: function(content)
 		{
 			// !: IE sets parentNode as fragment when innerHTML or text is inserted before element append  
@@ -922,9 +904,6 @@
 				E.innerHTML = (E.innerHTML || '') + content;
 			}
 		},
-		
-		
-		/// BACKGROUND
 		
 		setBackground: function(color, src, x, y, repeat)
 		{
@@ -978,9 +957,6 @@
 			}
 			return null;
 		},
-		
-		
-		/// FONT
 		
 		setFont: function(color, size, family, weight, style, spacing, lineHeight, useSmallCaps)
 		{
@@ -1079,9 +1055,6 @@
 			return null;
 		},
 		
-		
-		/// BORDER
-		
 		setBorder: function(color, width, style)
 		{
 			var S = this.style;
@@ -1119,9 +1092,6 @@
 			}
 			return null;
 		},
-		
-		
-		/// PADDING
 		
 		setPadding: function(top, right, bottom, left)
 		{
@@ -1202,9 +1172,6 @@
 			return null;
 		},
 		
-		
-		/// MARGIN
-		
 		setMargin: function(top, right, bottom, left)
 		{
 			var S = this.style;
@@ -1284,9 +1251,6 @@
 			return null;
 		},
 		
-		
-		/// TEXT
-		
 		setText: function(align, decoration, wordSpacing, whiteSpace, indent, transform)
 		{
 			var S = this.style;
@@ -1363,10 +1327,7 @@
 			}
 			return null;
 		},
-		
-		
-		/// SCROLL
-		
+
 		setScroll: function(top, left)
 		{
 			var E = this.element;
@@ -1398,9 +1359,6 @@
 			}
 			return null;
 		},
-		
-		
-		/// NODE
 		
 		createElement: function(tagName, id, classNames, cssObj, content)
 		{
@@ -1858,13 +1816,9 @@
 		}
 	};
 	
-	
-	(function()
+	(function() // creates optimum methods for each kind of user agent
 	{
 		var S = document.documentElement.style;
-		
-		
-		/// OPACITY
 		
 		if (S.opacity === undefined) 
 		{
@@ -1916,9 +1870,6 @@
 				return null;
 			};
 		}
-		
-		
-		/// CSS
 		
 		if (S.cssText === undefined) 
 		{

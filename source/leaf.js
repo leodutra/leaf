@@ -31,6 +31,7 @@
  *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 if (!window.leaf) {
     window.leaf = {};
 }
@@ -330,13 +331,13 @@ leaf.ElementHandler.prototype = {
         return this.style;
     },
     addListener: function(type, handlerFn){
-        this.core.addListener(this.element, type, handlerFn);
+        leaf.addListener(this.element, type, handlerFn);
     },
     removeListener: function(type, handlerFn){
-        this.core.removeListener(this.element, type, handlerFn);
+        leaf.removeListener(this.element, type, handlerFn);
     },
     dispatchEvent: function(type){
-        this.core.dispatchEvent(this.element, type);
+        leaf.dispatchEvent(this.element, type);
     },
     // TODO: benchmark
     addClass: function(classNames){
@@ -444,7 +445,7 @@ leaf.ElementHandler.prototype = {
             }
             
             if ('number' === typeof zIndex) {
-                S.zIndex = parseInt(zIndex, 10);
+                S.zIndex = zIndex >>> 0;
             }
         }
     },
@@ -596,8 +597,8 @@ leaf.ElementHandler.prototype = {
         if (E) {
         
             return {
-                x: E.offsetLeft,
-                y: E.offsetTop,
+                left: E.offsetLeft,
+                top: E.offsetTop,
                 width: E.offsetWidth,
                 height: E.offsetHeight,
                 parent: E.offsetParent

@@ -751,10 +751,10 @@ leaf.ElementHandler.prototype = {
 			{
 			
 				return {
-					top: parseFloat(S.top) >>> 0,
-					right: parseFloat(S.right) >>> 0,
-					bottom: parseFloat(S.bottom) >>> 0,
-					left: parseFloat(S.left) >>> 0,
+					top: parseFloat(S.top) || 0,
+					right: parseFloat(S.right) || 0,
+					bottom: parseFloat(S.bottom) || 0,
+					left: parseFloat(S.left) || 0,
 					zIndex: S.zIndex,
 					type: S.position
 				};
@@ -857,8 +857,8 @@ leaf.ElementHandler.prototype = {
 			{
 			
 				return {
-					x: parseFloat(S.left || S.right) >>> 0,
-					y: parseFloat(S.top || S.bottom) >>> 0
+					x: parseFloat(S.left || S.right) || 0,
+					y: parseFloat(S.top || S.bottom) || 0
 				};
 			}
 		}
@@ -976,8 +976,8 @@ leaf.ElementHandler.prototype = {
 			{
 			
 				return {
-					width: parseFloat(S.width) >>> 0,
-					height: parseFloat(S.height) >>> 0
+					width: parseFloat(S.width) || 0,
+					height: parseFloat(S.height) || 0
 				};
 			}
 		}
@@ -1011,10 +1011,10 @@ leaf.ElementHandler.prototype = {
 			{
 			
 				return {
-					x: parseFloat(S.left || S.right) >>> 0,
-					y: parseFloat(S.top || S.bottom) >>> 0,
-					width: parseFloat(S.width) >>> 0,
-					height: parseFloat(S.height) >>> 0
+					x: parseFloat(S.left || S.right) || 0,
+					y: parseFloat(S.top || S.bottom) || 0,
+					width: parseFloat(S.width) || 0,
+					height: parseFloat(S.height) || 0
 				};
 			}
 		}
@@ -1092,8 +1092,8 @@ leaf.ElementHandler.prototype = {
 			{
 			
 				return {
-					x: parseFloat(P[0]) >>> 0,
-					y: parseFloat(P[1]) >>> 0,
+					x: parseFloat(P[0]) || 0,
+					y: parseFloat(P[1]) || 0,
 					color: S.backgroundColor,
 					src: S.backgroundImage,
 					repeat: S.backgroundRepeat
@@ -1202,12 +1202,12 @@ leaf.ElementHandler.prototype = {
 			
 				return {
 					color: S.color,
-					size: parseFloat(S.fontSize) >>> 0,
+					size: parseFloat(S.fontSize) || 0,
 					family: S.fontFamily,
 					weight: S.fontWeight,
 					style: S.fontStyle,
-					spacing: parseFloat(S.letterSpacing) >>> 0,
-					lineHeight: parseFloat(S.lineHeight) >>> 0,
+					spacing: parseFloat(S.letterSpacing) || 0,
+					lineHeight: parseFloat(S.lineHeight) || 0,
 					variant: S.fontVariant
 				};
 			}
@@ -1341,10 +1341,10 @@ leaf.ElementHandler.prototype = {
 			{
 			
 				return {
-					top: parseFloat(S.paddingTop) >>> 0,
-					right: parseFloat(S.paddingRight) >>> 0,
-					bottom: parseFloat(S.paddingBottom) >>> 0,
-					left: parseFloat(S.paddingLeft) >>> 0
+					top: parseFloat(S.paddingTop) || 0,
+					right: parseFloat(S.paddingRight) || 0,
+					bottom: parseFloat(S.paddingBottom) || 0,
+					left: parseFloat(S.paddingLeft) || 0
 				};
 			}
 		}
@@ -1433,10 +1433,10 @@ leaf.ElementHandler.prototype = {
 			{
 			
 				return {
-					top: parseFloat(S.marginTop) >>> 0,
-					right: parseFloat(S.marginRight) >>> 0,
-					bottom: parseFloat(S.marginBottom) >>> 0,
-					left: parseFloat(S.marginLeft) >>> 0
+					top: parseFloat(S.marginTop) || 0,
+					right: parseFloat(S.marginRight) || 0,
+					bottom: parseFloat(S.marginBottom) || 0,
+					left: parseFloat(S.marginLeft) || 0
 				};
 			}
 		}
@@ -1523,9 +1523,9 @@ leaf.ElementHandler.prototype = {
 				return {
 					align: S.textAlign,
 					decoration: S.textDecoration,
-					wordSpacing: parseFloat(S.wordSpacing) >>> 0,
+					wordSpacing: parseFloat(S.wordSpacing) || 0,
 					whiteSpace: S.whiteSpace,
-					indent: parseFloat(S.textIndent) >>> 0,
+					indent: parseFloat(S.textIndent) || 0,
 					transform: S.textTransform
 				};
 			}
@@ -2098,7 +2098,7 @@ leaf.ElementHandler.prototype = {
 			if (this.style && 'number' === typeof opacity) 
 			{
 				this.style.filter = 'alpha(opacity=' +
-				(opacity < 0 ? 0 : 1 < opacity ? 1 : opacity.toFixed(2) * 100) +
+				(opacity < 0 ? 0 : 1 < opacity ? 1 : (opacity * 100) >>> 0) +
 				')'; // use IE filter
 			}
 			return this;
@@ -2112,12 +2112,10 @@ leaf.ElementHandler.prototype = {
 				try 
 				{
 					o = this.element.filters.alpha.opacity / 100;
-					
 					return o;
 				} 
 				catch (o) 
 				{
-				
 					return (o = (/opacity=(\d+)/i).exec(this.style.cssText)) ? o[1] / 100 : 1;
 				}
 			}
@@ -2139,13 +2137,11 @@ leaf.ElementHandler.prototype = {
 		leaf.ElementHandler.prototype.getOpacity = function()
 		{
 			var o = this.style;
-			
 			if (o) 
 			{
 			
 				return isNaN(o = parseFloat(o.opacity)) ? 1 : o;
 			}
-			
 			return null;
 		};
 	}
@@ -2155,7 +2151,6 @@ leaf.ElementHandler.prototype = {
 		leaf.ElementHandler.prototype.setCSS = function(cssObj)
 		{
 			var E = this.element;
-			
 			if (E && cssObj instanceof Object) 
 			{
 				var K = [];

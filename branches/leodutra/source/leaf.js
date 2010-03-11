@@ -42,32 +42,69 @@ if (!leaf.core) {
 
 /// Array
 
-//	based on ECMA spec. and JavaScript 1.6 from Mozilla
-leaf.each = function(array, callback, thisObject){
-
-    if (array instanceof Array && 'function' === typeof callback) {
-        // try a native call
-        if (array.forEach) {
-            array.forEach(callback, thisObject);
-        }
-        
-        else {
-            var L = array.length >>> 0;
-            var i = 0;
-            var k;
-            while (i < L) {
-                if (i in array) {
-                    itemHandler.call(thisObject, array[i], i++, array);
+//	based on ECMA spec. and Mozilla's JavaScript 1.6 
+if (!Array.prototype.forEach) {
+	alert('ok');
+    Array.prototype.forEach = function(callback, thisObject){
+    
+        if ('function' === typeof callback) {
+            var L = this.length >>> 0; // force zero
+           
+            for (var i = 0; i < L; i++) {
+			
+                if (i in this) {
+                    callback.call(thisObject, this[i], i, this);
                 }
             }
         }
-    }
-};
+        else {
+            throw new TypeError();
+        }
+    };
+}
+
+//	based on ECMA spec. and Mozilla's JavaScript 1.6 
+if (!Array.prototype.every) {
+    Array.prototype.every = function(callback, thisObject){
+        if ('function' === typeof callback) {
+            var L = this.length >>> 0; // force zero 
+            for (var i = 0; i < L; i++) {
+                if (i in this && !callback.call(thisObject, this[i], i, this)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        throw new TypeError();
+    };
+}
+
+
+if (!Array.prototype.filter) {
+    Array.prototype.filter = function(callback, thisObject){
+        if ('function' === typeof callback) {
+            var L = this.length >>> 0; // force zero 
+            var R = [];
+            var n = 0;
+            var v;
+            for (var i = 0; i < L; i++) {
+                if (i in this) {
+                    // "v" in case callback mutates this  
+                    if (callback.call(thisObject, v, i, this)) {
+                        R[n++] = v;
+                    }
+                }
+            }
+            return R;
+        }
+        throw new TypeError();
+    };
+}
 
 /// Object
 
 leaf.extend = function(superObject, extension){
-    if (superObject && superObject.constructor && extension) {
+    if (superObject && extension) {
         var o = function(){
         };
         o.prototype = superObject;
@@ -115,7 +152,7 @@ else {
         })();
     }
     leaf.createXHR = function(){
-        return new ActiveXObject(leaf.Ajax.core.activeXVersion);
+        return new ActiveXObject(leaf.core.activeXVersion);
     };
 }
 
@@ -132,21 +169,21 @@ leaf.getMouseXY = function(mouseEvent){
                 y: mouseEvent.pageY
             };
         }
-        var o = document;
-        var H = o.documentElement;
+        var H = document.documentElement;
+        var B = document.body;
         
-        if ((o = o.body)) // needed sometimes depending on browser and version since body can have a 1px rounder
+        if (B) // needed sometimes depending on browser and version since body can have a 1px rounder
         {
             return {
                 // clientLeft/Top IE adjust
-                x: mouseEvent.clientX + (H.scrollLeft || o.scrollLeft) - (H.clientLeft || 0),
-                y: mouseEvent.clientY + (H.scrollTop || o.scrollTop) - (H.clientTop || 0)
+                x: mouseEvent.clientX + (H.scrollLeft || B.scrollLeft) - (H.clientLeft >>> 0),
+                y: mouseEvent.clientY + (H.scrollTop || B.scrollTop) - (H.clientTop >>> 0)
             };
         }
         return {
             // clientLeft/Top IE adjust
-            x: mouseEvent.clientX + H.scrollLeft - (H.clientLeft || 0),
-            y: mouseEvent.clientY + H.scrollTop - (H.clientTop || 0)
+            x: mouseEvent.clientX + H.scrollLeft - (H.clientLeft >>> 0),
+            y: mouseEvent.clientY + H.scrollTop - (H.clientTop >>> 0)
         };
     }
     
@@ -164,7 +201,6 @@ leaf.core.purge = function(o){
         var i = a.length;
         var n;
         while (i--) {
-        
             if ('function' === typeof o[(n = a[i].name)]) {
                 o[n] = null;
             }
@@ -188,7 +224,7 @@ leaf.purge = function(domObj){
     }
 };
 
-leaf.$id = function(ids){
+leaf.getById = function(ids){
     if (ids instanceof Array) {
         var D = document;
         var L = ids.length;
@@ -206,7 +242,7 @@ leaf.$id = function(ids){
     return document.getElementById(ids); // null if no match
 };
 
-leaf.$tag = function(tagNames, rootNode){
+leaf.getByTag = function(tagNames, rootNode){
     rootNode = this.core.$(rootNode) || document;
     var o;
     if (tagNames instanceof Array) {
@@ -229,7 +265,7 @@ leaf.$tag = function(tagNames, rootNode){
 };
 
 if (document.getElementsByClassName) {
-    leaf.$class = function(classNames, rootElement){
+    leaf.getByClass = function(classNames, rootElement){
         rootElement = this.core.$(rootElement) || document;
         var o;
         if (classNames instanceof Array) {
@@ -248,6 +284,36 @@ if (document.getElementsByClassName) {
             return n ? K : null; // null if no match
         }
         return (o = rootElement.getElementsByClassName(classNames)).length ? o : null;
+    };
+}
+else {
+    leaf.getByClass = function(classNames, rootElement){
+        if ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array && classNames.length) {
+            var R = new RegExp('(?:\\s|^)(?:' + classNames.join('\|') + ')(?:\\s|$)');
+            var K = [];
+            var n = 0;
+            
+            // depth search
+            var q = function(o){
+                if (o.style && R.test(o.className)) {
+                    K[n++] = o;
+                }
+                if ((o = o.childNodes)) {
+                    var L = o.length;
+                    var i = 0;
+                    while (i < L) {
+                        q(o[i++]);
+                    }
+                }
+            };
+            q(this.core.$(rootElement) || document);
+            
+            // null if no match
+            if (n) {
+                return K;
+            }
+        }
+        return null;
     };
 }
 
@@ -443,10 +509,7 @@ leaf.ElementHandler.prototype = {
                     S.left = '';
                 }
             }
-            
-            if ('number' === typeof zIndex) {
-                S.zIndex = zIndex >>> 0;
-            }
+            S.zIndex = zIndex >>> 0;
         }
     },
     getPosition: function(keepAsValues){
@@ -468,10 +531,10 @@ leaf.ElementHandler.prototype = {
             else {
             
                 return {
-                    top: parseFloat(S.top) || 0,
-                    right: parseFloat(S.right) || 0,
-                    bottom: parseFloat(S.bottom) || 0,
-                    left: parseFloat(S.left) || 0,
+                    top: parseFloat(S.top) >>> 0,
+                    right: parseFloat(S.right) >>> 0,
+                    bottom: parseFloat(S.bottom) >>> 0,
+                    left: parseFloat(S.left) >>> 0,
                     zIndex: S.zIndex,
                     type: S.position
                 };
@@ -553,8 +616,8 @@ leaf.ElementHandler.prototype = {
             else {
             
                 return {
-                    x: parseFloat(S.left || S.right) || 0,
-                    y: parseFloat(S.top || S.bottom) || 0
+                    x: parseFloat(S.left || S.right) >>> 0,
+                    y: parseFloat(S.top || S.bottom) >>> 0
                 };
             }
         }
@@ -648,8 +711,8 @@ leaf.ElementHandler.prototype = {
             else {
             
                 return {
-                    width: parseFloat(S.width) || 0,
-                    height: parseFloat(S.height) || 0
+                    width: parseFloat(S.width) >>> 0,
+                    height: parseFloat(S.height) >>> 0
                 };
             }
         }
@@ -677,10 +740,10 @@ leaf.ElementHandler.prototype = {
             else {
             
                 return {
-                    x: parseFloat(S.left || S.right) || 0,
-                    y: parseFloat(S.top || S.bottom) || 0,
-                    width: parseFloat(S.width) || 0,
-                    height: parseFloat(S.height) || 0
+                    x: parseFloat(S.left || S.right) >>> 0,
+                    y: parseFloat(S.top || S.bottom) >>> 0,
+                    width: parseFloat(S.width) >>> 0,
+                    height: parseFloat(S.height) >>> 0
                 };
             }
         }
@@ -695,7 +758,6 @@ leaf.ElementHandler.prototype = {
         }
     },
     getContent: function(){
-    
         return this.element && this.element.innerHTML || '';
     },
     addContent: function(content){
@@ -743,8 +805,8 @@ leaf.ElementHandler.prototype = {
             else {
             
                 return {
-                    x: parseFloat(P[0]) || 0,
-                    y: parseFloat(P[1]) || 0,
+                    x: parseFloat(P[0]) >>> 0,
+                    y: parseFloat(P[1]) >>> 0,
                     color: S.backgroundColor,
                     src: S.backgroundImage,
                     repeat: S.backgroundRepeat
@@ -832,12 +894,12 @@ leaf.ElementHandler.prototype = {
             
                 return {
                     color: S.color,
-                    size: parseFloat(S.fontSize) || 0,
+                    size: parseFloat(S.fontSize) >>> 0,
                     family: S.fontFamily,
                     weight: S.fontWeight,
                     style: S.fontStyle,
-                    spacing: parseFloat(S.letterSpacing) || 0,
-                    lineHeight: parseFloat(S.lineHeight) || 0,
+                    spacing: parseFloat(S.letterSpacing) >>> 0,
+                    lineHeight: parseFloat(S.lineHeight) >>> 0,
                     variant: S.fontVariant
                 };
             }
@@ -943,10 +1005,10 @@ leaf.ElementHandler.prototype = {
             else {
             
                 return {
-                    top: parseFloat(S.paddingTop) || 0,
-                    right: parseFloat(S.paddingRight) || 0,
-                    bottom: parseFloat(S.paddingBottom) || 0,
-                    left: parseFloat(S.paddingLeft) || 0
+                    top: parseFloat(S.paddingTop) >>> 0,
+                    right: parseFloat(S.paddingRight) >>> 0,
+                    bottom: parseFloat(S.paddingBottom) >>> 0,
+                    left: parseFloat(S.paddingLeft) >>> 0
                 };
             }
         }
@@ -1016,10 +1078,10 @@ leaf.ElementHandler.prototype = {
             else {
             
                 return {
-                    top: parseFloat(S.marginTop) || 0,
-                    right: parseFloat(S.marginRight) || 0,
-                    bottom: parseFloat(S.marginBottom) || 0,
-                    left: parseFloat(S.marginLeft) || 0
+                    top: parseFloat(S.marginTop) >>> 0,
+                    right: parseFloat(S.marginRight) >>> 0,
+                    bottom: parseFloat(S.marginBottom) >>> 0,
+                    left: parseFloat(S.marginLeft) >>> 0
                 };
             }
         }
@@ -1089,9 +1151,9 @@ leaf.ElementHandler.prototype = {
                 return {
                     align: S.textAlign,
                     decoration: S.textDecoration,
-                    wordSpacing: parseFloat(S.wordSpacing) || 0,
+                    wordSpacing: parseFloat(S.wordSpacing) >>> 0,
                     whiteSpace: S.whiteSpace,
-                    indent: parseFloat(S.textIndent) || 0,
+                    indent: parseFloat(S.textIndent) >>> 0,
                     transform: S.textTransform
                 };
             }
@@ -1329,7 +1391,7 @@ leaf.ElementHandler.prototype = {
         if (e && 'number' === typeof elementIndex) {
             var K = [];
             var n = 0;
-            e = e.firstChild; // cannot be inside of while question
+            e = e.firstChild; // cannot be inside of while()
             while (e) {
             
                 if (e.nodeType === 1 && n++ === elementIndex) {
@@ -1441,6 +1503,7 @@ leaf.ElementHandler.prototype = {
     
         return (elementIndex = this.getChildElement(elementIndex)) ? elementIndex.cloneNode(!!cloneAttrAndChilds) : null;
     },
+	
     hasCollision: function(collisorElement){
         var E = this.element;
         
@@ -1595,7 +1658,7 @@ leaf.ElementHandler.prototype = {
             if (o && (o = o.getAttribute('style')) && 'string' === typeof property) {
             
                 /* RegExp does not 'compile' on AIR 1.0
-                 * This code is a little more faster than using pure RegExp
+                 * This code is faster than using pure RegExp
                  */
                 if (-1 < (i = o.search(new RegExp('(?:\\\;|\\s|^)' + property + '\\\:', 'i')))) {
                 
@@ -1626,7 +1689,7 @@ leaf.ElementHandler.prototype = {
             if (o && (o = o.cssText) && 'string' === typeof property) {
             
                 /* RegExp does not 'compile' on AIR 1.0
-                 * This code is a little more faster than using pure RegExp
+                 * This code is faster than using pure RegExp
                  */
                 if (-1 < (i = o.search(new RegExp('(?:\\\;|\\s|^)' + property + '\\\:', 'i')))) {
                 

@@ -43,17 +43,18 @@ if (!leaf.core)
 }
 
 /// Array
-
-//	based on ECMA spec. and Mozilla's JavaScript 1.6
+//	based on ECMA 5 spec. and Mozilla's JavaScript 1.6
 if (!Array.prototype.forEach) 
 {
-	Array.prototype.forEach = function(callback, thisObject)
+	Array.prototype.forEach = function(callback, thisObject /* = null */)
 	{
+	
 		if ('function' === typeof callback) 
 		{
 			var L = this.length >>> 0; // forces zero
 			for (var i = 0; i < L; i++) 
 			{
+			
 				if (i in this) 
 				{
 					callback.call(thisObject, this[i], i, this);
@@ -63,31 +64,36 @@ if (!Array.prototype.forEach)
 	};
 }
 
-//	based on ECMA spec. and Mozilla's JavaScript 1.6 
+//	based on ECMA 5 spec. and Mozilla's JavaScript 1.6 
 if (!Array.prototype.every) 
 {
-	Array.prototype.every = function(callback, thisObject)
+	Array.prototype.every = function(callback, thisObject /* = null */)
 	{
+	
 		if ('function' === typeof callback) 
 		{
 			var L = this.length >>> 0; // forces zero 
 			for (var i = 0; i < L; i++) 
 			{
+			
 				if (i in this && !callback.call(thisObject, this[i], i, this)) 
 				{
+				
 					return false;
 				}
 			}
 		}
+		
 		return true;
 	};
 }
 
-//	based on ECMA spec. and Mozilla's JavaScript 1.6 
+//	based on ECMA 5 spec. and Mozilla's JavaScript 1.6 
 if (!Array.prototype.filter) 
 {
-	Array.prototype.filter = function(callback, thisObject)
+	Array.prototype.filter = function(callback, thisObject /* = null */)
 	{
+	
 		if ('function' === typeof callback) 
 		{
 			var L = this.length >>> 0; // forces zero 
@@ -96,60 +102,70 @@ if (!Array.prototype.filter)
 			var v;
 			for (var i = 0; i < L; i++) 
 			{
+			
 				// "v" in case callback mutates this
 				if (i in this && callback.call(thisObject, v, i, this)) 
 				{
 					R[n++] = v;
 				}
 			}
+			
 			return R;
 		}
+		
 		return null;
 	};
 }
 
-//	based on ECMA spec. and Mozilla's JavaScript 1.6 
+//	based on ECMA 5 spec. and Mozilla's JavaScript 1.6 
 if (!Array.prototype.indexOf) 
 {
-	Array.prototype.indexOf = function(searchElement, fromIndex)
+	Array.prototype.indexOf = function(searchElement, fromIndex /* = 0 */)
 	{
-		var L = this.length >>> 0;
+		var L = this.length >>> 0; // forces zero
 		var i = Number(fromIndex) || 0;
+		
 		if ((i = i < 0 ? Math.ceil(i) : Math.floor(i)) < 0) 
 		{
 			i += L;
 		}
 		while (i < L) 
 		{
+		
 			if (i in this && this[i] === searchElement) 
 			{
+			
 				return i;
 			}
 			i += 1;
 		}
+		
 		return -1;
 	};
 }
 
-//	based on ECMA spec. and Mozilla's JavaScript 1.6
+//	based on ECMA 5 spec. and Mozilla's JavaScript 1.6
 if (!Array.prototype.lastIndexOf) 
 {
-	Array.prototype.lastIndexOf = function(searchElement, fromIndex)
+	Array.prototype.lastIndexOf = function(searchElement, fromIndex /* = 0 */)
 	{
-		var L = this.length;
+		var L = this.length >>> 0; // forces zero
 		var i = Number(fromIndex);
+		
 		if (isNaN(i)) 
 		{
 			i = L - 1;
 		}
 		else 
 		{
+		
 			if ((i = i < 0 ? Math.ceil(i) : Math.floor(i)) < 0) 
 			{
 				i += len;
 			}
 			else 
 			{
+			
 				if (L <= i) 
 				{
 					i = len - 1;
@@ -158,67 +174,89 @@ if (!Array.prototype.lastIndexOf)
 		}
 		while (i > -1) 
 		{
+		
 			if (i in this && this[i] === searchElement) 
 			{
+			
 				return i;
 			}
 			i -= 1;
 		}
+		
 		return -1;
 	};
 }
 
-//	based on ECMA spec. and Mozilla's JavaScript 1.6 
+//	based on ECMA 5 spec. and Mozilla's JavaScript 1.6 
 if (Array.prototype.map) 
 {
-	Array.prototype.map = function(callback, thisObject)
+	Array.prototype.map = function(callback, thisObject /* = null */)
 	{
+	
 		if ('function' === typeof callback) 
 		{
 			var L = this.length >>> 0; // forces zero
 			var R = [];
 			for (var i = 0; i < L; i++) 
 			{
+			
 				if (i in this) 
 				{
 					R[i] = callback.call(thisObject, this[i], i, this);
 				}
 			}
+			
 			return R;
 		}
+		
 		return null;
 	};
 }
 
-//	based on ECMA spec. and Mozilla's JavaScript 1.6 
+//	based on ECMA 5 spec. and Mozilla's JavaScript 1.6 
 if (!Array.prototype.some) 
 {
-	Array.prototype.some = function(callback, thisObject)
+	Array.prototype.some = function(callback, thisObject /* = null */)
 	{
+	
 		if ('function' === typeof callback) 
 		{
-			var L = this.length >>> 0;
+			var L = this.length >>> 0; // forces zero
 			for (var i = 0; i < L; i++) 
 			{
+			
 				if (i in this && callback.call(thisObject, this[i], i, this)) 
 				{
+				
 					return true;
 				}
 			}
 		}
+		
 		return false;
 	};
 }
 
+/// String
+//	based on ECMA 5 spec. and JQuery 1.4 function 
+if (!String.prototype.trim) 
+{
+	String.prototype.trim = function()
+	{
+	
+		return this.replace(/^(\s|\u00A0)+|(\s|\u00A0)+$/g, '');
+	};
+}
 /// Object
-
 leaf.extend = function(superObject, extension)
 {
-	if (superObject && extension) 
+
+	if (superObject && extension) // anything can be extended if is not undefined
 	{
 		var o = function()
 		{
 		};
+		// uses prototype, allowing use of "instanceof" on returned object. No mem. leak on primary tests.
 		o.prototype = superObject;
 		o = new o();
 		var n;
@@ -226,88 +264,107 @@ leaf.extend = function(superObject, extension)
 		{
 			o[n] = extension[n];
 		}
+		
 		return o;
 	}
+	
 	return null;
 };
 
 /// Ajax
-
+// createXHR supports a large range of IE ActiveXObjects versions
 if (window.XMLHttpRequest) 
 {
 	leaf.createXHR = function()
 	{
+	
 		return new XMLHttpRequest();
 	};
 }
 else 
-{
+
 	if (window.ActiveXObject) 
 	{
-		leaf.core.activeXVersion = (function()
+		leaf.createXHR = function()
 		{
-			var A = ActiveXObject; // cache
-			var o;
-			var i = 7;
-			while (i < 2) 
+		
+			if (!leaf.core.activeXVersion) 
 			{
-				try 
+				leaf.core.activeXVersion = (function()
 				{
-					new A('MSXML2.XMLHTTP.' + i + '.0');
-					return 'MSXML2.XMLHTTP.' + i + '.0';
-				} 
-				catch (o) 
-				{
-					--i;
-				}
+					var A = ActiveXObject; // cache
+					var i = 7;
+					var o;
+					while (i < 2) 
+					{
+						try 
+						{
+							new A('MSXML2.XMLHTTP.' + i + '.0');
+							
+							return 'MSXML2.XMLHTTP.' + i + '.0';
+						} 
+						catch (o) 
+						{
+							i -= 1;
+						}
+					}
+					
+					if (i === 2) 
+					{
+						try 
+						{
+							new A('MSXML2.XMLHTTP');
+							
+							return 'MSXML2.XMLHTTP';
+						} 
+						catch (o) 
+						{
+						
+							return 'Microsoft.XMLHTTP';
+						}
+					}
+				})();
 			}
-			if (i === 2) 
-			{
-				try 
-				{
-					new A('MSXML2.XMLHTTP');
-					return 'MSXML2.XMLHTTP';
-				} 
-				catch (o) 
-				{
-					return 'Microsoft.XMLHTTP';
-				}
-			}
-		})();
+			
+			return new ActiveXObject(leaf.core.activeXVersion);
+		};
 	}
-	leaf.createXHR = function()
+	else 
 	{
-		return new ActiveXObject(leaf.core.activeXVersion);
-	};
-}
-
-
+		leaf.createXHR = function()
+		{
+		
+			return null;
+		};
+	}
 /// Mouse
-
 leaf.getMouseXY = function(mouseEvent)
 {
 
 	if ((mouseEvent = mouseEvent || event)) 
 	{
+	
 		// pageX/Y is the best case on most browsers, but not W3Clike yet
 		if ('number' === typeof mouseEvent.pageY) 
 		{
+		
 			return {
 				x: mouseEvent.pageX,
 				y: mouseEvent.pageY
 			};
 		}
 		var H = document.documentElement;
-		var B = document.body;
-		
+		var B = document.body; // medium case cache
 		if (B) // needed sometimes depending on browser and version since body can have a 1px rounder
 		{
+		
 			return {
 				// clientLeft/Top IE adjust
 				x: mouseEvent.clientX + (H.scrollLeft || B.scrollLeft) - (H.clientLeft >>> 0),
 				y: mouseEvent.clientY + (H.scrollTop || B.scrollTop) - (H.clientTop >>> 0)
 			};
 		}
+		
 		return {
 			// clientLeft/Top IE adjust
 			x: mouseEvent.clientX + H.scrollLeft - (H.clientLeft >>> 0),
@@ -317,28 +374,31 @@ leaf.getMouseXY = function(mouseEvent)
 	
 	return null;
 };
-
 leaf.core.$ = function(e)
 {
+
 	return e ? e.style ? e : document.getElementById(e) : null;
 };
-
 leaf.core.purge = function(o)
 {
+	// IE old versions leaks on deletion when elements have functions
 	// base code: www.crockford.com
 	var a = o.attributes;
+	
 	if (a) 
 	{
 		var i = a.length;
 		var n;
 		while (i--) 
 		{
+		
 			if ('function' === typeof o[(n = a[i].name)]) 
 			{
 				o[n] = null;
 			}
 		}
 	}
+	
 	if ((o = o.childNodes)) 
 	{
 		var p = arguments.callee;
@@ -349,21 +409,22 @@ leaf.core.purge = function(o)
 		}
 	}
 };
-
 leaf.purge = function(domObj)
 {
+
 	if (domObj) 
 	{
 		this.core.purge(domObj);
+		
 		if (domObj.parentNode) 
 		{
 			domObj.parentNode.removeChild(domObj);
 		}
 	}
 };
-
-leaf.getById = function(ids)
+leaf.getById = function(ids /*:String|Array*/)
 {
+
 	if (ids instanceof Array) 
 	{
 		var D = document;
@@ -374,20 +435,23 @@ leaf.getById = function(ids)
 		var o;
 		while (i < L) 
 		{
+		
 			if ((o = D.getElementById(ids[i++]))) 
 			{
 				K[n++] = o;
 			}
 		}
+		
 		return n ? K : null; // null if no match
 	}
+	
 	return document.getElementById(ids); // null if no match
 };
-
-leaf.getByTag = function(tagNames, rootNode)
+leaf.getByTag = function(tagNames /*:String|Array*/, rootNode)
 {
 	rootNode = this.core.$(rootNode) || document;
 	var o;
+	
 	if (tagNames instanceof Array) 
 	{
 		var L = tagNames.length;
@@ -405,17 +469,20 @@ leaf.getByTag = function(tagNames, rootNode)
 			}
 			j = 0;
 		}
+		
 		return n ? K : null; // null if no match
 	}
+	
 	return (o = rootNode.getElementsByTagName(tagNames)).length ? o : null;
 };
 
 if (document.getElementsByClassName) 
 {
-	leaf.getByClass = function(classNames, rootElement)
+	leaf.getByClass = function(classNames /*:String|Array*/, rootElement)
 	{
 		rootElement = this.core.$(rootElement) || document;
 		var o;
+		
 		if (classNames instanceof Array) 
 		{
 			var L = classNames.length;
@@ -432,8 +499,10 @@ if (document.getElementsByClassName)
 				}
 				j = 0;
 			}
+			
 			return n ? K : null; // null if no match
 		}
+		
 		return (o = rootElement.getElementsByClassName(classNames)).length ? o : null;
 	};
 }
@@ -441,19 +510,21 @@ else
 {
 	leaf.getByClass = function(classNames, rootElement)
 	{
+	
 		if ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array && classNames.length) 
 		{
 			var R = new RegExp('(?:\\s|^)(?:' + classNames.join('\|') + ')(?:\\s|$)');
 			var K = [];
 			var n = 0;
-			
 			// depth search
 			var q = function(o)
 			{
+			
 				if (o.style && R.test(o.className)) 
 				{
 					K[n++] = o;
 				}
+				
 				if ((o = o.childNodes)) 
 				{
 					var L = o.length;
@@ -469,9 +540,11 @@ else
 			// null if no match
 			if (n) 
 			{
+			
 				return K;
 			}
 		}
+		
 		return null;
 	};
 }
@@ -480,6 +553,7 @@ if (window.addEventListener)
 {
 	leaf.addListener = function(domObj, eventType, handlerFn)
 	{
+	
 		if (domObj && domObj.addEventListener && 'string' === typeof eventType && 'function' === typeof handlerFn) 
 		{
 			domObj.addEventListener(eventType, handlerFn, false);
@@ -487,6 +561,7 @@ if (window.addEventListener)
 	};
 	leaf.removeListener = function(domObj, eventType, handlerFn)
 	{
+	
 		if (domObj && domObj.removeEventListener && 'string' === typeof eventType && 'function' === typeof handlerFn) 
 		{
 			domObj.removeEventListener(eventType, handlerFn, false);
@@ -494,6 +569,7 @@ if (window.addEventListener)
 	};
 	leaf.dispatchEvent = function(domObj, eventType)
 	{
+	
 		if (domObj && domObj.dispatchEvent && 'string' === typeof eventType) 
 		{
 			var e = document.createEvent('HTMLEvents');
@@ -541,8 +617,6 @@ else
 		}
 	};
 }
-
-
 /// ElementHandler
 leaf.ElementHandler = function(element)
 {
@@ -553,11 +627,9 @@ leaf.ElementHandler = function(element)
 	}
 };
 leaf.ElementHandler.prototype = {
-
 	element: null,
 	style: null,
 	core: null,
-	
 	ElementHandler: function(element)
 	{
 		this.setElement(element);
@@ -565,6 +637,7 @@ leaf.ElementHandler.prototype = {
 	setElement: function(element)
 	{
 		this.style = (this.element = (element = this.core.$(element))) ? element.style : null;
+		
 		return this;
 	},
 	getElement: function()
@@ -580,16 +653,19 @@ leaf.ElementHandler.prototype = {
 	addListener: function(type, handlerFn)
 	{
 		leaf.addListener(this.element, type, handlerFn);
+		
 		return this;
 	},
 	removeListener: function(type, handlerFn)
 	{
 		leaf.removeListener(this.element, type, handlerFn);
+		
 		return this;
 	},
 	dispatchEvent: function(type)
 	{
 		leaf.dispatchEvent(this.element, type);
+		
 		return this;
 	},
 	// TODO: benchmark
@@ -619,6 +695,7 @@ leaf.ElementHandler.prototype = {
 			}
 			E.className += ' ' + K.join(' ');
 		}
+		
 		return this;
 	},
 	removeClass: function(classNames)
@@ -651,6 +728,7 @@ leaf.ElementHandler.prototype = {
 				E.className = K.join(' ');
 			}
 		}
+		
 		return this;
 	},
 	setPosition: function(top, right, bottom, left, zIndex, type)
@@ -724,8 +802,13 @@ leaf.ElementHandler.prototype = {
 					S.left = '';
 				}
 			}
-			S.zIndex = zIndex >>> 0;
+			
+			if ('number' === typeof zIndex) 
+			{
+				S.zIndex = zIndex >>> 0;
+			}
 		}
+		
 		return this;
 	},
 	getPosition: function(keepAsValues)
@@ -751,11 +834,11 @@ leaf.ElementHandler.prototype = {
 			{
 			
 				return {
-					top: parseFloat(S.top) >>> 0,
-					right: parseFloat(S.right) >>> 0,
-					bottom: parseFloat(S.bottom) >>> 0,
-					left: parseFloat(S.left) >>> 0,
-					zIndex: S.zIndex,
+					top: parseFloat(S.top) || 0,
+					right: parseFloat(S.right) || 0,
+					bottom: parseFloat(S.bottom) || 0,
+					left: parseFloat(S.left) || 0,
+					zIndex: S.zIndex >>> 0,
 					type: S.position
 				};
 			}
@@ -836,6 +919,7 @@ leaf.ElementHandler.prototype = {
 				}
 			}
 		}
+		
 		return this;
 	},
 	getXY: function(keepAsValues)
@@ -857,8 +941,8 @@ leaf.ElementHandler.prototype = {
 			{
 			
 				return {
-					x: parseFloat(S.left || S.right) >>> 0,
-					y: parseFloat(S.top || S.bottom) >>> 0
+					x: parseFloat(S.left || S.right) || this.element.offsetLeft,
+					y: parseFloat(S.top || S.bottom) || this.element.offsetTop
 				};
 			}
 		}
@@ -902,6 +986,7 @@ leaf.ElementHandler.prototype = {
 				}
 			}
 		}
+		
 		return this;
 	},
 	getOffset: function()
@@ -955,6 +1040,7 @@ leaf.ElementHandler.prototype = {
 				}
 			}
 		}
+		
 		return this;
 	},
 	getSize: function(keepAsValues)
@@ -976,8 +1062,8 @@ leaf.ElementHandler.prototype = {
 			{
 			
 				return {
-					width: parseFloat(S.width) >>> 0,
-					height: parseFloat(S.height) >>> 0
+					width: parseFloat(S.width) || 0,
+					height: parseFloat(S.height) || 0
 				};
 			}
 		}
@@ -988,6 +1074,7 @@ leaf.ElementHandler.prototype = {
 	{
 		this.setSize(width, height);
 		this.setXY(x, y);
+		
 		return this;
 	},
 	getArea: function(keepAsValues)
@@ -1011,10 +1098,10 @@ leaf.ElementHandler.prototype = {
 			{
 			
 				return {
-					x: parseFloat(S.left || S.right) >>> 0,
-					y: parseFloat(S.top || S.bottom) >>> 0,
-					width: parseFloat(S.width) >>> 0,
-					height: parseFloat(S.height) >>> 0
+					x: parseFloat(S.left || S.right) || this.element.offsetLeft,
+					y: parseFloat(S.top || S.bottom) || this.element.offsetTop,
+					width: parseFloat(S.width) || this.element.offsetWidth,
+					height: parseFloat(S.height) || this.element.offsetHeight
 				};
 			}
 		}
@@ -1029,10 +1116,12 @@ leaf.ElementHandler.prototype = {
 		{
 			this.element.innerHTML = content === null || content === undefined ? '' : content;
 		}
+		
 		return this;
 	},
 	getContent: function()
 	{
+	
 		return this.element && this.element.innerHTML || '';
 	},
 	addContent: function(content)
@@ -1044,6 +1133,7 @@ leaf.ElementHandler.prototype = {
 		{
 			E.innerHTML = (E.innerHTML || '') + content;
 		}
+		
 		return this;
 	},
 	setBackground: function(color, src, x, y, repeat)
@@ -1067,6 +1157,7 @@ leaf.ElementHandler.prototype = {
 			('number' === typeof y ? y + 'px' : 'string' === typeof y ? y : (src[1] || '50%'));
 			S.backgroundRepeat = repeat ? repeat : 'no-repeat';
 		}
+		
 		return this;
 	},
 	getBackground: function(keepAsValues)
@@ -1092,8 +1183,8 @@ leaf.ElementHandler.prototype = {
 			{
 			
 				return {
-					x: parseFloat(P[0]) >>> 0,
-					y: parseFloat(P[1]) >>> 0,
+					x: parseFloat(P[0]) || 0,
+					y: parseFloat(P[1]) || 0,
 					color: S.backgroundColor,
 					src: S.backgroundImage,
 					repeat: S.backgroundRepeat
@@ -1174,6 +1265,7 @@ leaf.ElementHandler.prototype = {
 				S.fontVariant = useSmallCaps ? 'small-caps' : 'normal';
 			}
 		}
+		
 		return this;
 	},
 	getFont: function(keepAsValues)
@@ -1202,12 +1294,12 @@ leaf.ElementHandler.prototype = {
 			
 				return {
 					color: S.color,
-					size: parseFloat(S.fontSize) >>> 0,
+					size: parseFloat(S.fontSize) || 0,
 					family: S.fontFamily,
 					weight: S.fontWeight,
 					style: S.fontStyle,
-					spacing: parseFloat(S.letterSpacing) >>> 0,
-					lineHeight: parseFloat(S.lineHeight) >>> 0,
+					spacing: parseFloat(S.letterSpacing) || 0,
+					lineHeight: parseFloat(S.lineHeight) || 0,
 					variant: S.fontVariant
 				};
 			}
@@ -1241,6 +1333,7 @@ leaf.ElementHandler.prototype = {
 			}
 			S.borderStyle = 'string' === typeof style ? style : S.borderStyle || 'solid';
 		}
+		
 		return this;
 	},
 	getBorder: function(keepAsValues)
@@ -1318,6 +1411,7 @@ leaf.ElementHandler.prototype = {
 				}
 			}
 		}
+		
 		return this;
 	},
 	getPadding: function(keepAsValues)
@@ -1341,10 +1435,10 @@ leaf.ElementHandler.prototype = {
 			{
 			
 				return {
-					top: parseFloat(S.paddingTop) >>> 0,
-					right: parseFloat(S.paddingRight) >>> 0,
-					bottom: parseFloat(S.paddingBottom) >>> 0,
-					left: parseFloat(S.paddingLeft) >>> 0
+					top: parseFloat(S.paddingTop) || 0,
+					right: parseFloat(S.paddingRight) || 0,
+					bottom: parseFloat(S.paddingBottom) || 0,
+					left: parseFloat(S.paddingLeft) || 0
 				};
 			}
 		}
@@ -1410,6 +1504,7 @@ leaf.ElementHandler.prototype = {
 				}
 			}
 		}
+		
 		return this;
 	},
 	getMargin: function(keepAsValues)
@@ -1433,10 +1528,10 @@ leaf.ElementHandler.prototype = {
 			{
 			
 				return {
-					top: parseFloat(S.marginTop) >>> 0,
-					right: parseFloat(S.marginRight) >>> 0,
-					bottom: parseFloat(S.marginBottom) >>> 0,
-					left: parseFloat(S.marginLeft) >>> 0
+					top: parseFloat(S.marginTop) || 0,
+					right: parseFloat(S.marginRight) || 0,
+					bottom: parseFloat(S.marginBottom) || 0,
+					left: parseFloat(S.marginLeft) || 0
 				};
 			}
 		}
@@ -1496,6 +1591,7 @@ leaf.ElementHandler.prototype = {
 				}
 			}
 		}
+		
 		return this;
 	},
 	getText: function(keepAsValues)
@@ -1523,9 +1619,9 @@ leaf.ElementHandler.prototype = {
 				return {
 					align: S.textAlign,
 					decoration: S.textDecoration,
-					wordSpacing: parseFloat(S.wordSpacing) >>> 0,
+					wordSpacing: parseFloat(S.wordSpacing) || 0,
 					whiteSpace: S.whiteSpace,
-					indent: parseFloat(S.textIndent) >>> 0,
+					indent: parseFloat(S.textIndent) || 0,
 					transform: S.textTransform
 				};
 			}
@@ -1550,6 +1646,7 @@ leaf.ElementHandler.prototype = {
 				E.scrollLeft = left < 0 ? 0 : E.scrollWidth < left ? E.scrollWidth : left;
 			}
 		}
+		
 		return this;
 	},
 	getScroll: function()
@@ -1589,6 +1686,7 @@ leaf.ElementHandler.prototype = {
 				this.setContent(content);
 			}
 		}
+		
 		return this;
 	},
 	createChildElement: function(tagName, id, cssObj, content)
@@ -1611,6 +1709,7 @@ leaf.ElementHandler.prototype = {
 				tagName.setContent(content);
 			}
 		}
+		
 		return this;
 	},
 	append: function(parent)
@@ -1626,6 +1725,7 @@ leaf.ElementHandler.prototype = {
 				parent.appendChild(E);
 			}
 		}
+		
 		return this;
 	},
 	insertBefore: function(node)
@@ -1637,6 +1737,7 @@ leaf.ElementHandler.prototype = {
 		{
 			node.parentNode.insertBefore(E, node);
 		}
+		
 		return this;
 	},
 	insertAfter: function(node)
@@ -1656,6 +1757,7 @@ leaf.ElementHandler.prototype = {
 				node.parentNode.appendChild(E);
 			}
 		}
+		
 		return this;
 	},
 	insertAsFirst: function(parent)
@@ -1679,6 +1781,7 @@ leaf.ElementHandler.prototype = {
 				}
 			}
 		}
+		
 		return this;
 	},
 	remove: function()
@@ -1693,10 +1796,12 @@ leaf.ElementHandler.prototype = {
 				E.parentNode.removeChild(E);
 			}
 		}
+		
 		return this;
 	},
 	getParent: function()
 	{
+	
 		return this.element && this.element.parentNode || null;
 	},
 	getFirst: function()
@@ -1843,31 +1948,37 @@ leaf.ElementHandler.prototype = {
 	setChildElement: function(elementIndex)
 	{
 		this.setElement(this.getChildElement(elementIndex));
+		
 		return this;
 	},
 	setParent: function()
 	{
 		this.setElement(this.getParent());
+		
 		return this;
 	},
 	setFirst: function()
 	{
 		this.setElement(this.getFirst());
+		
 		return this;
 	},
 	setPrevious: function()
 	{
 		this.setElement(this.getPrevious());
+		
 		return this;
 	},
 	setNext: function()
 	{
 		this.setElement(this.getNext());
+		
 		return this;
 	},
 	setLast: function()
 	{
 		this.setElement(this.getLast());
+		
 		return this;
 	},
 	appendChild: function(childNode)
@@ -1877,6 +1988,7 @@ leaf.ElementHandler.prototype = {
 		{
 			this.element.appendChild(childNode);
 		}
+		
 		return this;
 	},
 	appendChildren: function(childNodes)
@@ -1897,6 +2009,7 @@ leaf.ElementHandler.prototype = {
 				}
 			}
 		}
+		
 		return this;
 	},
 	removeChild: function(index)
@@ -1906,6 +2019,7 @@ leaf.ElementHandler.prototype = {
 		{
 			this.element.removeChild(index);
 		}
+		
 		return this;
 	},
 	removeChildElement: function(elementIndex)
@@ -1915,6 +2029,7 @@ leaf.ElementHandler.prototype = {
 		{
 			this.element.removeChild(elementIndex);
 		}
+		
 		return this;
 	},
 	removeChildren: function()
@@ -1930,12 +2045,14 @@ leaf.ElementHandler.prototype = {
 				E.removeChild(K[i]);
 			}
 		}
+		
 		return this;
 	},
 	purge: function()
 	{
 		this.core.purge(this.element);
 		this.removeElement();
+		
 		return this;
 	},
 	purgeChildElement: function(elementIndex)
@@ -1946,6 +2063,7 @@ leaf.ElementHandler.prototype = {
 			this.core.purge(elementIndex);
 			this.removeChild(elementIndex);
 		}
+		
 		return this;
 	},
 	purgeChildren: function()
@@ -1969,6 +2087,7 @@ leaf.ElementHandler.prototype = {
 				E.removeChild(k);
 			}
 		}
+		
 		return this;
 	},
 	cloneChild: function(index, cloneAttrAndChilds)
@@ -1981,7 +2100,6 @@ leaf.ElementHandler.prototype = {
 	
 		return (elementIndex = this.getChildElement(elementIndex)) ? elementIndex.cloneNode(!!cloneAttrAndChilds) : null;
 	},
-	
 	hasCollision: function(collisorElement)
 	{
 		var E = this.element;
@@ -2053,6 +2171,7 @@ leaf.ElementHandler.prototype = {
 				}
 			}
 		}
+		
 		return this;
 	},
 	getAttribute: function(attribute)
@@ -2083,9 +2202,8 @@ leaf.ElementHandler.prototype = {
 		
 		return null;
 	}
+	
 };
-
-
 (function() // creates optimum methods for each kind of user agent
 {
 	var S = document.documentElement.style;
@@ -2097,10 +2215,9 @@ leaf.ElementHandler.prototype = {
 		
 			if (this.style && 'number' === typeof opacity) 
 			{
-				this.style.filter = 'alpha(opacity=' +
-				(opacity < 0 ? 0 : 1 < opacity ? 1 : opacity.toFixed(2) * 100) +
-				')'; // use IE filter
+				this.style.filter = 'alpha(opacity=' + (opacity < 0 ? 0 : 1 < opacity ? 1 : opacity * 100 >>> 0) + ')'; // use IE filter
 			}
+			
 			return this;
 		};
 		leaf.ElementHandler.prototype.getOpacity = function()
@@ -2134,6 +2251,7 @@ leaf.ElementHandler.prototype = {
 			{
 				this.style.opacity = opacity < 0 ? 0 : 1 < opacity ? 1 : opacity.toFixed(2);
 			}
+			
 			return this;
 		};
 		leaf.ElementHandler.prototype.getOpacity = function()
@@ -2167,6 +2285,7 @@ leaf.ElementHandler.prototype = {
 				}
 				E.setAttribute('style', (E.getAttribute('style') || '') + K.join(''));
 			}
+			
 			return this;
 		};
 		leaf.ElementHandler.prototype.getCSS = function(property)
@@ -2206,6 +2325,7 @@ leaf.ElementHandler.prototype = {
 				}
 				S.cssText = ((c = S.cssText) && (c.charAt(c.length - 1) === '\;' ? c : c + '; ') || '') + K.join('');
 			}
+			
 			return this;
 		};
 		leaf.ElementHandler.prototype.getCSS = function(property)

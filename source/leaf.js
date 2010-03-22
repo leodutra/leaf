@@ -1,7 +1,7 @@
 
 /*  LEAF JavaScript Library
  *  Leonardo Dutra
- *  v0.9.0a
+ *  v0.9.1a
  *
  *  Copyright (c) 2009, Leonardo Dutra Constâncio.
  *  All rights reserved.
@@ -43,16 +43,16 @@ if (!leaf.core)
 }
 
 /// Array
-//	based on ECMA 5 spec. and Mozilla's JavaScript 1.6
-if (!Array.prototype.forEach) 
+// functions based on ECMA 5 spec. and Mozilla's JavaScript 1.6
+if (!Array.prototype.some) // tests revealed when 1 ECMA 5 array function is implemented, the others are too 
 {
 	Array.prototype.forEach = function(callback, thisObject /* = null */)
 	{
 	
 		if ('function' === typeof callback) 
 		{
-			var L = this.length >>> 0; // forces zero
-			for (var i = 0; i < L; i++) 
+			var L = this.length >> 0;
+			for (var i = 0; i < L; ++i) 
 			{
 			
 				if (i in this) 
@@ -62,18 +62,14 @@ if (!Array.prototype.forEach)
 			}
 		}
 	};
-}
-
-//	based on ECMA 5 spec. and Mozilla's JavaScript 1.6 
-if (!Array.prototype.every) 
-{
+	
 	Array.prototype.every = function(callback, thisObject /* = null */)
 	{
 	
 		if ('function' === typeof callback) 
 		{
-			var L = this.length >>> 0; // forces zero 
-			for (var i = 0; i < L; i++) 
+			var L = this.length >> 0;
+			for (var i = 0; i < L; ++i) 
 			{
 			
 				if (i in this && !callback.call(thisObject, this[i], i, this)) 
@@ -86,21 +82,17 @@ if (!Array.prototype.every)
 		
 		return true;
 	};
-}
-
-//	based on ECMA 5 spec. and Mozilla's JavaScript 1.6 
-if (!Array.prototype.filter) 
-{
+	
 	Array.prototype.filter = function(callback, thisObject /* = null */)
 	{
 	
 		if ('function' === typeof callback) 
 		{
-			var L = this.length >>> 0; // forces zero 
+			var L = this.length >> 0;
 			var R = [];
 			var n = 0;
 			var v;
-			for (var i = 0; i < L; i++) 
+			for (var i = 0; i < L; ++i) 
 			{
 			
 				// "v" in case callback mutates this
@@ -115,26 +107,24 @@ if (!Array.prototype.filter)
 		
 		return null;
 	};
-}
-
-//	based on ECMA 5 spec. and Mozilla's JavaScript 1.6 
-if (!Array.prototype.indexOf) 
-{
+	
 	Array.prototype.indexOf = function(searchElement, fromIndex /* = 0 */)
 	{
-		var L = this.length >>> 0; // forces zero
-		var i = Number(fromIndex) || 0;
-		
-		if ((i = i < 0 ? Math.ceil(i) : Math.floor(i)) < 0) 
+		var L = this.length >> 0;
+		var i = fromIndex >> 0; // force number or floor
+		if (i < 0) 
 		{
-			i += L;
+			i += 1; // ceil
+			if (i < 0) 
+			{
+				i += L;
+			}
 		}
 		while (i < L) 
 		{
 		
 			if (i in this && this[i] === searchElement) 
 			{
-			
 				return i;
 			}
 			i += 1;
@@ -142,14 +132,10 @@ if (!Array.prototype.indexOf)
 		
 		return -1;
 	};
-}
-
-//	based on ECMA 5 spec. and Mozilla's JavaScript 1.6
-if (!Array.prototype.lastIndexOf) 
-{
+	
 	Array.prototype.lastIndexOf = function(searchElement, fromIndex /* = 0 */)
 	{
-		var L = this.length >>> 0; // forces zero
+		var L = this.length >> 0;
 		var i = Number(fromIndex);
 		
 		if (isNaN(i)) 
@@ -158,8 +144,7 @@ if (!Array.prototype.lastIndexOf)
 		}
 		else 
 		{
-		
-			if ((i = i < 0 ? Math.ceil(i) : Math.floor(i)) < 0) 
+			if ((i = (i < 0 ? i + 1 : i) >> 0) < 0) 
 			{
 				i += len;
 			}
@@ -185,19 +170,15 @@ if (!Array.prototype.lastIndexOf)
 		
 		return -1;
 	};
-}
-
-//	based on ECMA 5 spec. and Mozilla's JavaScript 1.6 
-if (Array.prototype.map) 
-{
+	
 	Array.prototype.map = function(callback, thisObject /* = null */)
 	{
 	
 		if ('function' === typeof callback) 
 		{
-			var L = this.length >>> 0; // forces zero
+			var L = this.length >> 0;
 			var R = [];
-			for (var i = 0; i < L; i++) 
+			for (var i = 0; i < L; ++i) 
 			{
 			
 				if (i in this) 
@@ -211,18 +192,14 @@ if (Array.prototype.map)
 		
 		return null;
 	};
-}
-
-//	based on ECMA 5 spec. and Mozilla's JavaScript 1.6 
-if (!Array.prototype.some) 
-{
+	
 	Array.prototype.some = function(callback, thisObject /* = null */)
 	{
 	
 		if ('function' === typeof callback) 
 		{
-			var L = this.length >>> 0; // forces zero
-			for (var i = 0; i < L; i++) 
+			var L = this.length >> 0;
+			for (var i = 0; i < L; ++i) 
 			{
 			
 				if (i in this && callback.call(thisObject, this[i], i, this)) 
@@ -238,15 +215,15 @@ if (!Array.prototype.some)
 }
 
 /// String
-//	based on ECMA 5 spec. and JQuery 1.4 function 
+// based on ECMA 5 spec. and JQuery 1.4 function 
 if (!String.prototype.trim) 
 {
 	String.prototype.trim = function()
 	{
-	
 		return this.replace(/^(\s|\u00A0)+|(\s|\u00A0)+$/g, '');
 	};
 }
+
 /// Object
 leaf.extend = function(superObject, extension)
 {
@@ -277,7 +254,6 @@ if (window.XMLHttpRequest)
 {
 	leaf.createXHR = function()
 	{
-	
 		return new XMLHttpRequest();
 	};
 }
@@ -333,7 +309,6 @@ else
 	{
 		leaf.createXHR = function()
 		{
-		
 			return null;
 		};
 	}
@@ -360,23 +335,23 @@ leaf.getMouseXY = function(mouseEvent)
 		
 			return {
 				// clientLeft/Top IE adjust
-				x: mouseEvent.clientX + (H.scrollLeft || B.scrollLeft) - (H.clientLeft >>> 0),
-				y: mouseEvent.clientY + (H.scrollTop || B.scrollTop) - (H.clientTop >>> 0)
+				x: mouseEvent.clientX + (H.scrollLeft || B.scrollLeft) - (H.clientLeft >> 0),
+				y: mouseEvent.clientY + (H.scrollTop || B.scrollTop) - (H.clientTop >> 0)
 			};
 		}
 		
 		return {
 			// clientLeft/Top IE adjust
-			x: mouseEvent.clientX + H.scrollLeft - (H.clientLeft >>> 0),
-			y: mouseEvent.clientY + H.scrollTop - (H.clientTop >>> 0)
+			x: mouseEvent.clientX + H.scrollLeft - (H.clientLeft >> 0),
+			y: mouseEvent.clientY + H.scrollTop - (H.clientTop >> 0)
 		};
 	}
 	
 	return null;
 };
+
 leaf.core.$ = function(e)
 {
-
 	return e ? e.style ? e : document.getElementById(e) : null;
 };
 leaf.core.purge = function(o)
@@ -578,7 +553,7 @@ if (window.addEventListener)
 		}
 	};
 }
-else 
+else // avoids incompatibility on "&& element.eventFunction" in the conditionals
 {
 	leaf.addListener = function(domObj, eventType, handlerFn)
 	{
@@ -805,7 +780,7 @@ leaf.ElementHandler.prototype = {
 			
 			if ('number' === typeof zIndex) 
 			{
-				S.zIndex = zIndex >>> 0;
+				S.zIndex = zIndex >> 0;
 			}
 		}
 		
@@ -838,7 +813,7 @@ leaf.ElementHandler.prototype = {
 					right: parseFloat(S.right) || 0,
 					bottom: parseFloat(S.bottom) || 0,
 					left: parseFloat(S.left) || 0,
-					zIndex: S.zIndex >>> 0,
+					zIndex: S.zIndex >> 0,
 					type: S.position
 				};
 			}
@@ -2215,7 +2190,7 @@ leaf.ElementHandler.prototype = {
 		
 			if (this.style && 'number' === typeof opacity) 
 			{
-				this.style.filter = 'alpha(opacity=' + (opacity < 0 ? 0 : 1 < opacity ? 1 : opacity * 100 >>> 0) + ')'; // use IE filter
+				this.style.filter = 'alpha(opacity=' + (opacity < 0 ? 0 : 1 < opacity ? 1 : opacity * 100 >> 0) + ')'; // use IE filter
 			}
 			
 			return this;

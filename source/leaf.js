@@ -54,7 +54,6 @@ if (!Array.prototype.some) // tests revealed when 1 ECMA 5 array function is imp
 			var L = this.length >> 0;
 			for (var i = 0; i < L; ++i) 
 			{
-			
 				if (i in this) 
 				{
 					callback.call(thisObject, this[i], i, this);
@@ -65,16 +64,13 @@ if (!Array.prototype.some) // tests revealed when 1 ECMA 5 array function is imp
 	
 	Array.prototype.every = function(callback, thisObject /* = null */)
 	{
-	
 		if ('function' === typeof callback) 
 		{
 			var L = this.length >> 0;
 			for (var i = 0; i < L; ++i) 
 			{
-			
 				if (i in this && !callback.call(thisObject, this[i], i, this)) 
-				{
-				
+				{	
 					return false;
 				}
 			}
@@ -85,7 +81,6 @@ if (!Array.prototype.some) // tests revealed when 1 ECMA 5 array function is imp
 	
 	Array.prototype.filter = function(callback, thisObject /* = null */)
 	{
-	
 		if ('function' === typeof callback) 
 		{
 			var L = this.length >> 0;
@@ -94,31 +89,31 @@ if (!Array.prototype.some) // tests revealed when 1 ECMA 5 array function is imp
 			var v;
 			for (var i = 0; i < L; ++i) 
 			{
-			
 				// "v" in case callback mutates this
 				if (i in this && callback.call(thisObject, v, i, this)) 
 				{
 					R[n++] = v;
 				}
 			}
-			
 			return R;
 		}
-		
 		return null;
 	};
 	
 	Array.prototype.indexOf = function(searchElement, fromIndex /* = 0 */)
 	{
 		var L = this.length >> 0;
-		var i = fromIndex >> 0; // force number or floor
+		var i = Number(fromIndex) || 0;
 		if (i < 0) 
 		{
-			i += 1; // ceil
-			if (i < 0) 
+			if ((i = i + 1 >> 0) < 0) // ceil (+1 >> 0, when negative) 
 			{
 				i += L;
 			}
+		}
+		else 
+		{
+			i <<= 0; // floor, when positive
 		}
 		while (i < L) 
 		{
@@ -143,23 +138,26 @@ if (!Array.prototype.some) // tests revealed when 1 ECMA 5 array function is imp
 			i = L - 1;
 		}
 		else 
+		
 		{
-			if ((i = (i < 0 ? i + 1 : i) >> 0) < 0) 
+			if (i < 0) 
 			{
-				i += len;
+				if ((i = i + 1 >> 0) < 0) // ceil, when negative
+				{
+					i += L;
+				}
 			}
 			else 
 			{
 			
-				if (L <= i) 
+				if (L <= i >> 0) // floor, when positive 
 				{
-					i = len - 1;
+					i = L - 1;
 				}
 			}
 		}
 		while (i > -1) 
 		{
-		
 			if (i in this && this[i] === searchElement) 
 			{
 			
@@ -186,7 +184,6 @@ if (!Array.prototype.some) // tests revealed when 1 ECMA 5 array function is imp
 					R[i] = callback.call(thisObject, this[i], i, this);
 				}
 			}
-			
 			return R;
 		}
 		
@@ -204,7 +201,6 @@ if (!Array.prototype.some) // tests revealed when 1 ECMA 5 array function is imp
 			
 				if (i in this && callback.call(thisObject, this[i], i, this)) 
 				{
-				
 					return true;
 				}
 			}
@@ -301,7 +297,6 @@ else
 					}
 				})();
 			}
-			
 			return new ActiveXObject(leaf.core.activeXVersion);
 		};
 	}

@@ -1,7 +1,7 @@
 
 /*  LEAF JavaScript Library
  *  Leonardo Dutra
- *  v0.9.1a
+ *  v0.9.2a
  *
  *  Copyright (c) 2009, Leonardo Dutra Constâncio.
  *  All rights reserved.
@@ -106,7 +106,7 @@ if (!Array.prototype.some) // tests revealed when 1 ECMA 5 array function is imp
 		var i = Number(fromIndex) || 0;
 		if (i < 0) 
 		{
-			if ((i = i + 1 >> 0) < 0) // ceil (+1 >> 0, when negative) 
+			if ((i = 1 + i >> 0) < 0) // ceil, when negative 
 			{
 				i += L;
 			}
@@ -142,7 +142,7 @@ if (!Array.prototype.some) // tests revealed when 1 ECMA 5 array function is imp
 		{
 			if (i < 0) 
 			{
-				if ((i = i + 1 >> 0) < 0) // ceil, when negative
+				if ((i = 1 + i >> 0) < 0) // ceil, when negative
 				{
 					i += L;
 				}

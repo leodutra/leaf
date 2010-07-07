@@ -1,2319 +1,1 @@
-
-/*
- * LEAF JavaScript Library
- * Version 0.9.3a
- * 
- * MIT License:
- * Copyright (c) 2008-2010 Leonardo Dutra Constâncio
- *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation
- * files (the "Software"), to deal in the Software without
- * restriction, including without limitation the rights to use,
- * copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following
- * conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- * OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- * OTHER DEALINGS IN THE SOFTWARE.
- */
-
-if (!window.leaf) 
-{
-	window.leaf = {};
-}
-
-if (!leaf.core) 
-{
-	leaf.core = {};
-}
-
-/// Array
-// functions based on ECMA 5 spec. and Mozilla's JavaScript 1.6
-if (!Array.prototype.some) // tests revealed when 1 ECMA 5 array function is implemented, the others are too 
-{
-	Array.prototype.forEach = function(callback, thisObject /* = null */)
-	{
-	
-		if ('function' === typeof callback) 
-		{
-			var L = this.length >> 0;
-			for (var i = 0; i < L; ++i) 
-			{
-				if (i in this) 
-				{
-					callback.call(thisObject, this[i], i, this);
-				}
-			}
-		}
-	};
-	
-	Array.prototype.every = function(callback, thisObject /* = null */)
-	{
-		if ('function' === typeof callback) 
-		{
-			var L = this.length >> 0;
-			for (var i = 0; i < L; ++i) 
-			{
-				if (i in this && !callback.call(thisObject, this[i], i, this)) 
-				{	
-					return false;
-				}
-			}
-		}
-		
-		return true;
-	};
-	
-	Array.prototype.filter = function(callback, thisObject /* = null */)
-	{
-		if ('function' === typeof callback) 
-		{
-			var L = this.length >> 0;
-			var R = [];
-			var n = 0;
-			var v;
-			for (var i = 0; i < L; ++i) 
-			{
-				// "v" in case callback mutates this
-				if (i in this && callback.call(thisObject, v, i, this)) 
-				{
-					R[n++] = v;
-				}
-			}
-			return R;
-		}
-		return null;
-	};
-	
-	Array.prototype.indexOf = function(searchElement, fromIndex /* = 0 */)
-	{
-		var L = this.length >> 0;
-		var i = Number(fromIndex) || 0;
-		if (i < 0) 
-		{
-			if ((i = 1 + i >> 0) < 0) // ceil, when negative 
-			{
-				i += L;
-			}
-		}
-		else 
-		{
-			i <<= 0; // floor, when positive
-		}
-		while (i < L) 
-		{
-		
-			if (i in this && this[i] === searchElement) 
-			{
-				return i;
-			}
-			i += 1;
-		}
-		
-		return -1;
-	};
-	
-	Array.prototype.lastIndexOf = function(searchElement, fromIndex /* = 0 */)
-	{
-		var L = this.length >> 0;
-		var i = Number(fromIndex);
-		
-		if (isNaN(i)) 
-		{
-			i = L - 1;
-		}
-		else 
-		
-		{
-			if (i < 0) 
-			{
-				if ((i = 1 + i >> 0) < 0) // ceil, when negative
-				{
-					i += L;
-				}
-			}
-			else 
-			{
-			
-				if (L <= i >> 0) // floor, when positive 
-				{
-					i = L - 1;
-				}
-			}
-		}
-		while (i > -1) 
-		{
-			if (i in this && this[i] === searchElement) 
-			{
-			
-				return i;
-			}
-			i -= 1;
-		}
-		
-		return -1;
-	};
-	
-	Array.prototype.map = function(callback, thisObject /* = null */)
-	{
-	
-		if ('function' === typeof callback) 
-		{
-			var L = this.length >> 0;
-			var R = [];
-			for (var i = 0; i < L; ++i) 
-			{
-			
-				if (i in this) 
-				{
-					R[i] = callback.call(thisObject, this[i], i, this);
-				}
-			}
-			return R;
-		}
-		
-		return null;
-	};
-	
-	Array.prototype.some = function(callback, thisObject /* = null */)
-	{
-	
-		if ('function' === typeof callback) 
-		{
-			var L = this.length >> 0;
-			for (var i = 0; i < L; ++i) 
-			{
-			
-				if (i in this && callback.call(thisObject, this[i], i, this)) 
-				{
-					return true;
-				}
-			}
-		}
-		
-		return false;
-	};
-}
-
-/// String
-// based on ECMA 5 spec. and JQuery 1.4 function 
-if (!String.prototype.trim) 
-{
-	String.prototype.trim = function()
-	{
-		return this.replace(/^(\s|\u00A0)+|(\s|\u00A0)+$/g, '');
-	};
-}
-
-/// Object
-leaf.extend = function(superObject, extension)
-{
-
-	if (superObject && extension) // anything can be extended if is not undefined
-	{
-		var o = function()
-		{
-		};
-		// uses prototype, allowing use of "instanceof" on returned object. No mem. leak on primary tests.
-		o.prototype = superObject;
-		o = new o();
-		var n;
-		for (n in extension) 
-		{
-			o[n] = extension[n];
-		}
-		
-		return o;
-	}
-	
-	return null;
-};
-
-/// Ajax
-// createXHR supports a large range of IE ActiveXObjects versions
-if (window.XMLHttpRequest) 
-{
-	leaf.createXHR = function()
-	{
-		return new XMLHttpRequest();
-	};
-}
-else 
-
-	if (window.ActiveXObject) 
-	{
-		leaf.createXHR = function()
-		{
-		
-			if (!leaf.core.activeXVersion) 
-			{
-				leaf.core.activeXVersion = (function()
-				{
-					var A = ActiveXObject; // cache
-					var i = 7;
-					var o;
-					while (i < 2) 
-					{
-						try 
-						{
-							new A('MSXML2.XMLHTTP.' + i + '.0');
-							
-							return 'MSXML2.XMLHTTP.' + i + '.0';
-						} 
-						catch (o) 
-						{
-							i -= 1;
-						}
-					}
-					
-					if (i === 2) 
-					{
-						try 
-						{
-							new A('MSXML2.XMLHTTP');
-							
-							return 'MSXML2.XMLHTTP';
-						} 
-						catch (o) 
-						{
-						
-							return 'Microsoft.XMLHTTP';
-						}
-					}
-				})();
-			}
-			return new ActiveXObject(leaf.core.activeXVersion);
-		};
-	}
-	else 
-	{
-		leaf.createXHR = function()
-		{
-			return null;
-		};
-	}
-/// Mouse
-leaf.getMouseXY = function(mouseEvent)
-{
-
-	if ((mouseEvent = mouseEvent || event)) 
-	{
-	
-		// pageX/Y is the best case on most browsers, but not W3Clike yet
-		if ('number' === typeof mouseEvent.pageY) 
-		{
-		
-			return {
-				x: mouseEvent.pageX,
-				y: mouseEvent.pageY
-			};
-		}
-		var H = document.documentElement;
-		var B = document.body; // medium case cache
-		if (B) // needed sometimes depending on browser and version since body can have a 1px rounder
-		{
-		
-			return {
-				// clientLeft/Top IE adjust
-				x: mouseEvent.clientX + (H.scrollLeft || B.scrollLeft) - (H.clientLeft >> 0),
-				y: mouseEvent.clientY + (H.scrollTop || B.scrollTop) - (H.clientTop >> 0)
-			};
-		}
-		
-		return {
-			// clientLeft/Top IE adjust
-			x: mouseEvent.clientX + H.scrollLeft - (H.clientLeft >> 0),
-			y: mouseEvent.clientY + H.scrollTop - (H.clientTop >> 0)
-		};
-	}
-	
-	return null;
-};
-
-leaf.core.$ = function(e)
-{
-	return e ? e.style ? e : document.getElementById(e) : null;
-};
-leaf.core.purge = function(o)
-{
-	// IE old versions leaks on deletion when elements have functions
-	// base code: www.crockford.com
-	var a = o.attributes;
-	
-	if (a) 
-	{
-		var i = a.length;
-		var n;
-		while (i--) 
-		{
-		
-			if ('function' === typeof o[(n = a[i].name)]) 
-			{
-				o[n] = null;
-			}
-		}
-	}
-	
-	if ((o = o.childNodes)) 
-	{
-		var p = arguments.callee;
-		a = o.length;
-		while (a--) 
-		{
-			p(o[a]);
-		}
-	}
-};
-leaf.purge = function(domObj)
-{
-
-	if (domObj) 
-	{
-		this.core.purge(domObj);
-		
-		if (domObj.parentNode) 
-		{
-			domObj.parentNode.removeChild(domObj);
-		}
-	}
-};
-leaf.getById = function(ids /*:String|Array*/)
-{
-
-	if (ids instanceof Array) 
-	{
-		var D = document;
-		var L = ids.length;
-		var n = 0;
-		var i = 0;
-		var K = [];
-		var o;
-		while (i < L) 
-		{
-		
-			if ((o = D.getElementById(ids[i++]))) 
-			{
-				K[n++] = o;
-			}
-		}
-		
-		return n ? K : null; // null if no match
-	}
-	
-	return document.getElementById(ids); // null if no match
-};
-leaf.getByTag = function(tagNames /*:String|Array*/, rootNode)
-{
-	rootNode = this.core.$(rootNode) || document;
-	var o;
-	
-	if (tagNames instanceof Array) 
-	{
-		var L = tagNames.length;
-		var n = 0;
-		var i = 0;
-		var j = 0;
-		var K = [];
-		var l;
-		while (i < L) 
-		{
-			l = (o = rootNode.getElementsByTagName(tagNames[i++])).length;
-			while (j < l) 
-			{
-				K[n++] = o[j++];
-			}
-			j = 0;
-		}
-		
-		return n ? K : null; // null if no match
-	}
-	
-	return (o = rootNode.getElementsByTagName(tagNames)).length ? o : null;
-};
-
-if (document.getElementsByClassName) 
-{
-	leaf.getByClass = function(classNames /*:String|Array*/, rootElement)
-	{
-		rootElement = this.core.$(rootElement) || document;
-		var o;
-		
-		if (classNames instanceof Array) 
-		{
-			var L = classNames.length;
-			var K = [];
-			var n = 0;
-			var i = 0;
-			var j = 0;
-			while (i < L) 
-			{
-				l = (o = rootElement.getElementsByClassName(classNames[i++])).length;
-				while (j < l) 
-				{
-					K[n++] = o[j++];
-				}
-				j = 0;
-			}
-			
-			return n ? K : null; // null if no match
-		}
-		
-		return (o = rootElement.getElementsByClassName(classNames)).length ? o : null;
-	};
-}
-else 
-{
-	leaf.getByClass = function(classNames, rootElement)
-	{
-	
-		if ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array && classNames.length) 
-		{
-			var R = new RegExp('(?:\\s|^)(?:' + classNames.join('\|') + ')(?:\\s|$)');
-			var K = [];
-			var n = 0;
-			// depth search
-			var q = function(o)
-			{
-			
-				if (o.style && R.test(o.className)) 
-				{
-					K[n++] = o;
-				}
-				
-				if ((o = o.childNodes)) 
-				{
-					var L = o.length;
-					var i = 0;
-					while (i < L) 
-					{
-						q(o[i++]);
-					}
-				}
-			};
-			q(this.core.$(rootElement) || document);
-			
-			// null if no match
-			if (n) 
-			{
-			
-				return K;
-			}
-		}
-		
-		return null;
-	};
-}
-
-if (window.addEventListener) 
-{
-	leaf.addListener = function(domObj, eventType, handlerFn)
-	{
-	
-		if (domObj && domObj.addEventListener && 'string' === typeof eventType && 'function' === typeof handlerFn) 
-		{
-			domObj.addEventListener(eventType, handlerFn, false);
-		}
-	};
-	leaf.removeListener = function(domObj, eventType, handlerFn)
-	{
-	
-		if (domObj && domObj.removeEventListener && 'string' === typeof eventType && 'function' === typeof handlerFn) 
-		{
-			domObj.removeEventListener(eventType, handlerFn, false);
-		}
-	};
-	leaf.dispatchEvent = function(domObj, eventType)
-	{
-	
-		if (domObj && domObj.dispatchEvent && 'string' === typeof eventType) 
-		{
-			var e = document.createEvent('HTMLEvents');
-			e.initEvent(eventType, true, true); // event type, bubbling, cancelable
-			domObj.dispatchEvent(e);
-		}
-	};
-}
-else // avoids incompatibility on "&& element.eventFunction" in the conditionals
-{
-	leaf.addListener = function(domObj, eventType, handlerFn)
-	{
-	
-		if (domObj && domObj.attachEvent && 'string' === typeof eventType && 'function' === typeof handlerFn) 
-		{
-			// uses hash name to fix IE problems
-			// base code by John Resig of JQuery (Event Contest - www.quirksmode.com)
-			var h = eventType + handlerFn;
-			domObj['on' + h] = handlerFn;
-			domObj.attachEvent('on' + eventType, (domObj[h] = function()
-			{
-				domObj['on' + h](event);
-			}));
-		}
-	};
-	leaf.removeListener = function(domObj, eventType, handlerFn)
-	{
-	
-		if (domObj && domObj.detachEvent && 'string' === typeof eventType && 'function' === typeof handlerFn) 
-		{
-			// uses hash name to fix IE problems
-			// base code by John Resig of JQuery, (Event Contest - www.quirksmode.com)
-			domObj.detachEvent('on' + eventType, domObj[(eventType += handlerFn)]);
-			domObj[eventType] = null;
-			domObj['on' + eventType] = null;
-		}
-	};
-	leaf.dispatchEvent = function(domObj, eventType)
-	{
-	
-		if (domObj && domObj.fireEvent && 'string' === typeof eventType) 
-		{
-			// dispatch for IE
-			domObj.fireEvent('on' + eventType, document.createEventObject());
-		}
-	};
-}
-/// ElementHandler
-leaf.ElementHandler = function(element)
-{
-
-	if (this instanceof leaf.ElementHandler) 
-	{
-		this.ElementHandler(element);
-	}
-};
-leaf.ElementHandler.prototype = {
-	element: null,
-	style: null,
-	core: null,
-	ElementHandler: function(element)
-	{
-		this.setElement(element);
-	},
-	setElement: function(element)
-	{
-		this.style = (this.element = (element = this.core.$(element))) ? element.style : null;
-		
-		return this;
-	},
-	getElement: function()
-	{
-	
-		return this.element;
-	},
-	getStyle: function()
-	{
-	
-		return this.style;
-	},
-	addListener: function(type, handlerFn)
-	{
-		leaf.addListener(this.element, type, handlerFn);
-		
-		return this;
-	},
-	removeListener: function(type, handlerFn)
-	{
-		leaf.removeListener(this.element, type, handlerFn);
-		
-		return this;
-	},
-	dispatchEvent: function(type)
-	{
-		leaf.dispatchEvent(this.element, type);
-		
-		return this;
-	},
-	// TODO: benchmark
-	addClass: function(classNames)
-	{
-		var E = this.element;
-		
-		if (E && 'string' === typeof E.className && ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array)) 
-		{
-			var R = new RegExp('(?:\\s|^)' + E.className.replace(/(?:^\s+|\s+$)/g, '').replace(/\s+/g, '\|') + '(?:\\s|$)', '');
-			var L = classNames.length;
-			var K = [];
-			var n = 0;
-			var i = 0;
-			while (i < L) 
-			{
-			
-				// test avoids residual className problem
-				if (R.test(classNames[i])) 
-				{
-					i += 1;
-				}
-				else 
-				{
-					K[n++] = classNames[i++];
-				}
-			}
-			E.className += ' ' + K.join(' ');
-		}
-		
-		return this;
-	},
-	removeClass: function(classNames)
-	{
-		var E = this.element;
-		
-		if (E && ('string' === typeof classNames ? classNames = [classNames] : classNames instanceof Array)) 
-		{
-			var c = E.className;
-			
-			if (c) 
-			{
-				var R = new RegExp('(:?\\s|^)(?:' + classNames.join('\|') + ')(?:\\s|$)', '');
-				var L = (c = c.split(/\s+/)).length;
-				var K = [];
-				var n = 0;
-				var i = 0;
-				while (i < L) 
-				{
-				
-					if (R.test(c[i])) 
-					{
-						i += 1;
-					}
-					else 
-					{
-						K[n++] = c[i++];
-					}
-				}
-				E.className = K.join(' ');
-			}
-		}
-		
-		return this;
-	},
-	setPosition: function(top, right, bottom, left, zIndex, type)
-	{
-		var S = this.style;
-		
-		if (S) 
-		{
-		
-			if ('string' === typeof type) 
-			{
-				S.position = type;
-			}
-			
-			if ('number' === typeof top) 
-			{
-				S.top = top + 'px';
-				bottom = '';
-			}
-			else 
-			{
-			
-				if ('string' === typeof top) 
-				{
-					S.top = top;
-					bottom = '';
-				}
-			}
-			
-			if ('number' === typeof bottom) 
-			{
-				S.bottom = bottom + 'px';
-				S.top = '';
-			}
-			else 
-			{
-			
-				if ('string' === typeof bottom) 
-				{
-					S.bottom = bottom;
-					S.top = '';
-				}
-			}
-			
-			if ('number' === typeof left) 
-			{
-				S.left = left + 'px';
-				right = '';
-			}
-			else 
-			{
-			
-				if ('string' === typeof left) 
-				{
-					S.left = left;
-					right = '';
-				}
-			}
-			
-			if ('number' === typeof right) 
-			{
-				S.right = right + 'px';
-				S.left = '';
-			}
-			else 
-			{
-			
-				if ('string' === typeof right) 
-				{
-					S.right = right;
-					S.left = '';
-				}
-			}
-			
-			if ('number' === typeof zIndex) 
-			{
-				S.zIndex = zIndex >> 0;
-			}
-		}
-		
-		return this;
-	},
-	getPosition: function(keepAsValues)
-	{
-		var S = this.style;
-		
-		if (S) 
-		{
-		
-			if (keepAsValues) 
-			{
-			
-				return {
-					top: S.top,
-					right: S.right,
-					bottom: S.bottom,
-					left: S.left,
-					zIndex: S.zIndex,
-					type: S.position
-				};
-			}
-			else 
-			{
-			
-				return {
-					top: parseFloat(S.top) || 0,
-					right: parseFloat(S.right) || 0,
-					bottom: parseFloat(S.bottom) || 0,
-					left: parseFloat(S.left) || 0,
-					zIndex: S.zIndex >> 0,
-					type: S.position
-				};
-			}
-		}
-		
-		return null;
-	},
-	setXY: function(x, y)
-	{
-		var S = this.style;
-		
-		if (S) 
-		{
-		
-			if ('number' === typeof x) 
-			{
-			
-				if (S.right) 
-				{
-					S.left = '';
-					S.right = x + 'px';
-				}
-				else 
-				{
-					S.left = x + 'px';
-					S.right = '';
-				}
-			}
-			else 
-			{
-			
-				if ('string' === typeof x) 
-				{
-				
-					if (S.right) 
-					{
-						S.left = '';
-						S.right = x;
-					}
-					else 
-					{
-						S.left = x;
-						S.right = '';
-					}
-				}
-			}
-			
-			if ('number' === typeof y) 
-			{
-			
-				if (S.bottom) 
-				{
-					S.top = '';
-					S.bottom = y + 'px';
-				}
-				else 
-				{
-					S.top = y + 'px';
-					S.bottom = '';
-				}
-			}
-			else 
-			{
-			
-				if ('string' === typeof y) 
-				{
-				
-					if (S.bottom) 
-					{
-						S.top = '';
-						S.bottom = y;
-					}
-					else 
-					{
-						S.top = y;
-						S.bottom = '';
-					}
-				}
-			}
-		}
-		
-		return this;
-	},
-	getXY: function(keepAsValues)
-	{
-		var S = this.style;
-		
-		if (S) 
-		{
-		
-			if (keepAsValues) 
-			{
-			
-				return {
-					x: S.left || S.right,
-					y: S.top || S.bottom
-				};
-			}
-			else 
-			{
-			
-				return {
-					x: parseFloat(S.left || S.right) || this.element.offsetLeft,
-					y: parseFloat(S.top || S.bottom) || this.element.offsetTop
-				};
-			}
-		}
-		
-		return null;
-	},
-	invertXY: function(x, y)
-	{
-		var S = this.style;
-		
-		if (S) 
-		{
-		
-			if (x) 
-			{
-			
-				if (S.right) 
-				{
-					S.left = S.right;
-					S.right = '';
-				}
-				else 
-				{
-					S.right = S.left;
-					S.left = '';
-				}
-			}
-			
-			if (y) 
-			{
-			
-				if (S.bottom) 
-				{
-					S.top = S.bottom;
-					S.bottom = '';
-				}
-				else 
-				{
-					S.bottom = S.top;
-					S.top = '';
-				}
-			}
-		}
-		
-		return this;
-	},
-	getOffset: function()
-	{
-		var E = this.element;
-		
-		if (E) 
-		{
-		
-			return {
-				left: E.offsetLeft,
-				top: E.offsetTop,
-				width: E.offsetWidth,
-				height: E.offsetHeight,
-				parent: E.offsetParent
-			};
-		}
-		
-		return null;
-	},
-	setSize: function(width, height)
-	{
-		var S = this.style;
-		
-		if (S) 
-		{
-		
-			if ('number' === typeof width) 
-			{
-				S.width = width + 'px';
-			}
-			else 
-			{
-			
-				if ('string' === typeof width) 
-				{
-					S.width = width;
-				}
-			}
-			
-			if ('number' === typeof height) 
-			{
-				S.height = height + 'px';
-			}
-			else 
-			{
-			
-				if ('string' === typeof height) 
-				{
-					S.height = height;
-				}
-			}
-		}
-		
-		return this;
-	},
-	getSize: function(keepAsValues)
-	{
-		var S = this.style;
-		
-		if (S) 
-		{
-		
-			if (keepAsValues) 
-			{
-			
-				return {
-					width: S.width,
-					height: S.height
-				};
-			}
-			else 
-			{
-			
-				return {
-					width: parseFloat(S.width) || 0,
-					height: parseFloat(S.height) || 0
-				};
-			}
-		}
-		
-		return null;
-	},
-	setArea: function(width, height, x, y)
-	{
-		this.setSize(width, height);
-		this.setXY(x, y);
-		
-		return this;
-	},
-	getArea: function(keepAsValues)
-	{
-		var S = this.style;
-		
-		if (S) 
-		{
-		
-			if (keepAsValues) 
-			{
-			
-				return {
-					x: S.left || S.right,
-					y: S.top || S.bottom,
-					width: S.width,
-					height: S.height
-				};
-			}
-			else 
-			{
-			
-				return {
-					x: parseFloat(S.left || S.right) || this.element.offsetLeft,
-					y: parseFloat(S.top || S.bottom) || this.element.offsetTop,
-					width: parseFloat(S.width) || this.element.offsetWidth,
-					height: parseFloat(S.height) || this.element.offsetHeight
-				};
-			}
-		}
-		
-		return null;
-	},
-	setContent: function(content)
-	{
-	
-		// !: IE sets parentNode as fragment when innerHTML or text is inserted before element append  
-		if (this.element) 
-		{
-			this.element.innerHTML = content === null || content === undefined ? '' : content;
-		}
-		
-		return this;
-	},
-	getContent: function()
-	{
-	
-		return this.element && this.element.innerHTML || '';
-	},
-	addContent: function(content)
-	{
-		// !: IE sets parentNode as fragment when innerHTML or text is inserted before element append
-		var E = this.element;
-		
-		if (E && !(content === null || content === undefined)) 
-		{
-			E.innerHTML = (E.innerHTML || '') + content;
-		}
-		
-		return this;
-	},
-	setBackground: function(color, src, x, y, repeat)
-	{
-		var S = this.style;
-		
-		if (S) 
-		{
-		
-			if ('string' === typeof color) 
-			{
-				S.backgroundColor = color;
-			}
-			
-			if ('string' === typeof src) 
-			{
-				S.backgroundImage = 'url(\'' + src + '\')';
-			}
-			src = S.backgroundPosition.split(' '); // keep on outside of logical sequence
-			S.backgroundPosition = ('number' === typeof x ? x + 'px' : 'string' === typeof x ? x : (src[0] || '50%')) + ' ' +
-			('number' === typeof y ? y + 'px' : 'string' === typeof y ? y : (src[1] || '50%'));
-			S.backgroundRepeat = repeat ? repeat : 'no-repeat';
-		}
-		
-		return this;
-	},
-	getBackground: function(keepAsValues)
-	{
-		var S = this.style;
-		
-		if (S) 
-		{
-			var P = S.backgroundPosition.split(' ');
-			
-			if (keepAsValues) 
-			{
-			
-				return {
-					x: P[0] || '',
-					y: P[1] || '',
-					color: S.backgroundColor,
-					src: S.backgroundImage,
-					repeat: S.backgroundRepeat
-				};
-			}
-			else 
-			{
-			
-				return {
-					x: parseFloat(P[0]) || 0,
-					y: parseFloat(P[1]) || 0,
-					color: S.backgroundColor,
-					src: S.backgroundImage,
-					repeat: S.backgroundRepeat
-				};
-			}
-		}
-		
-		return null;
-	},
-	setFont: function(color, size, family, weight, style, spacing, lineHeight, useSmallCaps)
-	{
-		var S = this.style;
-		
-		if (S) 
-		{
-		
-			if ('string' === typeof color) 
-			{
-				S.color = color;
-			}
-			
-			if ('string' === typeof family) 
-			{
-				S.fontFamily = family;
-			}
-			
-			if ('string' === typeof style) 
-			{
-				S.fontStyle = style;
-			}
-			
-			if ('string' === typeof weight || 'number' === typeof weight) 
-			{
-				S.fontWeight = weight;
-			}
-			
-			if ('number' === typeof size) 
-			{
-				S.fontSize = size + 'pt';
-			}
-			else 
-			{
-			
-				if ('string' === typeof size) 
-				{
-					S.fontSize = size;
-				}
-			}
-			
-			if ('number' === typeof spacing) 
-			{
-				S.letterSpacing = spacing + 'px';
-			}
-			else 
-			{
-			
-				if ('string' === typeof spacing) 
-				{
-					S.letterSpacing = spacing;
-				}
-			}
-			
-			if ('number' === typeof lineHeight) 
-			{
-				S.lineHeight = lineHeight + 'px';
-			}
-			else 
-			{
-			
-				if ('string' === typeof lineHeight) 
-				{
-					S.lineHeight = lineHeight;
-				}
-			}
-			
-			if (useSmallCaps !== null && useSmallCaps !== undefined) 
-			{
-				S.fontVariant = useSmallCaps ? 'small-caps' : 'normal';
-			}
-		}
-		
-		return this;
-	},
-	getFont: function(keepAsValues)
-	{
-		var S = this.style;
-		
-		if (S) 
-		{
-		
-			if (keepAsValues) 
-			{
-			
-				return {
-					color: S.color,
-					size: S.fontSize,
-					family: S.fontFamily,
-					weight: S.fontWeight,
-					style: S.fontStyle,
-					spacing: S.letterSpacing,
-					lineHeight: S.lineHeight,
-					variant: S.fontVariant
-				};
-			}
-			else 
-			{
-			
-				return {
-					color: S.color,
-					size: parseFloat(S.fontSize) || 0,
-					family: S.fontFamily,
-					weight: S.fontWeight,
-					style: S.fontStyle,
-					spacing: parseFloat(S.letterSpacing) || 0,
-					lineHeight: parseFloat(S.lineHeight) || 0,
-					variant: S.fontVariant
-				};
-			}
-		}
-		
-		return null;
-	},
-	setBorder: function(color, width, style)
-	{
-		var S = this.style;
-		
-		if (S) 
-		{
-		
-			if ('string' === typeof color) 
-			{
-				S.borderColor = color;
-			}
-			
-			if ('number' === typeof width) 
-			{
-				S.borderWidth = width + 'px';
-			}
-			else 
-			{
-			
-				if ('string' === typeof width) 
-				{
-					S.borderWidth = width;
-				}
-			}
-			S.borderStyle = 'string' === typeof style ? style : S.borderStyle || 'solid';
-		}
-		
-		return this;
-	},
-	getBorder: function(keepAsValues)
-	{
-		var S = this.style;
-		
-		if (S) 
-		{
-		
-			return {
-				color: S.borderColor,
-				width: keepAsValues ? S.borderWidth : parseFloat(S.borderWidth),
-				style: S.borderStyle
-			};
-		}
-		
-		return null;
-	},
-	setPadding: function(top, right, bottom, left)
-	{
-		var S = this.style;
-		
-		if (S) 
-		{
-		
-			if ('number' === typeof top) 
-			{
-				S.paddingTop = top + 'px';
-			}
-			else 
-			{
-			
-				if ('string' === typeof top) 
-				{
-					S.paddingTop = top;
-				}
-			}
-			
-			if ('number' === typeof right) 
-			{
-				S.paddingRight = right + 'px';
-			}
-			else 
-			{
-			
-				if ('string' === typeof right) 
-				{
-					S.paddingRight = right;
-				}
-			}
-			
-			if ('number' === typeof bottom) 
-			{
-				S.paddingBottom = bottom + 'px';
-			}
-			else 
-			{
-			
-				if ('string' === typeof bottom) 
-				{
-					S.paddingBottom = bottom;
-				}
-			}
-			
-			if ('number' === typeof left) 
-			{
-				S.paddingLeft = left + 'px';
-			}
-			else 
-			{
-			
-				if ('string' === typeof left) 
-				{
-					S.paddingLeft = left;
-				}
-			}
-		}
-		
-		return this;
-	},
-	getPadding: function(keepAsValues)
-	{
-		var S = this.style;
-		
-		if (S) 
-		{
-		
-			if (keepAsValues) 
-			{
-			
-				return {
-					top: S.paddingTop,
-					right: S.paddingRight,
-					bottom: S.paddingBottom,
-					left: S.paddingLeft
-				};
-			}
-			else 
-			{
-			
-				return {
-					top: parseFloat(S.paddingTop) || 0,
-					right: parseFloat(S.paddingRight) || 0,
-					bottom: parseFloat(S.paddingBottom) || 0,
-					left: parseFloat(S.paddingLeft) || 0
-				};
-			}
-		}
-		
-		return null;
-	},
-	setMargin: function(top, right, bottom, left)
-	{
-		var S = this.style;
-		
-		if (S) 
-		{
-		
-			if ('number' === typeof top) 
-			{
-				S.marginTop = top + 'px';
-			}
-			else 
-			{
-			
-				if ('string' === typeof top) 
-				{
-					S.marginTop = top;
-				}
-			}
-			
-			if ('number' === typeof right) 
-			{
-				S.marginRight = right + 'px';
-			}
-			else 
-			{
-			
-				if ('string' === typeof right) 
-				{
-					S.marginRight = right;
-				}
-			}
-			
-			if ('number' === typeof bottom) 
-			{
-				S.marginBottom = bottom + 'px';
-			}
-			else 
-			{
-			
-				if ('string' === typeof bottom) 
-				{
-					S.marginBottom = bottom;
-				}
-			}
-			
-			if ('number' === typeof left) 
-			{
-				S.marginLeft = left + 'px';
-			}
-			else 
-			{
-			
-				if ('string' === typeof left) 
-				{
-					S.marginLeft = left;
-				}
-			}
-		}
-		
-		return this;
-	},
-	getMargin: function(keepAsValues)
-	{
-		var S = this.style;
-		
-		if (S) 
-		{
-		
-			if (keepAsValues) 
-			{
-			
-				return {
-					top: S.marginTop,
-					right: S.marginRight,
-					bottom: S.marginBottom,
-					left: S.marginLeft
-				};
-			}
-			else 
-			{
-			
-				return {
-					top: parseFloat(S.marginTop) || 0,
-					right: parseFloat(S.marginRight) || 0,
-					bottom: parseFloat(S.marginBottom) || 0,
-					left: parseFloat(S.marginLeft) || 0
-				};
-			}
-		}
-		
-		return null;
-	},
-	setText: function(align, decoration, wordSpacing, whiteSpace, indent, transform)
-	{
-		var S = this.style;
-		
-		if (S) 
-		{
-		
-			if ('string' === typeof align) 
-			{
-				S.textAlign = align;
-			}
-			
-			if ('string' === typeof decoration) 
-			{
-				S.textDecoration = decoration;
-			}
-			
-			if ('string' === typeof whiteSpace) 
-			{
-				S.whiteSpace = whiteSpace;
-			}
-			
-			if ('string' === typeof transform) 
-			{
-				S.textTransform = transform;
-			}
-			
-			if ('number' === typeof indent) 
-			{
-				S.textIndent = indent + 'px';
-			}
-			else 
-			{
-			
-				if ('string' === typeof indent) 
-				{
-					S.textIndent = indent;
-				}
-			}
-			
-			if ('number' === typeof wordSpacing) 
-			{
-				S.wordSpacing = wordSpacing + 'px';
-			}
-			else 
-			{
-			
-				if ('string' === typeof wordSpacing) 
-				{
-					S.wordSpacing = wordSpacing;
-				}
-			}
-		}
-		
-		return this;
-	},
-	getText: function(keepAsValues)
-	{
-		var S = this.style;
-		
-		if (S) 
-		{
-		
-			if (keepAsValues) 
-			{
-			
-				return {
-					align: S.textAlign,
-					decoration: S.textDecoration,
-					wordSpacing: S.wordSpacing,
-					whiteSpace: S.whiteSpace,
-					indent: S.textIndent,
-					transform: S.textTransform
-				};
-			}
-			else 
-			{
-			
-				return {
-					align: S.textAlign,
-					decoration: S.textDecoration,
-					wordSpacing: parseFloat(S.wordSpacing) || 0,
-					whiteSpace: S.whiteSpace,
-					indent: parseFloat(S.textIndent) || 0,
-					transform: S.textTransform
-				};
-			}
-		}
-		
-		return null;
-	},
-	setScroll: function(top, left)
-	{
-		var E = this.element;
-		
-		if (E) 
-		{
-		
-			if ('number' === typeof top) 
-			{
-				E.scrollTop = top < 0 ? 0 : E.scrollHeight < top ? E.scrollHeight : top;
-			}
-			
-			if ('number' === typeof left) 
-			{
-				E.scrollLeft = left < 0 ? 0 : E.scrollWidth < left ? E.scrollWidth : left;
-			}
-		}
-		
-		return this;
-	},
-	getScroll: function()
-	{
-		var E = this.element;
-		
-		if (E) 
-		{
-		
-			return {
-				top: E.scrollTop,
-				left: E.scrollLeft,
-				height: E.scrollHeight,
-				width: E.scrollWidth
-			};
-		}
-		
-		return null;
-	},
-	createElement: function(tagName, id, classNames, cssObj, content)
-	{
-	
-		if ('string' === typeof tagName) 
-		{
-		
-			// reuse tagName
-			if ((tagName = document.createElement(tagName))) 
-			{
-			
-				if ('string' === typeof id) 
-				{
-					tagName.id = id;
-				}
-				this.style = (this.element = tagName).style;
-				this.addClass(classNames);
-				this.setCSS(cssObj);
-				this.setContent(content);
-			}
-		}
-		
-		return this;
-	},
-	createChildElement: function(tagName, id, cssObj, content)
-	{
-	
-		if (this.element && 'string' === typeof tagName) 
-		{
-		
-			// reuse tagName
-			if ((tagName = document.createElement(tagName))) 
-			{
-			
-				if ('string' === typeof id) 
-				{
-					tagName.id = id;
-				}
-				tagName = new leaf.ElementHandler(tagName);
-				tagName.setCSS(cssObj);
-				tagName.append(this.element);
-				tagName.setContent(content);
-			}
-		}
-		
-		return this;
-	},
-	append: function(parent)
-	{
-		var E = this.element;
-		
-		if (E && (!E.parentNode || E.parentNode.nodeType === 11)) // when content is changed before append, parentNode on IE is a fragment
-		{
-		
-			// optimum if for parent
-			if (parent ? 'string' === typeof parent ? parent = document.getElementById(parent) : (parent.nodeType === 1 || parent.nodeType === 11) : parent = document.body) 
-			{
-				parent.appendChild(E);
-			}
-		}
-		
-		return this;
-	},
-	insertBefore: function(node)
-	{
-		var E = this.element;
-		
-		// when content is changed before append, parentNode on IE is a fragment
-		if (E && (!E.parentNode || E.parentNode.nodeType === 11) && (node.nodeType && node.parentNode || (node = document.getElementById(node)))) 
-		{
-			node.parentNode.insertBefore(E, node);
-		}
-		
-		return this;
-	},
-	insertAfter: function(node)
-	{
-		var E = this.element;
-		
-		// when content is changed before append, parentNode on IE is a fragment
-		if (E && (!E.parentNode || E.parentNode.nodeType === 11) && (node.nodeType && node.parentNode || (node = document.getElementById(node)))) 
-		{
-		
-			if (node.nextSibling) 
-			{
-				node.parentNode.insertBefore(E, node.nextSibling);
-			}
-			else 
-			{
-				node.parentNode.appendChild(E);
-			}
-		}
-		
-		return this;
-	},
-	insertAsFirst: function(parent)
-	{
-		var E = this.element;
-		
-		if (E && (!E.parentNode || E.parentNode.nodeType === 11)) // when content is changed before append, parentNode on IE is a fragment
-		{
-		
-			// optimum if for parent
-			if (parent ? 'string' === typeof parent ? parent = document.getElementById(parent) : (parent.nodeType === 1 || parent.nodeType === 11) : parent = document.body) 
-			{
-			
-				if (parent.firstChild) 
-				{
-					parent.insertBefore(E, parent.firstChild);
-				}
-				else 
-				{
-					parent.appendChild(E);
-				}
-			}
-		}
-		
-		return this;
-	},
-	remove: function()
-	{
-		var E = this.element;
-		
-		if (E) 
-		{
-		
-			if (E.parentNode) 
-			{
-				E.parentNode.removeChild(E);
-			}
-		}
-		
-		return this;
-	},
-	getParent: function()
-	{
-	
-		return this.element && this.element.parentNode || null;
-	},
-	getFirst: function()
-	{
-		var e = this.element;
-		
-		if (e) 
-		{
-			e = e.firstChild;
-			while (e) 
-			{
-			
-				if (e.nodeType === 1) 
-				{
-				
-					return e;
-				}
-				e = e.nextSibling;
-			}
-		}
-		
-		return null;
-	},
-	getNext: function()
-	{
-		var e = this.element;
-		
-		if (e) 
-		{
-			while ((e = e.nextSibling)) 
-			{
-			
-				if (e.nodeType === 1) 
-				{
-				
-					return e;
-				}
-			}
-		}
-		
-		return null;
-	},
-	getPrevious: function()
-	{
-		var e = this.element;
-		
-		if (e) 
-		{
-			while ((e = e.previousSibling)) 
-			{
-			
-				if (e.nodeType === 1) 
-				{
-				
-					return e;
-				}
-			}
-		}
-		
-		return null;
-	},
-	getLast: function()
-	{
-		var e = this.element;
-		
-		if (e) 
-		{
-			e = e.lastChild;
-			while (e) 
-			{
-			
-				if (e.nodeType === 1) 
-				{
-				
-					return e;
-				}
-				e = e.previousSibling;
-			}
-		}
-		
-		return null;
-	},
-	getChild: function(index)
-	{
-	
-		return this.element && this.element.childNodes[index] || null;
-	},
-	hasChild: function(node)
-	{
-	
-		return this.element && node && node.parentNode === this.element || false;
-	},
-	getChildElements: function()
-	{
-		var e = this.element;
-		
-		if (e) 
-		{
-			var K = [];
-			var n = 0;
-			e = e.firstChild; // cannot be inside of while question
-			while (e) 
-			{
-			
-				if (e.nodeType === 1) 
-				{
-					K[n++] = e;
-				}
-				e = e.nextSibling;
-			}
-			
-			if (n) 
-			{
-			
-				return K;
-			}
-		}
-		
-		return null;
-	},
-	getChildElement: function(elementIndex)
-	{
-		var e = this.element;
-		
-		if (e && 'number' === typeof elementIndex) 
-		{
-			var K = [];
-			var n = 0;
-			e = e.firstChild; // cannot be inside of while()
-			while (e) 
-			{
-			
-				if (e.nodeType === 1 && n++ === elementIndex) 
-				{
-				
-					return e;
-				}
-				e = e.nextSibling;
-			}
-			
-			return null;
-		}
-	},
-	setChildElement: function(elementIndex)
-	{
-		this.setElement(this.getChildElement(elementIndex));
-		
-		return this;
-	},
-	setParent: function()
-	{
-		this.setElement(this.getParent());
-		
-		return this;
-	},
-	setFirst: function()
-	{
-		this.setElement(this.getFirst());
-		
-		return this;
-	},
-	setPrevious: function()
-	{
-		this.setElement(this.getPrevious());
-		
-		return this;
-	},
-	setNext: function()
-	{
-		this.setElement(this.getNext());
-		
-		return this;
-	},
-	setLast: function()
-	{
-		this.setElement(this.getLast());
-		
-		return this;
-	},
-	appendChild: function(childNode)
-	{
-	
-		if (this.element && childNode && !childNode.parentNode && childNode.nodeType) 
-		{
-			this.element.appendChild(childNode);
-		}
-		
-		return this;
-	},
-	appendChildren: function(childNodes)
-	{
-		var E = this.element;
-		
-		if (E && childNodes) 
-		{
-			var l = childNodes.length;
-			var i = 0;
-			var k;
-			while (i < l) 
-			{
-			
-				if ((k = childNodes[i++]) && !k.parentNode && k.nodeType) 
-				{
-					E.appendChild(k);
-				}
-			}
-		}
-		
-		return this;
-	},
-	removeChild: function(index)
-	{
-	
-		if (this.element && (index = this.getChild(index))) 
-		{
-			this.element.removeChild(index);
-		}
-		
-		return this;
-	},
-	removeChildElement: function(elementIndex)
-	{
-	
-		if (this.element && (elementIndex = this.getChildElement(elementIndex))) 
-		{
-			this.element.removeChild(elementIndex);
-		}
-		
-		return this;
-	},
-	removeChildren: function()
-	{
-		var E = this.element;
-		
-		if (E) 
-		{
-			var K = E.childNodes;
-			var i = K.length;
-			while (i--) 
-			{
-				E.removeChild(K[i]);
-			}
-		}
-		
-		return this;
-	},
-	purge: function()
-	{
-		this.core.purge(this.element);
-		this.removeElement();
-		
-		return this;
-	},
-	purgeChildElement: function(elementIndex)
-	{
-	
-		if ((elementIndex = this.getChildElement(elementIndex))) 
-		{
-			this.core.purge(elementIndex);
-			this.removeChild(elementIndex);
-		}
-		
-		return this;
-	},
-	purgeChildren: function()
-	{
-		var E = this.element;
-		
-		if (E) 
-		{
-			// local purge for best performance
-			var p = this.core.purge;
-			var C = E.childNodes;
-			var i = C.length;
-			var k;
-			while (i--) 
-			{
-			
-				if ((k = C[i]).nodeType === 1) 
-				{
-					p(k);
-				}
-				E.removeChild(k);
-			}
-		}
-		
-		return this;
-	},
-	cloneChild: function(index, cloneAttrAndChilds)
-	{
-	
-		return (index = this.getChild(index)) ? index.cloneNode(!!cloneAttrAndChilds) : null;
-	},
-	cloneChildElement: function(elementIndex, cloneAttrAndChilds)
-	{
-	
-		return (elementIndex = this.getChildElement(elementIndex)) ? elementIndex.cloneNode(!!cloneAttrAndChilds) : null;
-	},
-	hasCollision: function(collisorElement)
-	{
-		var E = this.element;
-		
-		if (E && collisorElement && collisorElement.style) 
-		{
-			var R = document.documentElement;
-			var eX = 0;
-			var eY = 0;
-			var o = E;
-			while (o !== R) 
-			{
-				eX += o.offsetLeft;
-				eY += o.offsetTop;
-				o = o.parentNode;
-			}
-			var cX = 0;
-			var cY = 0;
-			o = collisorElement;
-			while (o !== R) 
-			{
-				cX += o.offsetLeft;
-				cY += o.offsetTop;
-				o = o.parentNode;
-			}
-			
-			if (!(eX < cX - E.offsetWidth || cX + collisorElement.offsetWidth < eX)) 
-			{
-			
-				return !(eY < cY - E.offsetHeight || cY + collisorElement.offsetHeight < eY);
-			}
-		}
-		
-		return false;
-	},
-	setAttribute: function(attribute, value)
-	{
-		var E = this.element;
-		
-		if (E && value !== undefined) 
-		{
-		
-			if ('string' === typeof attribute) 
-			{
-			
-				if ('style' === attribute && E.style.cssText !== undefined) 
-				{
-					E.style.cssText = value;
-				}
-				else 
-				{
-					E.setAttribute(attribute, value);
-				}
-			}
-			else 
-			{
-			
-				if ('number' === typeof attribute) 
-				{
-				
-					if ('object' === typeof E.attributes[attribute]) 
-					{
-						E.attributes[attribute].nodeValue = value;
-					}
-					else 
-					{
-						E.attributes[attribute] = value;
-					}
-				}
-			}
-		}
-		
-		return this;
-	},
-	getAttribute: function(attribute)
-	{
-		var o = this.element;
-		
-		if (o && (o = o[attribute] || o.getAttribute(attribute) || o.attributes[attribute])) 
-		{
-		
-			if ('style' === attribute && o.cssText !== undefined) 
-			{
-			
-				return o.cssText.toLowerCase();
-			}
-			
-			if ('object' === typeof o) 
-			{
-			
-				return o.nodeValue || '';
-			}
-		}
-		
-		if ('string' === typeof o) 
-		{
-		
-			return o;
-		}
-		
-		return null;
-	}
-	
-};
-(function() // creates optimum methods for each kind of user agent
-{
-	var S = document.documentElement.style;
-	
-	if (S.opacity === undefined) 
-	{
-		leaf.ElementHandler.prototype.setOpacity = function(opacity)
-		{
-		
-			if (this.style && 'number' === typeof opacity) 
-			{
-				this.style.filter = 'alpha(opacity=' + (opacity < 0 ? 0 : 1 < opacity ? 1 : opacity * 100 >> 0) + ')'; // use IE filter
-			}
-			
-			return this;
-		};
-		leaf.ElementHandler.prototype.getOpacity = function()
-		{
-		
-			if (this.element) 
-			{
-				var o;
-				try 
-				{
-					o = this.element.filters.alpha.opacity / 100;
-					
-					return o;
-				} 
-				catch (o) 
-				{
-				
-					return (o = (/opacity=(\d+)/i).exec(this.style.cssText)) ? o[1] / 100 : 1;
-				}
-			}
-			
-			return null;
-		};
-	}
-	else 
-	{
-		leaf.ElementHandler.prototype.setOpacity = function(opacity)
-		{
-		
-			if (this.style && 'number' === typeof opacity) 
-			{
-				this.style.opacity = opacity < 0 ? 0 : 1 < opacity ? 1 : opacity.toFixed(2);
-			}
-			
-			return this;
-		};
-		leaf.ElementHandler.prototype.getOpacity = function()
-		{
-			var o = this.style;
-			
-			if (o) 
-			{
-			
-				return isNaN(o = parseFloat(o.opacity)) ? 1 : o;
-			}
-			
-			return null;
-		};
-	}
-	
-	if (S.cssText === undefined) 
-	{
-		leaf.ElementHandler.prototype.setCSS = function(cssObj)
-		{
-			var E = this.element;
-			
-			if (E && cssObj instanceof Object) 
-			{
-				var K = [];
-				var n = 0;
-				var c;
-				for (c in cssObj) 
-				{
-					K[n++] = c + ': ' + cssObj[c] + '\; ';
-				}
-				E.setAttribute('style', (E.getAttribute('style') || '') + K.join(''));
-			}
-			
-			return this;
-		};
-		leaf.ElementHandler.prototype.getCSS = function(property)
-		{
-			var o = this.element;
-			
-			if (o && (o = o.getAttribute('style')) && 'string' === typeof property) 
-			{
-			
-				/* RegExp does not 'compile' on AIR 1.0
-				 * This code is faster than using pure RegExp
-				 */
-				if (-1 < (i = o.search(new RegExp('(?:\\\;|\\s|^)' + property + '\\\:', 'i')))) 
-				{
-				
-					return o.substring((i = o.indexOf(':', i) + 2), (i = o.indexOf('\;', i)) === -1 ? o.length : i);
-				}
-			}
-			
-			return null;
-		};
-	}
-	else 
-	{
-		leaf.ElementHandler.prototype.setCSS = function(cssObj)
-		{
-			var S = this.style;
-			
-			if (S && cssObj instanceof Object) 
-			{
-				var K = [];
-				var n = 0;
-				var c;
-				for (c in cssObj) 
-				{
-					K[n++] = c + ': ' + cssObj[c] + '\; ';
-				}
-				S.cssText = ((c = S.cssText) && (c.charAt(c.length - 1) === '\;' ? c : c + '; ') || '') + K.join('');
-			}
-			
-			return this;
-		};
-		leaf.ElementHandler.prototype.getCSS = function(property)
-		{
-			var o = this.style;
-			
-			if (o && (o = o.cssText) && 'string' === typeof property) 
-			{
-			
-				/* RegExp does not 'compile' on AIR 1.0
-				 * This code is faster than using pure RegExp
-				 */
-				if (-1 < (i = o.search(new RegExp('(?:\\\;|\\s|^)' + property + '\\\:', 'i')))) 
-				{
-				
-					return o.substring((i = o.indexOf(':', i) + 2), (i = o.indexOf('\;', i)) === -1 ? o.length : i);
-				}
-			}
-			
-			return null;
-		};
-	}
-})();
-
-leaf.ElementHandler.prototype.core = leaf.core;
+/*	 LEAF JavaScript Library	 Version 0.9.4a	 	 MIT License:	 Copyright (c) 2008-2010 Leonardo Dutra Constâncio	 	 Permission is hereby granted, free of charge, to any person	 obtaining a copy of this software and associated documentation	 files (the "Software"), to deal in the Software without	 restriction, including without limitation the rights to use,	 copy, modify, merge, publish, distribute, sublicense, and/or sell	 copies of the Software, and to permit persons to whom the	 Software is furnished to do so, subject to the following	 conditions:	 	 The above copyright notice and this permission notice shall be	 included in all copies or substantial portions of the Software.	 	 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,	 EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES	 OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND	 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT	 HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,	 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING	 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR	 OTHER DEALINGS IN THE SOFTWARE. */if (window.leaf) {	if (!leaf.core) 	{		leaf.core = {};	}}else {	leaf = {		core: {}	};}if (!Array.prototype.some) {	Array.prototype.forEach = function(callback, thisObject)	{		if (typeof callback === 'function') 		{			var L = this.length;			for (var i = 0; i < L; ++i) 			{				if (i in this) 				{					callback.call(thisObject, this[i], i, this);				}			}		}	};	Array.prototype.every = function(callback, thisObject)	{		if (typeof callback === 'function') 		{			var L = this.length;			for (var i = 0; i < L; ++i) 			{				if (i in this && !callback.call(thisObject, this[i], i, this)) 				{					return false;				}			}		}		return true;	};	Array.prototype.filter = function(callback, thisObject)	{		if (typeof callback === 'function') 		{			var L = this.length;			var R = [];			var n = 0;			var v; // does not mutate object			for (var i = 0; i < L; ++i) 			{				if (i in this && callback.call(thisObject, v = this[i], i, this)) 				{					R[n++] = v;				}			}			return R;		}		return null;	};	Array.prototype.indexOf = function(searchElement, fromIndex)	{		var L = this.length;		var i = Number(fromIndex) || 0;		if (i < 0) // must test before shift, cause of -0.1 to -0.999...		{			if ((i >>= 0) < 0) // ceil for less than zero 			{				i += L;			}		}		else 		{			i <<= 0; // floor		}		while (i < L) 		{			if (i in this && this[i] === searchElement) 			{				return i;			}			++i;		}		return -1;	};	Array.prototype.lastIndexOf = function(searchElement, fromIndex)	{		var L = this.length;		var i = Number(fromIndex);		if (isNaN(i)) 		{			i = L - 1;		}		else 			if (i < 0) 			{				if ((i >>= 0) < 0) // ceil for less than zero				{					i += L;				}			}			else 							if (L <= (i >>= 0)) // floor				{					i = L - 1;				}				while (i > -1) 		{			if (i in this && this[i] === searchElement) 			{				return i;			}			--i;		}		return -1;	};	Array.prototype.map = function(callback, thisObject)	{		if (typeof callback === 'function') 		{			var L = this.length;			var R = [];			for (var i = 0; i < L; ++i) 			{				if (i in this) 				{					R[i] = callback.call(thisObject, this[i], i, this);				}			}			return R;		}		return null;	};	Array.prototype.some = function(callback, thisObject)	{		if (typeof callback === 'function') 		{			var L = this.length;			for (var i = 0; i < L; ++i) 			{				if (i in this && callback.call(thisObject, this[i], i, this)) 				{					return true;				}			}		}		return false;	};}if (!String.prototype.trim) {	String.prototype.trim = function()	{		return this.replace(/^(\s|\u00A0)+|(\s|\u00A0)+$/g, '');	};	String.prototype.trimLeft = function()	{		return this.replace(/^(\s|\u00A0)+/, '');	};	String.prototype.trimRight = function()	{		return this.replace(/(\s|\u00A0)+$/, '');	};}leaf.extend = function(superObject, extension){	if (superObject && extension) 	{		var o = function()		{		};		o.prototype = superObject;		o = new o();		var n;		for (n in extension) 		{			if (extension[n] !== undefined) 			{				o[n] = extension[n];			}		}		return o;	}	return null;};if (window.XMLHttpRequest) {	leaf.createXHR = function()	{		return new XMLHttpRequest();	};}else 	if (window.ActiveXObject) 	{		leaf.createXHR = function()		{			if (!leaf.core.activeXVersion) 			{				leaf.core.activeXVersion = (function()				{					var A = ActiveXObject;					var i = 7;					var o;					while (i < 2) 					{						try 						{							new A('MSXML2.XMLHTTP.' + i + '.0');							return 'MSXML2.XMLHTTP.' + i + '.0';						} 						catch (o) 						{							i -= 1;						}					}					if (i === 2) 					{						try 						{							new A('MSXML2.XMLHTTP');							return 'MSXML2.XMLHTTP';						} 						catch (o) 						{							return 'Microsoft.XMLHTTP';						}					}				})();			}			return new ActiveXObject(leaf.core.activeXVersion);		};	}	else 	{		leaf.createXHR = function()		{			return null;		};	}leaf.getMouseXY = function(mouseEvent){	if ((mouseEvent = mouseEvent || event)) 	{		if (typeof mouseEvent.pageY === 'number') 		{			return {				x: mouseEvent.pageX,				y: mouseEvent.pageY			};		}		var H = document.documentElement;		var B = document.body;		if (B) 		{			return {				x: mouseEvent.clientX + (H.scrollLeft || B.scrollLeft) - (H.clientLeft >> 0) - (B.clientLeft),				y: mouseEvent.clientY + (H.scrollTop || B.scrollTop) - (H.clientTop >> 0) - (B.clientTop)			};		}		return {			x: mouseEvent.clientX + H.scrollLeft - (H.clientLeft >> 0),			y: mouseEvent.clientY + H.scrollTop - (H.clientTop >> 0)		};	}	return null;};leaf.core.$ = function(e){	return e ? e.style ? e : document.getElementById(e) : null;};leaf.purge = function(domObj){	if (domObj) 	{		var a = domObj.attributes;		if (a) 		{			var i = a.length;			while (i--) 			{				if (typeof domObj[a[i].name] === 'function') 				{					domObj[a[i].name] = null;				}			}		}		if ((domObj = domObj.childNodes)) 		{			var p = leaf.purge;			a = domObj.length;			while (a--) 			{				p(domObj[a]);			}		}		if (domObj.parentNode) 		{			domObj.parentNode.removeChild(domObj);		}	}};leaf.getByIds = function(ids){	var o;	if (ids instanceof Array) 	{		var D = document;		var L = ids.length;		var n = 0;		var i = 0;		var K = [];		while (i < L) 		{			if ((o = D.getElementById(ids[i++]))) 			{				K[n++] = o;			}		}		return K;	}	return (o = document.getElementById(ids)) ? [o] : [];};leaf.getByTags = function(tagNames, rootNode){	rootNode = this.core.$(rootNode) || document;	var o;	if (tagNames instanceof Array) 	{		var L = tagNames.length;		var n = 0;		var i = 0;		var j = 0;		var K = [];		var l;		while (i < L) 		{			l = (o = rootNode.getElementsByTagName(tagNames[i++])).length;			while (j < l) 			{				K[n++] = o[j++];			}			j = 0;		}		return K;	}	return rootNode.getElementsByTagName(tagNames);};if (document.getElementsByClassName) {	leaf.getByClass = function(classNames, rootElement)	{		rootElement = this.core.$(rootElement) || document;		var o;		if (classNames instanceof Array) 		{			var L = classNames.length;			var K = [];			var n = 0;			var i = 0;			var j = 0;			while (i < L) 			{				l = (o = rootElement.getElementsByClassName(classNames[i++])).length;				while (j < l) 				{					K[n++] = o[j++];				}				j = 0;			}			return K;		}		return rootElement.getElementsByClassName(classNames);	};}else {	leaf.getByClass = function(classNames, rootElement)	{		var K = [];		if (typeof classNames === 'string' ? classNames = [classNames] : classNames instanceof Array && classNames.length) 		{			var R = new RegExp('(?:\\s|^)(?:' + classNames.join('\|') + ')(?:\\s|$)');			var n = 0;			var q = function(o)			{				if (o.style && R.test(o.className)) 				{					K[n++] = o;				}				if ((o = o.childNodes)) 				{					var L = o.length;					var i = 0;					while (i < L) 					{						q(o[i++]);					}				}			};			q(this.core.$(rootElement) || document);		}		return K;	};}if (window.addEventListener) {	leaf.addListener = function(domObj, type, listener)	{		if (domObj && domObj.addEventListener && typeof type === 'string' && typeof listener === 'function') 		{			domObj.addEventListener(type, listener, false);		}	};	leaf.removeListener = function(domObj, type, listener)	{		if (domObj && domObj.removeEventListener && typeof type === 'string' && typeof listener === 'function') 		{			domObj.removeEventListener(type, listener, false);		}	};	leaf.dispatchEvent = function(domObj, type)	{		if (domObj && domObj.dispatchEvent && typeof type === 'string') 		{			var e = document.createEvent('HTMLEvents');			e.initEvent(type, true, true);			domObj.dispatchEvent(e);		}	};}else 	if (window.attachEvent) 	{		leaf.addListener = function(domObj, type, listener)		{			if (domObj && domObj.attachEvent && typeof type === 'string' && typeof listener === 'function') 			{				var h = type + listener;				domObj['on' + h] = listener;				domObj.attachEvent('on' + type, (domObj[h] = function()				{					domObj['on' + h](event);				}));			}		};		leaf.removeListener = function(domObj, type, listener)		{			if (domObj && domObj.detachEvent && typeof type === 'string' && typeof listener === 'function') 			{				domObj.detachEvent('on' + type, domObj[(type += listener)]);				domObj[type] = null;				domObj['on' + type] = null;			}		};		leaf.dispatchEvent = function(domObj, type)		{			if (domObj && domObj.fireEvent && typeof type === 'string') 			{				domObj.fireEvent('on' + type, document.createEventObject());			}		};	}	else 	{		leaf.addListener = function(domObj, type, listener)		{		};		leaf.removeListener = function(domObj, type, listener)		{		};		leaf.dispatchEvent = function(domObj, type)		{		};	}leaf.ALL = 0;leaf.TOP = 1;leaf.RIGHT = 2;leaf.BOTTOM = 4;leaf.LEFT = 8;leaf.ElementHandler = function(element){	if (this instanceof leaf.ElementHandler) 	{		var _ = this; // avoids common intellisense errors		_.setElement(element);	}};leaf.ElementHandler.prototype = {	element: null,	style: null,	core: null,		setElement: function(element)	{		this.style = (this.element = this.core.$(element)) ? this.element.style : null;		return this;	},	getElement: function()	{		return this.element;	},	getStyle: function()	{		return this.style;	},	addListener: function(type, listener)	{		leaf.addListener(this.element, type, listener);		return this;	},	removeListener: function(type, listener)	{		leaf.removeListener(this.element, type, listener);		return this;	},	dispatchEvent: function(type)	{		leaf.dispatchEvent(this.element, type);		return this;	},	addClass: function(classNames)	{		var E = this.element;		if (E && typeof E.className === 'string' && (typeof classNames === 'string' ? classNames = [classNames] : classNames instanceof Array)) 		{			var R = new RegExp('(?:\\s|^)' + E.className.replace(/(?:^\s+|\s+$)/g, '').replace(/\s+/g, '\|') + '(?:\\s|$)', '');			var L = classNames.length;			var K = [];			var n = 0;			var i = 0;			while (i < L) 			{				if (R.test(classNames[i])) 				{					i += 1;				}				else 				{					K[n++] = classNames[i++];				}			}			E.className += ' ' + K.join(' ');		}		return this;	},	removeClass: function(classNames)	{		var E = this.element;		if (E && (typeof classNames === 'string' ? classNames = [classNames] : classNames instanceof Array)) 		{			var c = E.className;			if (c) 			{				var R = new RegExp('(:?\\s|^)(?:' + classNames.join('\|') + ')(?:\\s|$)', '');				var L = (c = c.split(/\s+/)).length;				var K = [];				var n = 0;				var i = 0;				while (i < L) 				{					if (R.test(c[i])) 					{						i += 1;					}					else 					{						K[n++] = c[i++];					}				}				E.className = K.join(' ');			}		}		return this;	},	setPosition: function(top, right, bottom, left, zIndex, type)	{		var S = this.style;		if (S) 		{			if (typeof type === 'string') 			{				S.position = type;			}			if (typeof top === 'number') 			{				S.top = top + 'px';				bottom = '';			}			else 				if (typeof top === 'string') 				{					S.top = top;					bottom = '';				}						if (typeof bottom === 'number') 			{				S.bottom = bottom + 'px';				S.top = '';			}			else 				if (typeof bottom === 'string') 				{					S.bottom = bottom;					S.top = '';				}						if (typeof left === 'number') 			{				S.left = left + 'px';				right = '';			}			else 							if (typeof left === 'string') 				{					S.left = left;					right = '';				}						if (typeof right === 'number') 			{				S.right = right + 'px';				S.left = '';			}			else 							if (typeof right === 'string') 				{					S.right = right;					S.left = '';				}						if (typeof zIndex === 'number') 			{				S.zIndex = zIndex >> 0;			}		}		return this;	},	getPosition: function(keepValues)	{		var S = this.style;		if (S) 		{			if (keepValues) 			{				return {					top: S.top,					right: S.right,					bottom: S.bottom,					left: S.left,					zIndex: S.zIndex,					type: S.position				};			}						return {				top: parseFloat(S.top) || 0,				right: parseFloat(S.right) || 0,				bottom: parseFloat(S.bottom) || 0,				left: parseFloat(S.left) || 0,				zIndex: S.zIndex >> 0,				type: S.position			};					}		return null;	},	setXY: function(x, y)	{		var S = this.style;		if (S) 		{			if (typeof x === 'number') 			{				if (S.right) 				{					S.left = '';					S.right = x + 'px';				}				else 				{					S.left = x + 'px';					S.right = '';				}			}			else 			{				if (typeof x === 'string') 				{					if (S.right) 					{						S.left = '';						S.right = x;					}					else 					{						S.left = x;						S.right = '';					}				}			}			if (typeof y === 'number') 			{				if (S.bottom) 				{					S.top = '';					S.bottom = y + 'px';				}				else 				{					S.top = y + 'px';					S.bottom = '';				}			}			else 			{				if (typeof y === 'string') 				{					if (S.bottom) 					{						S.top = '';						S.bottom = y;					}					else 					{						S.top = y;						S.bottom = '';					}				}			}		}		return this;	},	getXY: function(keepValues)	{		var S = this.style;		if (S) 		{			if (keepValues) 			{				return {					x: S.left || S.right || this.element.offsetLeft + 'px',					y: S.top || S.bottom || this.element.offsetTop + 'px'				};			}						return {				x: parseFloat(S.left || S.right) || this.element.offsetLeft,				y: parseFloat(S.top || S.bottom) || this.element.offsetTop			};					}		return null;	},	invertXY: function(x, y)	{		var S = this.style;		if (S) 		{			if (x) 			{				if (S.right) 				{					S.left = S.right;					S.right = '';				}				else 				{					S.right = S.left;					S.left = '';				}			}			if (y) 			{				if (S.bottom) 				{					S.top = S.bottom;					S.bottom = '';				}				else 				{					S.bottom = S.top;					S.top = '';				}			}		}		return this;	},	getOffset: function()	{		var E = this.element;		if (E) 		{			return {				left: E.offsetLeft,				top: E.offsetTop,				width: E.offsetWidth,				height: E.offsetHeight,				parent: E.offsetParent			};		}		return null;	},	setSize: function(width, height)	{		var S = this.style;		if (S) 		{			if (typeof width === 'number') 			{				S.width = width + 'px';			}			else 			{				if (typeof width === 'string') 				{					S.width = width;				}			}			if (typeof height === 'number') 			{				S.height = height + 'px';			}			else 			{				if (typeof height === 'string') 				{					S.height = height;				}			}		}		return this;	},	getSize: function(keepValues)	{		var S = this.style;		if (S) 		{			if (keepValues) 			{				return {					width: S.width,					height: S.height				};			}						return {				width: parseFloat(S.width) || this.element.offsetWidth,				height: parseFloat(S.height) || this.element.offsetHeight			};					}		return null;	},	setArea: function(width, height, x, y)	{		this.setSize(width, height);		this.setXY(x, y);		return this;	},	getArea: function(keepValues)	{		var S = this.style;		if (S) 		{			if (keepValues) 			{				return {					x: S.left || S.right || this.element.offsetLeft + 'px',					y: S.top || S.bottom || this.element.offsetTop + 'px',					width: S.width || this.element.offsetWidth + 'px',					height: S.height || this.element.offsetHeight + 'px'				};			}									return {				x: parseFloat(S.left || S.right) || this.element.offsetLeft,				y: parseFloat(S.top || S.bottom) || this.element.offsetTop,				width: parseFloat(S.width) || this.element.offsetWidth,				height: parseFloat(S.height) || this.element.offsetHeight			};					}		return null;	},	setContent: function(content)	{		if (this.element) 		{			this.element.innerHTML = content === null || content === undefined ? '' : content;		}		return this;	},	getContent: function()	{		return this.element && this.element.innerHTML || '';	},	addContent: function(content)	{		var E = this.element;		if (E && !(content === null || content === undefined)) 		{			E.innerHTML = (E.innerHTML || '') + content;		}		return this;	},	setBackground: function(color, src, x, y, repeat)	{		var S = this.style;		if (S) 		{			if (typeof color === 'string') 			{				S.backgroundColor = color;			}			if (typeof src === 'string') 			{				S.backgroundImage = 'url(\'' + src + '\')';			}			src = S.backgroundPosition.split(' ');			S.backgroundPosition = (typeof x === 'number' ? x + 'px' : typeof x === 'string' ? x : (src[0] || '50%')) + ' ' + (typeof y === 'number' ? y + 'px' : typeof y === 'string' ? y : (src[1] || '50%'));			S.backgroundRepeat = repeat ? repeat : 'no-repeat';		}		return this;	},	getBackground: function(keepValues)	{		var S = this.style;		if (S) 		{			var P = S.backgroundPosition.split(' ');			if (keepValues) 			{				return {					x: P[0] || '',					y: P[1] || '',					color: S.backgroundColor,					src: S.backgroundImage,					repeat: S.backgroundRepeat				};			}						return {				x: parseFloat(P[0]) || 0,				y: parseFloat(P[1]) || 0,				color: S.backgroundColor,				src: S.backgroundImage,				repeat: S.backgroundRepeat			};					}		return null;	},	setFont: function(color, size, family, weight, style, spacing, lineHeight, useSmallCaps)	{		var S = this.style;		if (S) 		{			if (typeof color === 'string') 			{				S.color = color;			}			if (typeof family === 'string') 			{				S.fontFamily = family;			}			if (typeof style === 'string') 			{				S.fontStyle = style;			}			if (typeof weight === 'string' || typeof weight === 'number') 			{				S.fontWeight = weight;			}			if (typeof size === 'number') 			{				S.fontSize = size + 'pt';			}			else 							if (typeof size === 'string') 				{					S.fontSize = size;				}						if (typeof spacing === 'number') 			{				S.letterSpacing = spacing + 'px';			}			else 							if (typeof spacing === 'string') 				{					S.letterSpacing = spacing;				}						if (typeof lineHeight === 'number') 			{				S.lineHeight = lineHeight + 'px';			}			else 							if (typeof lineHeight === 'string') 				{					S.lineHeight = lineHeight;				}						if (useSmallCaps !== null && useSmallCaps !== undefined) 			{				S.fontVariant = useSmallCaps ? 'small-caps' : 'normal';			}		}		return this;	},	getFont: function(keepValues)	{		var S = this.style;		if (S) 		{			if (keepValues) 			{				return {					color: S.color,					size: S.fontSize,					family: S.fontFamily,					weight: S.fontWeight,					style: S.fontStyle,					spacing: S.letterSpacing,					lineHeight: S.lineHeight,					variant: S.fontVariant				};			}						return {				color: S.color,				size: parseFloat(S.fontSize) || 0,				family: S.fontFamily,				weight: S.fontWeight,				style: S.fontStyle,				spacing: parseFloat(S.letterSpacing) || 0,				lineHeight: parseFloat(S.lineHeight) || 0,				variant: S.fontVariant			};					}		return null;	},	setBorder: function(color, width, style)	{		var S = this.style;		if (S) 		{			if (typeof color === 'string') 			{				S.borderColor = color;			}			if (typeof width === 'number') 			{				S.borderWidth = width + 'px';			}			else 							if (typeof width === 'string') 				{					S.borderWidth = width;				}						S.borderStyle = typeof style === 'string' ? style : S.borderStyle || 'solid';		}		return this;	},	getBorder: function(keepValues)	{		var S = this.style;		if (S) 		{			return {				color: S.borderColor,				width: keepValues ? S.borderWidth : parseFloat(S.borderWidth),				style: S.borderStyle			};		}		return null;	},	setPadding: function(top, right, bottom, left)	{		var S = this.style;		if (S) 		{			if (typeof top === 'number') 			{				S.paddingTop = top + 'px';			}			else 							if (typeof top === 'string') 				{					S.paddingTop = top;				}						if (typeof right === 'number') 			{				S.paddingRight = right + 'px';			}			else 							if (typeof right === 'string') 				{					S.paddingRight = right;				}						if (typeof bottom === 'number') 			{				S.paddingBottom = bottom + 'px';			}			else 							if (typeof bottom === 'string') 				{					S.paddingBottom = bottom;				}						if (typeof left === 'number') 			{				S.paddingLeft = left + 'px';			}			else 							if (typeof left === 'string') 				{					S.paddingLeft = left;				}					}		return this;	},	getPadding: function(keepValues)	{		var S = this.style;		if (S) 		{			if (keepValues) 			{				return {					top: S.paddingTop,					right: S.paddingRight,					bottom: S.paddingBottom,					left: S.paddingLeft				};			}						return {				top: parseFloat(S.paddingTop) || 0,				right: parseFloat(S.paddingRight) || 0,				bottom: parseFloat(S.paddingBottom) || 0,				left: parseFloat(S.paddingLeft) || 0			};					}		return null;	},	setMargin: function(top, right, bottom, left)	{		var S = this.style;		if (S) 		{			if (typeof top === 'number') 			{				S.marginTop = top + 'px';			}			else 							if (typeof top === 'string') 				{					S.marginTop = top;				}						if (typeof right === 'number') 			{				S.marginRight = right + 'px';			}			else 							if (typeof right === 'string') 				{					S.marginRight = right;				}						if (typeof bottom === 'number') 			{				S.marginBottom = bottom + 'px';			}			else 							if (typeof bottom === 'string') 				{					S.marginBottom = bottom;				}						if (typeof left === 'number') 			{				S.marginLeft = left + 'px';			}			else 							if (typeof left === 'string') 				{					S.marginLeft = left;				}					}		return this;	},	getMargin: function(keepValues)	{		var S = this.style;		if (S) 		{			if (keepValues) 			{				return {					top: S.marginTop,					right: S.marginRight,					bottom: S.marginBottom,					left: S.marginLeft				};			}			return {				top: parseFloat(S.marginTop) || 0,				right: parseFloat(S.marginRight) || 0,				bottom: parseFloat(S.marginBottom) || 0,				left: parseFloat(S.marginLeft) || 0			};					}		return null;	},	setText: function(align, decoration, wordSpacing, whiteSpace, indent, transform)	{		var S = this.style;		if (S) 		{			if (typeof align === 'string') 			{				S.textAlign = align;			}			if (typeof decoration === 'string') 			{				S.textDecoration = decoration;			}			if (typeof whiteSpace === 'string') 			{				S.whiteSpace = whiteSpace;			}			if (typeof transform === 'string') 			{				S.textTransform = transform;			}			if (typeof indent === 'number') 			{				S.textIndent = indent + 'px';			}			else 							if (typeof indent === 'string') 				{					S.textIndent = indent;				}						if (typeof wordSpacing === 'number') 			{				S.wordSpacing = wordSpacing + 'px';			}			else 							if (typeof wordSpacing === 'string') 				{					S.wordSpacing = wordSpacing;				}					}		return this;	},	getText: function(keepValues)	{		var S = this.style;		if (S) 		{			if (keepValues) 			{				return {					align: S.textAlign,					decoration: S.textDecoration,					wordSpacing: S.wordSpacing,					whiteSpace: S.whiteSpace,					indent: S.textIndent,					transform: S.textTransform				};			}							return {					align: S.textAlign,					decoration: S.textDecoration,					wordSpacing: parseFloat(S.wordSpacing) || 0,					whiteSpace: S.whiteSpace,					indent: parseFloat(S.textIndent) || 0,					transform: S.textTransform				};					}		return null;	},	setScroll: function(top, left)	{		var E = this.element;		if (E) 		{			if (typeof top === 'number') 			{				E.scrollTop = top < 0 ? 0 : E.scrollHeight < top ? E.scrollHeight : top;			}			if (typeof left === 'number') 			{				E.scrollLeft = left < 0 ? 0 : E.scrollWidth < left ? E.scrollWidth : left;			}		}		return this;	},	getScroll: function()	{		var E = this.element;		if (E) 		{			return {				top: E.scrollTop,				left: E.scrollLeft,				height: E.scrollHeight,				width: E.scrollWidth			};		}		return null;	},	createElement: function(tagName, id, classNames, cssObj, content)	{		if (typeof tagName === 'string' && (tagName = document.createElement(tagName))) 		{			if (typeof id === 'string') 			{				tagName.id = id;			}			this.style = (this.element = tagName).style;			this.addClass(classNames);			this.setCSS(cssObj);			this.setContent(content);		}		return this;	},	createChildElement: function(tagName, id, cssObj, content)	{		if (this.element && typeof tagName === 'string' && (tagName = document.createElement(tagName))) 		{			if (typeof id === 'string') 			{				tagName.id = id;			}			tagName = new leaf.ElementHandler(tagName);			tagName.setCSS(cssObj);			tagName.append(this.element);			tagName.setContent(content);		}		return this;	},	append: function(parent)	{		if (this.element && typeof parent === 'string' ? parent = document.getElementById(parent) : parent && (parent.nodeType === 1 || parent.nodeType === 11) || (parent = document.body)) 		{			this.remove();			parent.appendChild(this.element);		}		return this;	},	insertBefore: function(node)	{		if (this.element && (node.nodeType && node.parentNode || (node = document.getElementById(node)))) 		{			this.remove();			node.parentNode.insertBefore(this.element, node);		} 		return this;	},	insertAfter: function(node)	{		var E = this.element;		if (E && (node.nodeType && node.parentNode || (node = document.getElementById(node)))) 		{			this.remove();			if (node.nextSibling) 			{				node.parentNode.insertBefore(E, node.nextSibling);			}			else 			{				node.parentNode.appendChild(E);			}		}		return this;	},	insertAsFirst: function(parent)	{		var E = this.element;		if (E && typeof parent === 'string' ? parent = document.getElementById(parent) : parent && (parent.nodeType === 1 || parent.nodeType === 11) ||( parent = document.body)) 		{			if (parent.firstChild) 			{				parent.insertBefore(E, parent.firstChild);			}			else 			{				parent.appendChild(E);			}				}		return this;	},	remove: function()	{		var E = this.element;		if (E && E.parentNode) 		{			E.parentNode.removeChild(E);		}		return this;	},	getParent: function()	{		return this.element && this.element.parentNode || null;	},	getFirst: function()	{		var e = this.element;		if (e) 		{			e = e.firstChild;			while (e) 			{				if (e.nodeType === 1) 				{					return e;				}				e = e.nextSibling;			}		}		return null;	},	getNext: function()	{		var e = this.element;		if (e) 		{			while ((e = e.nextSibling)) 			{				if (e.nodeType === 1) 				{					return e;				}			}		}		return null;	},	getPrevious: function()	{		var e = this.element;		if (e) 		{			while ((e = e.previousSibling)) 			{				if (e.nodeType === 1) 				{					return e;				}			}		}		return null;	},	getLast: function()	{		var e = this.element;		if (e) 		{			e = e.lastChild;			while (e) 			{				if (e.nodeType === 1) 				{					return e;				}				e = e.previousSibling;			}		}		return null;	},	getChild: function(index)	{		return this.element && this.element.childNodes[index] || null;	},	hasChild: function(node)	{		return this.element && node && node.parentNode === this.element || false;	},	getChildElements: function()	{		var e = this.element;		var K = [];		if (e) 		{			var n = 0;			e = e.firstChild;			while (e) 			{				if (e.nodeType === 1) 				{					K[n++] = e;				}				e = e.nextSibling;			}		}		return K;	},	getChildElement: function(elementIndex)	{		var e = this.element;		if (e && typeof elementIndex === 'number') 		{			var n = 0;			e = e.firstChild;			while (e) 			{				if (e.nodeType === 1 && n++ === elementIndex) 				{					return e;				}				e = e.nextSibling;			}			return null;		}	},	setChildElement: function(elementIndex)	{		this.setElement(this.getChildElement(elementIndex));		return this;	},	setParent: function()	{		this.setElement(this.getParent());		return this;	},	setFirst: function()	{		this.setElement(this.getFirst());		return this;	},	setPrevious: function()	{		this.setElement(this.getPrevious());		return this;	},	setNext: function()	{		this.setElement(this.getNext());		return this;	},	setLast: function()	{		this.setElement(this.getLast());		return this;	},	appendChild: function(childNode)	{		if (this.element && childNode && childNode.nodeType) 		{			if (childNode.parentNode) 			{				childNode.parentNode.removeChild(childNode);			}			this.element.appendChild(childNode);		}		return this;	},	appendChildren: function(childNodes)	{		var E = this.element;		if (E && childNodes) 		{			var l = childNodes.length;			var i = 0;			var k;			while (i < l) 			{				if ((k = childNodes[i++]) && k.nodeType) 				{					if (k.parentNode) 					{						k.parentNode.removeChild(k);					}					E.appendChild(k);				}			}		}		return this;	},	removeChild: function(index)	{		if (this.element && (index = this.getChild(index))) 		{			this.element.removeChild(index);		}		return this;	},	removeChildElement: function(elementIndex)	{		if (this.element && (elementIndex = this.getChildElement(elementIndex))) 		{			this.element.removeChild(elementIndex);		}		return this;	},	removeChildren: function()	{		var E = this.element;		if (E) 		{			var K = E.childNodes;			var i = K.length;			while (i--) 			{				E.removeChild(K[i]);			}		}		return this;	},	purge: function()	{		leaf.purge(this.element);		this.setElement(null);		return this;	},	purgeChildElement: function(elementIndex)	{		if ((elementIndex = this.getChildElement(elementIndex))) 		{			leaf.purge(elementIndex);			this.removeChild(elementIndex);		}		return this;	},	purgeChildren: function()	{		var E = this.element;		if (E) 		{			var p = leaf.purge;			var C = E.childNodes;			var i = C.length;			var k;			while (i--) 			{				if ((k = C[i]).nodeType === 1) 				{					p(k);				}			}		}		return this;	},	cloneChild: function(index, cloneAttrAndChilds)	{		return (index = this.getChild(index)) ? index.cloneNode(!!cloneAttrAndChilds) : null;	},	cloneChildElement: function(elementIndex, cloneAttrAndChilds)	{		return (elementIndex = this.getChildElement(elementIndex)) ? elementIndex.cloneNode(!!cloneAttrAndChilds) : null;	},	hasCollision: function(collisorElement)	{		var E = this.element;		if (E && collisorElement && collisorElement.style) 		{			var R = document.documentElement;			var eX = 0;			var eY = 0;			var o = E;			while (o !== R) 			{				eX += o.offsetLeft;				eY += o.offsetTop;				o = o.parentNode;			}			var cX = 0;			var cY = 0;			o = collisorElement;			while (o !== R) 			{				cX += o.offsetLeft;				cY += o.offsetTop;				o = o.parentNode;			}			if (!(eX < cX - E.offsetWidth || cX + collisorElement.offsetWidth < eX)) 			{				return !(eY < cY - E.offsetHeight || cY + collisorElement.offsetHeight < eY);			}		}		return false;	},	setAttribute: function(attribute, value)	{		var E = this.element;		if (E && value !== undefined) 		{			if (typeof attribute === 'string') 			{				if ('style' === attribute && E.style.cssText !== undefined) 				{					E.style.cssText = value;				}				else 				{					E.setAttribute(attribute, value);				}			}			else 				if (typeof attribute === 'number') 				{					if (typeof E.attributes[attribute] === 'object') 					{						E.attributes[attribute].nodeValue = value;					}					else 					{						E.attributes[attribute] = value;					}				}					}		return this;	},	getAttribute: function(attribute)	{		var o = this.element;		if (o && (o = o[attribute] || o.getAttribute(attribute) || o.attributes[attribute])) 		{			if ('style' === attribute && o.cssText !== undefined) 			{				return o.cssText.toLowerCase();			}			if (typeof o === 'object') 			{				return o.nodeValue || '';			}		}		if (typeof o === 'string') 		{			return o;		}		return null;	}};(function(){	var S = document.documentElement.style;	if (S.opacity === undefined) 	{		leaf.ElementHandler.prototype.setOpacity = function(opacity)		{			if (this.style && typeof opacity === 'number') 			{				this.style.filter = 'alpha(opacity=' + (opacity < 0 ? 0 : 1 < opacity ? 1 : opacity * 100 >> 0) + ')';			}			return this;		};		leaf.ElementHandler.prototype.getOpacity = function()		{			if (this.element) 			{				var o;				try 				{					o = this.element.filters.alpha.opacity / 100;					return o;				} 				catch (o) 				{					return (o = (/opacity=(\d+)/i).exec(this.style.cssText)) ? o[1] / 100 : 1;				}			}			return null;		};	}	else 	{		leaf.ElementHandler.prototype.setOpacity = function(opacity)		{			if (this.style && typeof opacity === 'number') 			{				this.style.opacity = opacity < 0 ? 0 : 1 < opacity ? 1 : opacity.toFixed(2);			}			return this;		};		leaf.ElementHandler.prototype.getOpacity = function()		{			var o = this.style;			if (o) 			{				return isNaN(o = parseFloat(o.opacity)) ? 1 : o;			}			return null;		};	}	if (S.cssText === undefined) 	{		leaf.ElementHandler.prototype.setCSS = function(cssObj)		{			var E = this.element;			if (E && typeof cssObj ==='object') 			{				var K = [];				var n = 0;				var c;				for (c in cssObj) 				{					K[n++] = c + ': ' + cssObj[c] + '\; ';				}				E.setAttribute('style', (E.getAttribute('style') || '') + K.join(''));			}			return this;		};		leaf.ElementHandler.prototype.getCSS = function(property)		{			var o = this.element;			if (o && typeof property === 'string' && (o = o.getAttribute('style')) && ~(i = o.search(new RegExp('(?:\\\;|\\s|\\u00A0|^)' + property + '\\\:', 'i')))) 			{						return o.substring((i = o.indexOf(':', i) + 2), (i = o.indexOf('\;', i)) === -1 ? o.length : i);			}			return null;		};	}	else 	{		leaf.ElementHandler.prototype.setCSS = function(cssObj)		{			var S = this.style;			if (S && typeof cssObj ==='object') 			{				var K = [];				var n = 0;				var c;				for (c in cssObj) 				{					K[n++] = c + ': ' + cssObj[c] + '\; ';				}				S.cssText = ((c = S.cssText) && (c.charAt(c.length - 1) === '\;' ? c : c + '; ') || '') + K.join('');			}			return this;		};		leaf.ElementHandler.prototype.getCSS = function(property)		{			var o = this.style;			if (o && (o = o.cssText) && typeof property === 'string' && ~(i = o.search(new RegExp('(?:\\\;|\\s|^)' + property + '\\\:', 'i')))) 			{				return o.substring((i = o.indexOf(':', i) + 2), (i = o.indexOf('\;', i)) === -1 ? o.length : i);			}			return null;		};	}})();leaf.ElementHandler.prototype.core = leaf.core;

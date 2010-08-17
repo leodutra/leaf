@@ -1,7 +1,7 @@
 
 /*
  LEAF JavaScript Library
- Version 0.10.3a
+ Version 0.10.5a
  
  MIT License:
  Copyright (c) 2009-2010 Leonardo Dutra Constâncio
@@ -37,1194 +37,1180 @@
  - Date.now() && Date.prototype.toISOString()
  - enhance setCSS with cross compatibility (opacity, bg, etc)
  - any better option to "instanceof Array"
+ - Remake: addClasses, removeClasses, setAttribute & getAttribute & getByClasses (http://www.quirksmode.org/dom/w3c_core.html#attributes);
  */
-
-leaf = this.leaf || {};
-
-/*
-if (!this.JSON) 
+(function(window, undefined)
 {
-	JSON = 
+	var document = window.document;
+	leaf = window.leaf || {};
+	
+	/*
+	 if (!this.JSON)
+	 {
+	 JSON =
+	 {
+	 parse: function(...) {...},
+	 stringfy: function(...) {...}
+	 };
+	 }
+	 // */
+	/*
+	 if (!Date.prototype.toISOString)
+	 {
+	 Date.prototype.toISOString = function() {};
+	 }
+	 // */
+	if (!Date.prototype.toJSON)//ok
 	{
-		parse: function(...) {...},
-		stringfy: function(...) {...}
-	};
-}
-// */
-
-/*
-if (!Date.prototype.toISOString) 
-{
-	Date.prototype.toISOString = function() {};
-}
-// */
-
-if (!Date.prototype.toJSON)//ok
-{
-	// from http://json.org/json2.js
-	Date.prototype.toJSON = function(key)
-	{
-		function f(n)
+		// from http://json.org/json2.js
+		Date.prototype.toJSON = function(key)
 		{
-			return n < 10 ? '0' + n : n;
-		}
-		return isFinite(this.valueOf()) ? this.getUTCFullYear() + '-' +
-		f(this.getUTCMonth() + 1) +
-		'-' +
-		f(this.getUTCDate()) +
-		'T' +
-		f(this.getUTCHours()) +
-		':' +
-		f(this.getUTCMinutes()) +
-		':' +
-		f(this.getUTCSeconds()) +
-		'Z' : null;
-	};
-	String.prototype.toJSON = Number.prototype.toJSON = Boolean.prototype.toJSON = function(key)
-	{
-		return this.valueOf();
-	};
-}
-
-if (!String.prototype.trim)//ok
-{
-	String.prototype.trim = function()
-	{
-		return this.replace(/^(\s|\u00A0)+|(\s|\u00A0)+$/g, '');
-	};
-	String.prototype.trimLeft = function()
-	{
-		return this.replace(/^(\s|\u00A0)+/, '');
-	};
-	String.prototype.trimRight = function()
-	{
-		return this.replace(/(\s|\u00A0)+$/, '');
-	};
-}
-Array.isArray = function(array)
-{
-	//return Object.prototype.toString.call( array ) === "[object Array]"; // from ejohn.org
-	return array && array.constructor === Array;
-};
-
-if (!Array.prototype.some)//ok
-{
-	// from Mozilla - MDC and ECMA 5
-	Array.prototype.some = function(callback, thisObject)
-	{
-		if (typeof callback === 'function') 
-		{
-			var L = this.length >> 0;
-			for (var i = 0; i < L; ++i) 
+			function f(n)
 			{
-				if (i in this && callback.call(thisObject, this[i], i, this)) 
-				{
-					return true;
-				}
+				return n < 10 ? '0' + n : n;
 			}
-		}
-		return false;
+			return isFinite(this.valueOf()) ? this.getUTCFullYear() + '-' +
+			f(this.getUTCMonth() + 1) +
+			'-' +
+			f(this.getUTCDate()) +
+			'T' +
+			f(this.getUTCHours()) +
+			':' +
+			f(this.getUTCMinutes()) +
+			':' +
+			f(this.getUTCSeconds()) +
+			'Z' : null;
+		};
+		String.prototype.toJSON = Number.prototype.toJSON = Boolean.prototype.toJSON = function(key)
+		{
+			return this.valueOf();
+		};
+	}
+	
+	if (!String.prototype.trim)//ok
+	{
+		String.prototype.trim = function()
+		{
+			return this.replace(/^(\s|\u00A0)+|(\s|\u00A0)+$/g, '');
+		};
+		String.prototype.trimLeft = function()
+		{
+			return this.replace(/^(\s|\u00A0)+/, '');
+		};
+		String.prototype.trimRight = function()
+		{
+			return this.replace(/(\s|\u00A0)+$/, '');
+		};
+	}
+	Array.isArray = function(array)
+	{
+		// array && array.constructor === Array has issues
+		return Object.prototype.toString.call(array) === '[object Array]'; // from ejohn.org
 	};
 	
-	Array.prototype.forEach = function(callback, thisObject)
+	if (!Array.prototype.some)//ok
 	{
-		if (typeof callback === 'function') 
+		// from Mozilla - MDC and ECMA 5
+		Array.prototype.some = function(callback, thisObject)
 		{
-			var L = this.length >> 0;
-			for (var i = 0; i < L; ++i) 
+			if (typeof callback === 'function') 
 			{
-				if (i in this) 
+				var L = this.length >> 0;
+				for (var i = -1; ++i < L;) 
 				{
-					callback.call(thisObject, this[i], i, this);
+					if (i in this && callback.call(thisObject, this[i], i, this)) 
+					{
+						return true;
+					}
 				}
 			}
-		}
-	};
-	
-	Array.prototype.every = function(callback, thisObject)
-	{
-		if (typeof callback === 'function') 
+			return false;
+		};
+		
+		Array.prototype.forEach = function(callback, thisObject)
 		{
-			var L = this.length >> 0;
-			for (var i = 0; i < L; ++i) 
+			if (typeof callback === 'function') 
 			{
-				if (i in this && !callback.call(thisObject, this[i], i, this)) 
+				var L = this.length >> 0;
+				for (var i = -1; ++i < L;) // most browsers optimize i++; for others it loses only for i+=1 
 				{
-					return false;
+					if (i in this) 
+					{
+						callback.call(thisObject, this[i], i, this);
+					}
 				}
 			}
-		}
-		return true;
-	};
-	
-	Array.prototype.indexOf = function(searchElement, fromIndex)
-	{
-		var L = this.length >> 0;
-		var i = Number(fromIndex) || 0;
-		if (i < 0) // must test before shift, cause of "-0.0...1" to "-0.900..." possibility
+		};
+		
+		Array.prototype.every = function(callback, thisObject)
 		{
-			if ((i >>= 0) < 0) // ceil for less than zero 
+			if (typeof callback === 'function') 
+			{
+				var L = this.length >> 0;
+				for (var i = -1; ++i < L;) // most browsers optimize i++; for others it loses only for i+=1
+				{
+					if (i in this && !callback.call(thisObject, this[i], i, this)) 
+					{
+						return false;
+					}
+				}
+			}
+			return true;
+		};
+		
+		Array.prototype.indexOf = function(searchElement, fromIndex)
+		{
+			var L = this.length >> 0;
+			var i = fromIndex >> 0; // ceil negative, floor positive
+			if (i < 0) // -1, -1.1, -1.2, etc
 			{
 				i += L;
 			}
-		}
-		else 
-		{
-			i >>= 0; // floor, since i >= 0
-		}
-		while (i < L) 
-		{
-			if (i in this && this[i] === searchElement) 
+			i--; //opt
+			while (++i < L) 
 			{
-				return i;
-			}
-			++i;
-		}
-		return -1;
-	};
-	Array.prototype.lastIndexOf = function(searchElement, fromIndex)
-	{
-		var L = this.length >> 0;
-		var i = Number(fromIndex);
-		if (i === i) // false if is NaN 
-		{
-			if (i < 0) 
-			{
-				if ((i >>= 0) < 0) // ceil for less than zero
+				if (i in this && this[i] === searchElement) 
 				{
-					i += L;
+					return i;
+				} 
+			}
+			return -1;
+		};
+		Array.prototype.lastIndexOf = function(searchElement, fromIndex)
+		{
+			var L = this.length >> 0;
+			var i = Number(fromIndex);
+			if (i === i) // false if is NaN 
+			{
+				if (i < 0) 
+				{
+					if ((i >>= 0) < 0) // ceil for less than zero
+					{
+						i += L;
+					}
 				}
+				else 
+					if (L <= (i >>>= 0)) // floor, since i >= 0
+					{
+						i = L - 1;
+					}
 			}
 			else 
-				if (L <= (i >>= 0)) // floor, since i >= 0
+			{
+				i = L - 1;
+			}
+			while (~ i) // -1 < i, ~ = -(N+1)
+ 			{
+				if (i in this && this[i] === searchElement) 
 				{
-					i = L - 1;
+					return i;
 				}
-		}
-		else 
-		{
-			i = L - 1;
-		}
-		while (~ i) // -1 < i, ~ = -(N+1)
- 		{
-			if (i in this && this[i] === searchElement) 
-			{
-				return i;
+				i--;
 			}
-			--i;
-		}
-		return -1;
-	};
-	Array.prototype.filter = function(callback, thisObject)
-	{
-		if (typeof callback === 'function') 
-		{
-			var L = this.length >> 0;
-			var R = [];
-			var n = 0;
-			var v; // prevents object mutation
-			for (var i = 0; i < L; ++i) 
-			{
-				if (i in this && callback.call(thisObject, v = this[i], i, this)) 
-				{
-					R[n++] = v;
-				}
-			}
-			return R;
-		}
-		return null;
-	};
-	Array.prototype.map = function(callback, thisObject)
-	{
-		if (typeof callback === 'function') 
-		{
-			var L = this.length >> 0;
-			var R = [];
-			for (var i = 0; i < L; ++i) 
-			{
-				if (i in this) 
-				{
-					R[i] = callback.call(thisObject, this[i], i, this);
-				}
-			}
-			return R;
-		}
-		return null;
-	};
-}
-
-leaf.extend = function(superObj, extension)//ok
-
-{
-	// cannot use on internals (IE mainly)
-	if (superObj && extension) 
-	{
-		var n = function () {};
-		n.prototype = superObj;
-		superObj = new n;
-		for (n in extension) 
-		{
-			if (extension[n] !== undefined) 
-			{
-				superObj[n] = extension[n];
-			}
-		}
-		return superObj;
-	}
-	return null;
-};
-leaf.clone = function(obj)//ok
-{
-	if (JSON.parse) 
-	{
-		return JSON.parse(JSON.stringify(obj));
-	}
-	var c = function(o)
-	{
-		var R = {};
-		var k;
-		for (k in o) 
-		{
-			R[k] = typeof o[k] === 'object' && o[k] ? c(o[k]) : o[k];
-		}
-		return R;
-	};
-	return c(obj);
-};
-if (this.XMLHttpRequest)//ok
-{
-	leaf.createXHR = function()
-	{
-		return new XMLHttpRequest();
-	};
-}
-else 
-	if (this.ActiveXObject) 
-	{
-		leaf.createXHR = function()
-		{
-			if (!leaf.createXHR.activeX) 
-			{
-				leaf.createXHR.activeX = (function()
-				{
-					var A = ActiveXObject; // cache
-					var V = ['MSXML2.XMLHTTP', 'MSXML2.XMLHTTP.3.0', 'MSXML2.XMLHTTP.6.0'];
-					// 'MSXML2.XMLHTTP.4.0' & 'MSXML2.XMLHTTP.5.0' have issues 
-					var i = V.length;
-					var o;
-					while (i--) 
-					{
-						try 
-						{
-							new A(V[i]);
-							return V[i];
-						} 
-						catch (o) 
-						{
-						}
-					}
-					return 'Microsoft.XMLHTTP';
-				})();
-			}
-			return new ActiveXObject(leaf.createXHR.activeX);
+			return -1;
 		};
-	}
-	else 
-	{
-		leaf.createXHR = function()
+		Array.prototype.filter = function(callback, thisObject)
 		{
+			if (typeof callback === 'function') 
+			{
+				var L = this.length >> 0;
+				var R = [];
+				var n = 0;
+				var v; // prevents object mutation
+				for (var i = -1; ++i < L;)
+				{
+					if (i in this && callback.call(thisObject, v = this[i], i, this)) 
+					{
+						R[n++] = v;
+					}
+				}
+				return R;
+			}
+			return null;
+		};
+		Array.prototype.map = function(callback, thisObject)
+		{
+			if (typeof callback === 'function') 
+			{
+				var L = this.length >> 0;
+				var R = [];
+				for (var i = -1; ++i < L;)
+				{
+					if (i in this) 
+					{
+						R[i] = callback.call(thisObject, this[i], i, this);
+					}
+				}
+				return R;
+			}
 			return null;
 		};
 	}
-
-
-leaf.getMouseXY = function(event)//ok
-{
-	if ((event = event || window.event)) 
+	
+	leaf.extend = function(superObj, extension)//ok
 	{
-		if (typeof event.pageY === 'number') 
+		// cannot use on internals (IE and some others)
+		if (superObj && extension) 
 		{
-			return {
-				x: event.pageX,
-				y: event.pageY
-			};
-		}
-		var H = document.documentElement;
-		var B = document.body;
-		if (B) 
-		{
-			return {
-				x: event.clientX + (H.scrollLeft || B.scrollLeft) - (H.clientLeft >> 0) - (B.clientLeft >> 0),
-				y: event.clientY + (H.scrollTop || B.scrollTop) - (H.clientTop >> 0) - (B.clientTop >> 0)
-			};
-		}
-		return {
-			x: event.clientX + H.scrollLeft - (H.clientLeft >> 0),
-			y: event.clientY + H.scrollTop - (H.clientTop >> 0)
-		};
-	}
-	return null;
-};
-
-
-leaf.purge = function(domObj) // use to destroy elements
-{
-	// base by Crookford (http://javascript.crockford.com/memory/leak.html)
-	// this fixes the IE6- issue: elements with listeneres are not garbaged
-	if (domObj) 
-	{
-		var a = domObj.attributes;
-		if (a) 
-		{
-			var i = a.length;
-			while (i--) 
+			var n = function()
 			{
-				if (typeof domObj[a[i].name] === 'function') // no cache for name. Few functions expected
+			};
+			n.prototype = superObj;
+			superObj = new n;
+			for (n in extension) 
+			{
+				if (extension[n] !== undefined) 
 				{
-					domObj[a[i].name] = null;
+					superObj[n] = extension[n];
 				}
 			}
+			return superObj;
 		}
-		if ((domObj = domObj.childNodes)) 
+		return null;
+	};
+	leaf.clone = function(obj)//ok
+	{
+		if (JSON.parse) 
 		{
-			var p = leaf.purge;
-			a = domObj.length;
-			while (a--) 
+			return JSON.parse(JSON.stringify(obj));
+		}
+		var c = function(o)
+		{
+			var R = {};
+			var k;
+			for (k in o) 
 			{
-				p(domObj[a]);
+				R[k] = typeof o[k] === 'object' && o[k] ? c(o[k]) : o[k];
+			}
+			return R;
+		};
+		return c(obj);
+	};
+	if (this.XMLHttpRequest)//ok
+	{
+		leaf.createXHR = function()
+		{
+			return new XMLHttpRequest();
+		};
+	}
+	else 
+		if (this.ActiveXObject) 
+		{
+			leaf.createXHR = function()
+			{
+				if (!leaf.createXHR.activeX) 
+				{
+					leaf.createXHR.activeX = (function()
+					{
+						var A = ActiveXObject; // cache
+						var V = ['MSXML2.XMLHTTP', 'MSXML2.XMLHTTP.3.0', 'MSXML2.XMLHTTP.6.0', 'MSXML3.XMLHTTP'];
+						// 'MSXML2.XMLHTTP.4.0' & 'MSXML2.XMLHTTP.5.0' have issues 
+						// TODO check if MSXML3 has issues
+						var i = 4;
+						var o;
+						while (i--) 
+						{
+							try 
+							{
+								new A(V[i]);
+								return V[i];
+							} 
+							catch (o) 
+							{
+							}
+						}
+						return 'Microsoft.XMLHTTP';
+					})();
+				}
+				return new ActiveXObject(leaf.createXHR.activeX);
+			};
+		}
+		else 
+		{
+			leaf.createXHR = function()
+			{
+				return null;
+			};
+		}
+	
+	
+	leaf.getMouseXY = function(event)//ok
+	{
+		if ((event = event || window.event)) 
+		{
+			if (typeof event.pageY === 'number') 
+			{
+				return {
+					x: event.pageX,
+					y: event.pageY
+				};
+			}
+			var H = document.documentElement;
+			var B = document.body;
+			if (B) 
+			{
+				return {
+					x: event.clientX + (H.scrollLeft || B.scrollLeft) - (H.clientLeft >> 0) - (B.clientLeft >> 0),
+					y: event.clientY + (H.scrollTop || B.scrollTop) - (H.clientTop >> 0) - (B.clientTop >> 0)
+				};
+			}
+			return {
+				x: event.clientX + H.scrollLeft - (H.clientLeft >> 0),
+				y: event.clientY + H.scrollTop - (H.clientTop >> 0)
+			};
+		}
+		return null;
+	};
+	
+	
+	leaf.purge = function(domObj) // use to destroy elements
+	{
+		// base by Crookford (http://javascript.crockford.com/memory/leak.html)
+		// this fixes the IE6- issue: elements with listeneres are not garbaged
+		if (domObj) 
+		{
+			var a = domObj.attributes;
+			if (a) 
+			{
+				var i = a.length;
+				while (i--) 
+				{
+					if (typeof domObj[a[i].name] === 'function') // no cache for name. Few functions expected
+					{
+						domObj[a[i].name] = null;
+					}
+				}
+			}
+			if ((domObj = domObj.childNodes)) 
+			{
+				var p = leaf.purge;
+				a = domObj.length;
+				while (a--) 
+				{
+					p(domObj[a]);
+				}
+			}
+			if (domObj.parentNode) // instant remove
+			{
+				domObj.parentNode.removeChild(domObj);
 			}
 		}
-		if (domObj.parentNode) // instant remove
-		{
-			domObj.parentNode.removeChild(domObj);
-		}
-	}
-};
-leaf.getByIds = function(ids)//ok
-{
-	if (typeof ids==='object') 
+	};
+	leaf.getByIds = function(ids)//ok
 	{
-		var D = document;
-		var L = ids.length >> 0;
-		var n = 0;
-		var i = 0;
-		var K = [];
-		var o;
-		while (i < L) 
+		if (typeof ids === 'object') 
 		{
-			if ((o = D.getElementById(ids[i++]))) 
-			{
-				K[n++] = o;
-			}
-		}
-		return K;
-	}
-	return (ids = document.getElementById(ids)) ? [ids] : [];
-};
-leaf.getByTags = function(tagNames, rootNode)//ok
-{
-	rootNode = rootNode ? rootNode.getElementsByTagName ? rootNode : document.getElementById(rootNode) || document : document;
-	if (typeof tagNames==='object') 
-	{
-		var L = tagNames.length >> 0;
-		var n = 0;
-		var i = 0;
-		var j = 0;
-		var K = [];
-		var l;
-		var o;
-		while (i < L) 
-		{
-			l = (o = rootNode.getElementsByTagName(tagNames[i++])).length;
-			while (j < l) 
-			{
-				K[n++] = o[j++];
-			}
-			j = 0;
-		}
-		return K;
-	}
-	return rootNode.getElementsByTagName(tagNames);
-};
-if (document.getElementsByClassName) 
-{
-	leaf.getByClasses = function(classNames, rootNode)
-	{
-		rootNode = rootNode ? rootNode.getElementsByClassName ? rootNode : document.getElementById(rootNode) || document : document;
-		if (typeof classNames==='object') 
-		{
-			var L = classNames.length >> 0;
+			var D = document;
+			var L = ids.length >> 0;
 			var n = 0;
-			var i = 0;
+			var i = -1; //opt
+			var K = [];
+			var o;
+			while (++i < L) 
+			{
+				if ((o = D.getElementById(ids[i]))) 
+				{
+					K[n++] = o;
+				}
+			}
+			return K;
+		}
+		return (ids = document.getElementById(ids)) ? [ids] : [];
+	};
+	leaf.getByTags = function(tagNames, rootNode)//ok
+	{
+		rootNode = rootNode ? rootNode.getElementsByTagName ? rootNode : document.getElementById(rootNode) || document : document;
+		if (typeof tagNames === 'object') 
+		{
+			var L = tagNames.length >> 0;
+			var n = 0;
+			var i = -1; //opt
 			var j = 0;
 			var K = [];
 			var l;
 			var o;
-			while (i < L) 
+			while (++i < L) 
 			{
-				l = (o = rootNode.getElementsByClassName(classNames[i++])).length;
-				while (j < l) 
+				l = (o = rootNode.getElementsByTagName(tagNames[i])).length;
+				while (++j < l) 
 				{
-					K[n++] = o[j++];
+					K[n++] = o[j];
 				}
-				j = 0;
+				j = -1; //opt
 			}
 			return K;
 		}
-		return rootNode.getElementsByClassName(classNames);
+		return rootNode.getElementsByTagName(tagNames);
 	};
-}
-else 
-{
-	leaf.getByClasses = function(classNames, rootNode)// fix to allow className: "test test1" as getElementByClassName
+	if (document.getElementsByClassName) 
 	{
-		var K = [];
-		if (typeof classNames === 'string' ? classNames = [classNames] : classNames && classNames.length && classNames.join) 
+		leaf.getByClasses = function(classNames, rootNode)
 		{
-			var R = new RegExp('(?:\\s|^)(?:' + classNames.join('\|') + ')(?:\\s|$)');
-			var n = 0;
-			var q = function(o)
+			rootNode = rootNode ? rootNode.getElementsByClassName ? rootNode : document.getElementById(rootNode) || document : document;
+			if (typeof classNames === 'object') 
 			{
-				if (o.style && R.test(o.className)) 
+				var L = classNames.length >> 0;
+				var n = 0;
+				var i = -1; //opt
+				var j = 0;
+				var K = [];
+				var l;
+				var o;
+				while (++i < L) 
 				{
-					K[n++] = o;
-				}
-				if ((o = o.childNodes)) 
-				{
-					var L = o.length;
-					var i = 0;
-					while (i < L) 
+					l = (o = rootNode.getElementsByClassName(classNames[i])).length;
+					while (++j < l) 
 					{
-						q(o[i++]);
+						K[n++] = o[j];
 					}
+					j = -1; //opt
 				}
-			};
-			q(rootNode ? rootNode.getElementsByTagName ? rootNode : document.getElementById(rootNode) || document : document); // by tagName cause of no by class
-		}
-		return K;
-	};
-}
-if (this.addEventListener) 
-{
-	leaf.addListener = function(domObj, type, listener)
-	{
-		if (domObj && domObj.addEventListener && typeof type === 'string' && typeof listener === 'function') 
-		{
-			domObj.addEventListener(type, listener, false);
-		}
-	};
-	leaf.removeListener = function(domObj, type, listener)
-	{
-		if (domObj && domObj.removeEventListener && typeof type === 'string' && typeof listener === 'function') 
-		{
-			domObj.removeEventListener(type, listener, false);
-		}
-	};
-	leaf.dispatchEvent = function(domObj, type)
-	{
-		if (domObj && domObj.dispatchEvent && typeof type === 'string') 
-		{
-			var e = document.createEvent('HTMLEvents');
-			e.initEvent(type, true, true);
-			domObj.dispatchEvent(e);
-		}
-	};
-}
-else 
-	if (this.attachEvent) 
-	{
-		leaf.addListener = function(domObj, type, listener)
-		{
-			if (domObj && domObj.attachEvent && typeof type === 'string' && typeof listener === 'function') 
-			{
-				var h = type + listener;
-				domObj['on' + h] = listener;
-				domObj.attachEvent('on' + type, (domObj[h] = function()
-				{
-					domObj['on' + h](event);
-				}));
+				return K;
 			}
-		};
-		leaf.removeListener = function(domObj, type, listener)
-		{
-			if (domObj && domObj.detachEvent && typeof type === 'string' && typeof listener === 'function') 
-			{
-				domObj.detachEvent('on' + type, domObj[(type += listener)]);
-				domObj[type] = null;
-				domObj['on' + type] = null;
-			}
-		};
-		leaf.dispatchEvent = function(domObj, type)
-		{
-			if (domObj && domObj.fireEvent && typeof type === 'string') 
-			{
-				domObj.fireEvent('on' + type, document.createEventObject());
-			}
+			return rootNode.getElementsByClassName(classNames);
 		};
 	}
 	else 
 	{
+		leaf.getByClasses = function(classNames, rootNode)//TODO fix to allow className: "test test1" as getElementByClassName
+		{
+			var K = [];
+			if (typeof classNames === 'string' ? classNames = [classNames] : classNames && classNames.length && classNames.join) 
+			{
+				var R = new RegExp('(?:\\s|^)(?:' + classNames.join('\|') + ')(?:\\s|$)');
+				var n = 0;
+				var q = function(o)
+				{
+					if (o.style && R.test(o.className)) 
+					{
+						K[n++] = o;
+					}
+					if ((o = o.childNodes)) 
+					{
+						var L = o.length;
+						var i = -1; //opt
+						while (++i < L) 
+						{
+							q(o[i]);
+						}
+					}
+				};
+				q(rootNode ? rootNode.getElementsByTagName ? rootNode : document.getElementById(rootNode) || document : document); // by tagName cause of no by class
+			}
+			return K;
+		};
+	}
+	if (this.addEventListener) 
+	{
 		leaf.addListener = function(domObj, type, listener)
 		{
+			if (domObj && domObj.addEventListener && typeof type === 'string' && typeof listener === 'function') 
+			{
+				domObj.addEventListener(type, listener, false);
+			}
 		};
 		leaf.removeListener = function(domObj, type, listener)
 		{
+			if (domObj && domObj.removeEventListener && typeof type === 'string' && typeof listener === 'function') 
+			{
+				domObj.removeEventListener(type, listener, false);
+			}
 		};
 		leaf.dispatchEvent = function(domObj, type)
 		{
+			if (domObj && domObj.dispatchEvent && typeof type === 'string') 
+			{
+				var e = document.createEvent('HTMLEvents');
+				e.initEvent(type, true, true);
+				domObj.dispatchEvent(e);
+			}
 		};
 	}
-
-leaf.ElementHandler = function(element)
-{
-	if (this instanceof leaf.ElementHandler) 
-	{
-		var _ = this; // avoids common intellisense errors
-		_.setElement(element);
-	}
-};
-leaf.ElementHandler.prototype = {
-
-	/* do not handle this vars directly */
-	element: null,
-	style: null,
-	
-	setElement: function(element)
-	{
-		this.style = (this.element = element ? element.style ? element : document.getElementById(element) : null) ? this.element.style : null;
-		return this;
-	},
-	getElement: function()
-	{
-		return this.element;
-	},
-	getStyle: function()
-	{
-		return this.style;
-	},
-	addListener: function(type, listener)
-	{
-		leaf.addListener(this.element, type, listener);
-		return this;
-	},
-	removeListener: function(type, listener)
-	{
-		leaf.removeListener(this.element, type, listener);
-		return this;
-	},
-	dispatchEvent: function(type)
-	{
-		leaf.dispatchEvent(this.element, type);
-		return this;
-	},
-	addClasses: function(classNames)
-	{
-		var E = this.element;
-		if (E && typeof E.className === 'string' && (typeof classNames === 'string' ? classNames = [classNames] : typeof classNames==='object')) 
+	else 
+		if (this.attachEvent) 
 		{
-			var R = new RegExp('(?:\\s|^)' + E.className.trim().replace(/\s+/g, '\|') + '(?:\\s|$)', '');
-			var L = classNames.length >> 0;
-			var n = 0;
-			var i = 0;
-			var K = [];
-			while (i < L) 
+			leaf.addListener = function(domObj, type, listener)
 			{
-				if (R.test(classNames[i])) 
+				if (domObj && domObj.attachEvent && typeof type === 'string' && typeof listener === 'function') 
 				{
-					++i;
-				}
-				else 
-				{
-					K[n++] = classNames[i++];
-				}
-			}
-			E.className += ' ' + K.join(' ');
-		}
-		return this;
-	},
-	removeClasses: function(classNames)
-	{
-		var E = this.element;
-		if (E && (typeof classNames === 'string' ? classNames = [classNames] : typeof classNames==='object')) 
-		{
-			var c = E.className;
-			if (c) 
-			{
-				var R = new RegExp('(:?\\s|^)(?:' + classNames.join('\|') + ')(?:\\s|$)', '');
-				var L = (c = c.split(/\s+/)).length >> 0;
-				var n = 0;
-				var i = 0;
-				var K = [];
-				while (i < L) 
-				{
-					if (R.test(c[i])) 
+					var h = type + listener;
+					domObj['on' + h] = listener;
+					domObj.attachEvent('on' + type, (domObj[h] = function()
 					{
-						++i;
-					}
-					else 
-					{
-						K[n++] = c[i++];
-					}
+						domObj['on' + h](event);
+					}));
 				}
-				E.className = K.join(' ');
-			}
-		}
-		return this;
-	},
-	setScroll: function(top, left)
-	{
-		var E = this.element;
-		if (E) 
-		{
-			if (typeof top === 'number') 
+			};
+			leaf.removeListener = function(domObj, type, listener)
 			{
-				E.scrollTop = top < 0 ? 0 : E.scrollHeight < top ? E.scrollHeight : top;
-			}
-			if (typeof left === 'number') 
+				if (domObj && domObj.detachEvent && typeof type === 'string' && typeof listener === 'function') 
+				{
+					domObj.detachEvent('on' + type, domObj[(type += listener)]);
+					domObj[type] = null;
+					domObj['on' + type] = null;
+				}
+			};
+			leaf.dispatchEvent = function(domObj, type)
 			{
-				E.scrollLeft = left < 0 ? 0 : E.scrollWidth < left ? E.scrollWidth : left;
-			}
-		}
-		return this;
-	},
-	getScroll: function()
-	{
-		var E = this.element;
-		if (E) 
-		{
-			return {
-				top: E.scrollTop,
-				left: E.scrollLeft,
-				height: E.scrollHeight,
-				width: E.scrollWidth
+				if (domObj && domObj.fireEvent && typeof type === 'string') 
+				{
+					domObj.fireEvent('on' + type, document.createEventObject());
+				}
 			};
 		}
-		return null;
-	},
-	create: function(tagName, id, classNames, cssObj, content)
-	{
-		if (typeof tagName === 'string' && (tagName = document.createElement(tagName))) 
+		else 
 		{
-			if (typeof id === 'string') 
+			leaf.addListener = function(domObj, type, listener)
 			{
-				tagName.id = id;
-			}
-			this.style = (this.element = tagName).style;
-			this.addClass(classNames);
-			this.setCSS(cssObj);
-			this.setContent(content);
-		}
-		return this;
-	},
-	createChildElement: function(tagName, id, cssObj, content)
-	{
-		if (this.element && typeof tagName === 'string' && (tagName = document.createElement(tagName))) 
-		{
-			if (typeof id === 'string') 
+			};
+			leaf.removeListener = function(domObj, type, listener)
 			{
-				tagName.id = id;
-			}
-			tagName = new leaf.ElementHandler(tagName);
-			tagName.setCSS(cssObj);
-			tagName.append(this.element);
-			tagName.setContent(content);
-		}
-		return this;
-	},
-	append: function(parent)
-	{
-		if (this.element && typeof parent === 'string' ? parent = document.getElementById(parent) : parent && (parent.nodeType === 1 || parent.nodeType === 11) || (parent = document.body)) 
-		{
-			this.remove();
-			parent.appendChild(this.element);
-		}
-		return this;
-	},
-	insertBefore: function(node)
-	{
-		if (this.element && (node.nodeType && node.parentNode || (node = document.getElementById(node)))) 
-		{
-			this.remove();
-			node.parentNode.insertBefore(this.element, node);
-		}
-		return this;
-	},
-	insertAfter: function(node)
-	{
-		var E = this.element;
-		if (E && (node.nodeType && node.parentNode || (node = document.getElementById(node)))) 
-		{
-			this.remove();
-			if (node.nextSibling) 
+			};
+			leaf.dispatchEvent = function(domObj, type)
 			{
-				node.parentNode.insertBefore(E, node.nextSibling);
-			}
-			else 
-			{
-				node.parentNode.appendChild(E);
-			}
+			};
 		}
-		return this;
-	},
-	insertAsFirst: function(parent)
+	
+	leaf.ElementHandler = function(element)
 	{
-		var E = this.element;
-		if (E && typeof parent === 'string' ? parent = document.getElementById(parent) : parent && (parent.nodeType === 1 || parent.nodeType === 11) || (parent = document.body)) 
+		if (this instanceof leaf.ElementHandler) 
 		{
-			if (parent.firstChild) 
-			{
-				parent.insertBefore(E, parent.firstChild);
-			}
-			else 
-			{
-				parent.appendChild(E);
-			}
+			var _ = this; // avoids common intellisense errors
+			_.setElement(element);
 		}
-		return this;
-	},
-	remove: function()
-	{
-		var E = this.element;
-		if (E && E.parentNode) 
+	};
+	leaf.ElementHandler.prototype = {
+	
+		/* do not handle this vars directly */
+		element: null,
+		style: null,
+		
+		setElement: function(element)
 		{
-			E.parentNode.removeChild(E);
-		}
-		return this;
-	},
-	getParent: function()
-	{
-		return this.element && this.element.parentNode || null;
-	},
-	getFirst: function()
-	{
-		var e = this.element;
-		if (e) 
+			this.style = (this.element = element ? element.style ? element : document.getElementById(element) : null) ? this.element.style : null;
+			return this;
+		},
+		getElement: function()
 		{
-			e = e.firstChild;
-			while (e) 
+			return this.element;
+		},
+		getStyle: function()
+		{
+			return this.style;
+		},
+		addListener: function(type, listener)
+		{
+			leaf.addListener(this.element, type, listener);
+			return this;
+		},
+		removeListener: function(type, listener)
+		{
+			leaf.removeListener(this.element, type, listener);
+			return this;
+		},
+		dispatchEvent: function(type)
+		{
+			leaf.dispatchEvent(this.element, type);
+			return this;
+		},
+		addClasses: function(classNames)
+		{
+			var E = this.element;
+			if (E && typeof E.className === 'string' && (typeof classNames === 'string' ? classNames = [classNames] : typeof classNames === 'object')) 
 			{
-				if (e.nodeType === 1) 
+				var R = new RegExp('(?:\\s|^)' + E.className.trim().replace(/\s+/g, '\|') + '(?:\\s|$)', '');
+				var L = classNames.length >> 0;
+				var n = 0;
+				var i = -1; //opt
+				var K = [];
+				while (++i < L) 
 				{
-					return e;
-				}
-				e = e.nextSibling;
-			}
-		}
-		return null;
-	},
-	getNext: function()
-	{
-		var e = this.element;
-		if (e) 
-		{
-			while ((e = e.nextSibling)) 
-			{
-				if (e.nodeType === 1) 
-				{
-					return e;
-				}
-			}
-		}
-		return null;
-	},
-	getPrevious: function()
-	{
-		var e = this.element;
-		if (e) 
-		{
-			while ((e = e.previousSibling)) 
-			{
-				if (e.nodeType === 1) 
-				{
-					return e;
-				}
-			}
-		}
-		return null;
-	},
-	getLast: function()
-	{
-		var e = this.element;
-		if (e) 
-		{
-			e = e.lastChild;
-			while (e) 
-			{
-				if (e.nodeType === 1) 
-				{
-					return e;
-				}
-				e = e.previousSibling;
-			}
-		}
-		return null;
-	},
-	getChild: function(index)
-	{
-		return this.element && this.element.childNodes[index] || null;
-	},
-	hasChild: function(node)
-	{
-		return this.element && node && node.parentNode === this.element || false;
-	},
-	getChildElements: function()
-	{
-		var e = this.element;
-		var K = [];
-		if (e) 
-		{
-			var n = 0;
-			e = e.firstChild;
-			while (e) 
-			{
-				if (e.nodeType === 1) 
-				{
-					K[n++] = e;
-				}
-				e = e.nextSibling;
-			}
-		}
-		return K;
-	},
-	getChildElement: function(elementIndex)
-	{
-		var e = this.element;
-		if (e && typeof elementIndex === 'number') 
-		{
-			var n = 0;
-			e = e.firstChild;
-			while (e) 
-			{
-				if (e.nodeType === 1 && n++ === elementIndex) 
-				{
-					return e;
-				}
-				e = e.nextSibling;
-			}
-			return null;
-		}
-	},
-	setChildElement: function(elementIndex)
-	{
-		this.setElement(this.getChildElement(elementIndex));
-		return this;
-	},
-	setParent: function()
-	{
-		this.setElement(this.getParent());
-		return this;
-	},
-	setFirst: function()
-	{
-		this.setElement(this.getFirst());
-		return this;
-	},
-	setPrevious: function()
-	{
-		this.setElement(this.getPrevious());
-		return this;
-	},
-	setNext: function()
-	{
-		this.setElement(this.getNext());
-		return this;
-	},
-	setLast: function()
-	{
-		this.setElement(this.getLast());
-		return this;
-	},
-	appendChild: function(childNode)
-	{
-		if (this.element && childNode && childNode.nodeType) 
-		{
-			if (childNode.parentNode) 
-			{
-				childNode.parentNode.removeChild(childNode);
-			}
-			this.element.appendChild(childNode);
-		}
-		return this;
-	},
-	appendChildren: function(childNodes)
-	{
-		var E = this.element;
-		if (E && childNodes) 
-		{
-			var l = childNodes.length;
-			var i = 0;
-			var k;
-			while (i < l) 
-			{
-				if ((k = childNodes[i++]) && k.nodeType) 
-				{
-					if (k.parentNode) 
+					if (R.test(classNames[i])) 
 					{
-						k.parentNode.removeChild(k);
+						continue;
 					}
-					E.appendChild(k);
+					K[n++] = classNames[i];
 				}
-			}
-		}
-		return this;
-	},
-	removeChild: function(index)
-	{
-		if (this.element && (index = this.getChild(index))) 
-		{
-			this.element.removeChild(index);
-		}
-		return this;
-	},
-	removeChildElement: function(elementIndex)
-	{
-		if (this.element && (elementIndex = this.getChildElement(elementIndex))) 
-		{
-			this.element.removeChild(elementIndex);
-		}
-		return this;
-	},
-	removeChildren: function()
-	{
-		var E = this.element;
-		if (E) 
-		{
-			var K = E.childNodes;
-			var i = K.length;
-			while (i--) 
-			{
-				E.removeChild(K[i]);
-			}
-		}
-		return this;
-	},
-	purge: function()
-	{
-		leaf.purge(this.element);
-		this.element = this.style = null;
-		return this;
-	},
-	purgeChildElement: function(elementIndex)
-	{
-		leaf.purge(this.getChildElement(elementIndex));
-		return this;
-	},
-	purgeChildren: function()
-	{
-		var E = this.element;
-		if (E) 
-		{
-			var p = leaf.purge;
-			var C = E.childNodes;
-			var i = C.length;
-			var k;
-			while (i--) 
-			{
-				if ((k = C[i]).nodeType === 1) 
-				{
-					p(k);
-				}
-			}
-		}
-		return this;
-	},
-	cloneChild: function(index, cloneAttrAndChilds)
-	{
-		return (index = this.getChild(index)) ? index.cloneNode(!!cloneAttrAndChilds) : null;
-	},
-	cloneChildElement: function(elementIndex, cloneAttrAndChilds)
-	{
-		return (elementIndex = this.getChildElement(elementIndex)) ? elementIndex.cloneNode(!!cloneAttrAndChilds) : null;
-	},
-	hasCollision: function(collisorElement)
-	{
-		var E = this.element;
-		if (E && collisorElement && collisorElement.style) 
-		{
-			var R = document.documentElement;
-			var eX = 0;
-			var eY = 0;
-			var o = E;
-			while (o !== R) 
-			{
-				eX += o.offsetLeft;
-				eY += o.offsetTop;
-				o = o.parentNode;
-			}
-			var cX = 0;
-			var cY = 0;
-			o = collisorElement;
-			while (o !== R) 
-			{
-				cX += o.offsetLeft;
-				cY += o.offsetTop;
-				o = o.parentNode;
-			}
-			if (!(eX < cX - E.offsetWidth || cX + collisorElement.offsetWidth < eX)) 
-			{
-				return !(eY < cY - E.offsetHeight || cY + collisorElement.offsetHeight < eY);
-			}
-		}
-		return false;
-	},
-	setAttribute: function(attribute, value)
-	{
-		var E = this.element;
-		if (E && value !== undefined) 
-		{
-			if (typeof attribute === 'string') 
-			{
-				if ('style' === attribute && E.style.cssText !== undefined) 
-				{
-					E.style.cssText = value;
-				}
-				else 
-				{
-					E.setAttribute(attribute, value);
-				}
-			}
-			else 
-				if (typeof attribute === 'number') 
-				{
-					if (typeof E.attributes[attribute] === 'object') 
-					{
-						E.attributes[attribute].nodeValue = value;
-					}
-					else 
-					{
-						E.attributes[attribute] = value;
-					}
-				}
-			
-		}
-		return this;
-	},
-	getAttribute: function(attribute)
-	{
-		var o = this.element;
-		if (o && (o = o[attribute] || o.getAttribute(attribute) || o.attributes[attribute])) 
-		{
-			if ('style' === attribute && o.cssText !== undefined) 
-			{
-				return o.cssText.toLowerCase();
-			}
-			if (typeof o === 'object') 
-			{
-				return o.nodeValue || '';
-			}
-		}
-		if (typeof o === 'string') 
-		{
-			return o;
-		}
-		return null;
-	}
-};
-(function()
-{
-	var S = document.createElement('div').style;
-	if (S.opacity === undefined) 
-	{
-		leaf.ElementHandler.prototype.setOpacity = function(opacity)
-		{
-			if (this.style && typeof opacity === 'number') 
-			{
-				this.style.filter = 'alpha(opacity=' + (opacity < 0 ? 0 : 1 < opacity ? 1 : opacity * 100 >> 0) + ')';
+				E.className += ' ' + K.join(' ');
 			}
 			return this;
-		};
-		leaf.ElementHandler.prototype.getOpacity = function()
+		},
+		removeClasses: function(classNames)
+		{
+			var E = this.element;
+			if (E && (typeof classNames === 'string' ? classNames = [classNames] : typeof classNames === 'object')) 
+			{
+				var c = E.className;
+				if (c) 
+				{
+					var R = new RegExp('(:?\\s|^)(?:' + classNames.join('\|') + ')(?:\\s|$)', '');
+					var L = (c = c.split(/\s+/)).length >> 0;
+					var n = 0;
+					var i = -1; //opt
+					var K = [];
+					while (++i < L) 
+					{
+						if (R.test(c[i])) 
+						{
+							continue;
+						}
+						K[n++] = c[i];
+					}
+					E.className = K.join(' ');
+				}
+			}
+			return this;
+		},
+		setScroll: function(top, left)
+		{
+			var E = this.element;
+			if (E) 
+			{
+				if (typeof top === 'number') 
+				{
+					E.scrollTop = top < 0 ? 0 : E.scrollHeight < top ? E.scrollHeight : top;
+				}
+				if (typeof left === 'number') 
+				{
+					E.scrollLeft = left < 0 ? 0 : E.scrollWidth < left ? E.scrollWidth : left;
+				}
+			}
+			return this;
+		},
+		getScroll: function()
+		{
+			var E = this.element;
+			if (E) 
+			{
+				return {
+					top: E.scrollTop,
+					left: E.scrollLeft,
+					height: E.scrollHeight,
+					width: E.scrollWidth
+				};
+			}
+			return null;
+		},
+		create: function(tagName, id, classNames, cssObj, content)
+		{
+			if (typeof tagName === 'string' && (tagName = document.createElement(tagName))) 
+			{
+				if (typeof id === 'string') 
+				{
+					tagName.id = id;
+				}
+				this.style = (this.element = tagName).style;
+				this.addClass(classNames);
+				this.setCSS(cssObj);
+				this.setContent(content);
+			}
+			return this;
+		},
+		createChildElement: function(tagName, id, cssObj, content)
 		{
 			if (this.element) 
 			{
-				var o;
-				try 
-				{
-					o = this.element.filters.alpha.opacity / 100;
-					return o;
-				} 
-				catch (o) 
-				{
-					return (o = (/opacity=(\d+)/i).exec(this.style.cssText)) ? o[1] / 100 : 1;
-				}
-			}
-			return null;
-		};
-	}
-	else 
-	{
-		leaf.ElementHandler.prototype.setOpacity = function(opacity)
-		{
-			if (this.style && typeof opacity === 'number') 
-			{
-				this.style.opacity = opacity < 0 ? 0 : 1 < opacity ? 1 : opacity.toFixed(2);
+				new leaf.ElementHandler().create(tagName, id, classNames, cssObj, content).append(this.element);
 			}
 			return this;
-		};
-		leaf.ElementHandler.prototype.getOpacity = function()
+		},
+		append: function(parent)
 		{
-			var o = this.style;
-			if (o) 
+			if (this.element && (typeof parent === 'string' ? parent = document.getElementById(parent) : parent && (parent.nodeType === 1 || parent.nodeType === 11) || (parent = document.body))) 
 			{
-				return (o = parseFloat(o.opacity)) === o ? o : 1; // comparison is false if is NaN 
+				this.remove();
+				parent.appendChild(this.element);
 			}
-			return null;
-		};
-	}
-	if (S.cssText === undefined) 
-	{
-		leaf.ElementHandler.prototype.setCSS = function(cssObj)
+			return this;
+		},
+		insertBefore: function(node)
+		{
+			if (this.element && (node.nodeType && node.parentNode || (node = document.getElementById(node)))) 
+			{
+				this.remove();
+				node.parentNode.insertBefore(this.element, node);
+			}
+			return this;
+		},
+		insertAfter: function(node)
 		{
 			var E = this.element;
-			if (E && cssObj) 
+			if (E && (node.nodeType && node.parentNode || (node = document.getElementById(node)))) 
 			{
-				var K = [];
-				var n = 0;
-				var c;
-				for (c in cssObj) 
+				this.remove();
+				if (node.nextSibling) 
 				{
-					K[n++] = c + ': ' + cssObj[c] + '\; ';
+					node.parentNode.insertBefore(E, node.nextSibling);
 				}
-				E.setAttribute('style', (E.getAttribute('style') || '') + K.join(''));
+				else 
+				{
+					node.parentNode.appendChild(E);
+				}
 			}
 			return this;
-		};
-		leaf.ElementHandler.prototype.getCSS = function(property)
+		},
+		insertAsFirst: function(parent)
+		{
+			var E = this.element;
+			if (E && typeof parent === 'string' ? parent = document.getElementById(parent) : parent && (parent.nodeType === 1 || parent.nodeType === 11) || (parent = document.body)) 
+			{
+				if (parent.firstChild) 
+				{
+					parent.insertBefore(E, parent.firstChild);
+				}
+				else 
+				{
+					parent.appendChild(E);
+				}
+			}
+			return this;
+		},
+		remove: function()
+		{
+			var E = this.element;
+			if (E && E.parentNode) 
+			{
+				E.parentNode.removeChild(E);
+			}
+			return this;
+		},
+		getParent: function()
+		{
+			return this.element && this.element.parentNode || null;
+		},
+		getFirst: function()
+		{
+			var e = this.element;
+			if (e) 
+			{
+				e = e.firstChild;
+				while (e) 
+				{
+					if (e.nodeType === 1) 
+					{
+						return e;
+					}
+					e = e.nextSibling;
+				}
+			}
+			return null;
+		},
+		getNext: function()
+		{
+			var e = this.element;
+			if (e) 
+			{
+				while ((e = e.nextSibling)) 
+				{
+					if (e.nodeType === 1) 
+					{
+						return e;
+					}
+				}
+			}
+			return null;
+		},
+		getPrevious: function()
+		{
+			var e = this.element;
+			if (e) 
+			{
+				while ((e = e.previousSibling)) 
+				{
+					if (e.nodeType === 1) 
+					{
+						return e;
+					}
+				}
+			}
+			return null;
+		},
+		getLast: function()
+		{
+			var e = this.element;
+			if (e) 
+			{
+				e = e.lastChild;
+				while (e) 
+				{
+					if (e.nodeType === 1) 
+					{
+						return e;
+					}
+					e = e.previousSibling;
+				}
+			}
+			return null;
+		},
+		getChild: function(index)
+		{
+			return this.element && this.element.childNodes[index] || null;
+		},
+		hasChild: function(node)
+		{
+			return this.element && node && node.parentNode === this.element || false;
+		},
+		getChildElements: function()
+		{
+			// element.children[] has issues
+			var e = this.element;
+			var K = [];
+			if (e) 
+			{
+				var n = 0;
+				e = e.firstChild;
+				while (e) 
+				{
+					if (e.nodeType === 1) 
+					{
+						K[n++] = e;
+					}
+					e = e.nextSibling;
+				}
+			}
+			return K;
+		},
+		getChildElement: function(elementIndex)
+		{
+			// element.children[] has issues
+			var e = this.element;
+			if (e && typeof elementIndex === 'number') 
+			{
+				var n = 0;
+				e = e.firstChild;
+				while (e) 
+				{
+					if (e.nodeType === 1 && n++ === elementIndex) 
+					{
+						return e;
+					}
+					e = e.nextSibling;
+				}
+				return null;
+			}
+		},
+		setChildElement: function(elementIndex)
+		{
+			this.setElement(this.getChildElement(elementIndex));
+			return this;
+		},
+		setParent: function()
+		{
+			this.setElement(this.getParent());
+			return this;
+		},
+		setFirst: function()
+		{
+			this.setElement(this.getFirst());
+			return this;
+		},
+		setPrevious: function()
+		{
+			this.setElement(this.getPrevious());
+			return this;
+		},
+		setNext: function()
+		{
+			this.setElement(this.getNext());
+			return this;
+		},
+		setLast: function()
+		{
+			this.setElement(this.getLast());
+			return this;
+		},
+		appendChild: function(childNode)
+		{
+			if (this.element && childNode && childNode.nodeType) 
+			{
+				if (childNode.parentNode) 
+				{
+					childNode.parentNode.removeChild(childNode);
+				}
+				this.element.appendChild(childNode);
+			}
+			return this;
+		},
+		appendChildren: function(childNodes)
+		{
+			var E = this.element;
+			if (E && childNodes) 
+			{
+				var l = childNodes.length;
+				var i = -1; //opt
+				var k;
+				while (++i < l) 
+				{
+					if ((k = childNodes[i]) && k.nodeType) 
+					{
+						if (k.parentNode) 
+						{
+							k.parentNode.removeChild(k);
+						}
+						E.appendChild(k);
+					}
+				}
+			}
+			return this;
+		},
+		removeChild: function(index)
+		{
+			if (this.element && (index = this.getChild(index))) 
+			{
+				this.element.removeChild(index);
+			}
+			return this;
+		},
+		removeChildElement: function(elementIndex)
+		{
+			if (this.element && (elementIndex = this.getChildElement(elementIndex))) 
+			{
+				this.element.removeChild(elementIndex);
+			}
+			return this;
+		},
+		removeChildren: function()
+		{
+			var E = this.element;
+			if (E) 
+			{
+				var K = E.childNodes;
+				var i = K.length;
+				while (i--) 
+				{
+					E.removeChild(K[i]);
+				}
+			}
+			return this;
+		},
+		purge: function()
+		{
+			leaf.purge(this.element);
+			this.element = this.style = null;
+			return this;
+		},
+		purgeChildElement: function(elementIndex)
+		{
+			leaf.purge(this.getChildElement(elementIndex));
+			return this;
+		},
+		purgeChildren: function()
+		{
+			var E = this.element;
+			if (E) 
+			{
+				var p = leaf.purge;
+				var C = E.childNodes;
+				var i = C.length;
+				var k;
+				while (i--) 
+				{
+					if ((k = C[i]).nodeType === 1) 
+					{
+						p(k);
+					}
+				}
+			}
+			return this;
+		},
+		cloneChild: function(index, cloneAttrAndChilds)
+		{
+			return (index = this.getChild(index)) ? index.cloneNode(!!cloneAttrAndChilds) : null;
+		},
+		cloneChildElement: function(elementIndex, cloneAttrAndChilds)
+		{
+			return (elementIndex = this.getChildElement(elementIndex)) ? elementIndex.cloneNode(!!cloneAttrAndChilds) : null;
+		},
+		hasCollision: function(collisorElement)
+		{
+			var E = this.element;
+			if (E && collisorElement && collisorElement.style) 
+			{
+				var R = document.documentElement;
+				var eX = 0;
+				var eY = 0;
+				var o = E;
+				while (o !== R) 
+				{
+					eX += o.offsetLeft;
+					eY += o.offsetTop;
+					o = o.parentNode;
+				}
+				var cX = 0;
+				var cY = 0;
+				o = collisorElement;
+				while (o !== R) 
+				{
+					cX += o.offsetLeft;
+					cY += o.offsetTop;
+					o = o.parentNode;
+				}
+				if (!(eX < cX - E.offsetWidth || cX + collisorElement.offsetWidth < eX)) 
+				{
+					return !(eY < cY - E.offsetHeight || cY + collisorElement.offsetHeight < eY);
+				}
+			}
+			return false;
+		},
+		setAttribute: function(attribute, value)
+		{
+			var E = this.element;
+			if (E && value !== undefined) 
+			{
+				if (typeof attribute === 'string') 
+				{
+					if ('style' === attribute && E.style.cssText !== undefined) 
+					{
+						E.style.cssText = value;
+					}
+					else 
+					{
+						E.setAttribute(attribute, value);
+					}
+				}
+				else 
+					if (typeof attribute === 'number') 
+					{
+						if (typeof E.attributes[attribute] === 'object') 
+						{
+							E.attributes[attribute].nodeValue = value;
+						}
+						else 
+						{
+							E.attributes[attribute] = value;
+						}
+					}
+				
+			}
+			return this;
+		},
+		getAttribute: function(attribute)
 		{
 			var o = this.element;
-			if (o && typeof property === 'string' && (o = o.getAttribute('style')) && ~ (i = o.search(new RegExp('(?:\\\;|\\s|\\u00A0|^)' + property + '\\\:', 'i')))) 
+			if (o && (o = o[attribute] || o.getAttribute(attribute) || o.attributes[attribute])) 
 			{
-				return o.substring((i = o.indexOf(':', i) + 2), (i = o.indexOf('\;', i)) === -1 ? o.length : i);
-			}
-			return null;
-		};
-	}
-	else 
-	{
-		leaf.ElementHandler.prototype.setCSS = function(cssObj)
-		{
-			var S = this.style;
-			if (S && cssObj) 
-			{
-				var K = [];
-				var n = 0;
-				var c;
-				for (c in cssObj) 
+				if ('style' === attribute && o.cssText !== undefined) 
 				{
-					K[n++] = c + ': ' + cssObj[c] + '\; ';
+					return o.cssText.toLowerCase();
 				}
-				S.cssText = ((c = S.cssText) && (c.charAt(c.length - 1) === '\;' ? c : c + '; ') || '') + K.join('');
+				if (typeof o === 'object') 
+				{
+					return o.nodeValue || '';
+				}
 			}
-			return this;
-		};
-		leaf.ElementHandler.prototype.getCSS = function(property)
-		{
-			var o = this.style;
-			if (o && (o = o.cssText) && typeof property === 'string' && ~ (i = o.search(new RegExp('(?:\\\;|\\s|^)' + property + '\\\:', 'i')))) 
+			if (typeof o === 'string') 
 			{
-				return o.substring((i = o.indexOf(':', i) + 2), (i = o.indexOf('\;', i)) === -1 ? o.length : i);
+				return o;
 			}
 			return null;
-		};
-	}
-})();
+		}
+	};
+	(function()
+	{
+		var S = document.createElement('div').style;
+		if (S.opacity === undefined) 
+		{
+			leaf.ElementHandler.prototype.setOpacity = function(opacity)
+			{
+				if (this.style && typeof opacity === 'number') 
+				{
+					this.style.filter = 'alpha(opacity=' + (opacity < 0 ? 0 : 1 < opacity ? 1 : opacity * 100 >> 0) + ')';
+				}
+				return this;
+			};
+			leaf.ElementHandler.prototype.getOpacity = function()
+			{
+				if (this.element) 
+				{
+					var o;
+					try 
+					{
+						o = this.element.filters.alpha.opacity / 100;
+						return o;
+					} 
+					catch (o) 
+					{
+						return (o = (/opacity=(\d+)/i).exec(this.style.cssText)) ? o[1] / 100 : 1;
+					}
+				}
+				return null;
+			};
+		}
+		else 
+		{
+			leaf.ElementHandler.prototype.setOpacity = function(opacity)
+			{
+				if (this.style && typeof opacity === 'number') 
+				{
+					this.style.opacity = opacity < 0 ? 0 : 1 < opacity ? 1 : opacity.toFixed(2);
+				}
+				return this;
+			};
+			leaf.ElementHandler.prototype.getOpacity = function()
+			{
+				var o = this.style;
+				if (o) 
+				{
+					return (o = parseFloat(o.opacity)) === o ? o : 1; // comparison is false if is NaN 
+				}
+				return null;
+			};
+		}
+		if (S.cssText === undefined) 
+		{
+			leaf.ElementHandler.prototype.setCSS = function(cssObj)
+			{
+				var E = this.element;
+				if (E && cssObj) 
+				{
+					var K = [];
+					var n = 0;
+					var c;
+					for (c in cssObj) 
+					{
+						K[n++] = c + ': ' + cssObj[c] + '\; ';
+					}
+					E.setAttribute('style', (E.getAttribute('style') || '') + K.join(''));
+				}
+				return this;
+			};
+			leaf.ElementHandler.prototype.getCSS = function(property)
+			{
+				var o = this.element;
+				if (o && typeof property === 'string' && (o = o.getAttribute('style')) && ~ (i = o.search(new RegExp('(?:\\\;|\\s|\\u00A0|^)' + property + '\\\:', 'i')))) 
+				{
+					return o.substring((i = o.indexOf(':', i) + 2), (i = o.indexOf('\;', i)) === -1 ? o.length : i);
+				}
+				return null;
+			};
+		}
+		else 
+		{
+			leaf.ElementHandler.prototype.setCSS = function(cssObj)
+			{
+				var S = this.style;
+				if (S && cssObj) 
+				{
+					var K = [];
+					var n = 0;
+					var c;
+					for (c in cssObj) 
+					{
+						K[n++] = c + ': ' + cssObj[c] + '\; ';
+					}
+					S.cssText = ((c = S.cssText) && (c.charAt(c.length - 1) === '\;' ? c : c + '; ') || '') + K.join('');
+				}
+				return this;
+			};
+			leaf.ElementHandler.prototype.getCSS = function(property)
+			{
+				var o = this.style;
+				if (o && (o = o.cssText) && typeof property === 'string' && ~ (i = o.search(new RegExp('(?:\\\;|\\s|^)' + property + '\\\:', 'i')))) 
+				{
+					return o.substring((i = o.indexOf(':', i) + 2), (i = o.indexOf('\;', i)) === -1 ? o.length : i);
+				}
+				return null;
+			};
+		}
+	})();
+})(this);

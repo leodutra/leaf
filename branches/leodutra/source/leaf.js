@@ -132,7 +132,7 @@
 			if (typeof callback === 'function') 
 			{
 				var L = this.length >> 0;
-				for (var i = -1; ++i < L;) // most browsers optimize i++; for others it loses only for i+=1 
+				for (var i = -1; ++i < L;) 
 				{
 					if (i in this) 
 					{
@@ -147,7 +147,7 @@
 			if (typeof callback === 'function') 
 			{
 				var L = this.length >> 0;
-				for (var i = -1; ++i < L;) // most browsers optimize i++; for others it loses only for i+=1
+				for (var i = -1; ++i < L;) 
 				{
 					if (i in this && !callback.call(thisObject, this[i], i, this)) 
 					{
@@ -158,16 +158,16 @@
 			return true;
 		};
 		
-		Array.prototype.indexOf = function(searchElement, fromIndex)
+		Array.prototype.indexOf = function(searchElement, fromIndex) // very optimized
 		{
 			var L = this.length >> 0;
 			var i = fromIndex >> 0; // ceil negative, floor positive
-			if (i < 0) // -1, -1.1, -1.2, etc
+			if (i-- < 0) // care here
 			{
+				// -1, -1.1, -1.2, etc
 				i += L;
 			}
-			i--; //opt
-			while (++i < L) 
+			while (++i < L) // care here
 			{
 				if (i in this && this[i] === searchElement) 
 				{
@@ -403,12 +403,12 @@
 			var D = document;
 			var L = ids.length >> 0;
 			var n = 0;
-			var i = -1; //opt
+			var i = 0;
 			var K = [];
 			var o;
-			while (++i < L) 
+			while (i < L) 
 			{
-				if ((o = D.getElementById(ids[i]))) 
+				if ((o = D.getElementById(ids[i++]))) 
 				{
 					K[n++] = o;
 				}
@@ -424,19 +424,19 @@
 		{
 			var L = tagNames.length >> 0;
 			var n = 0;
-			var i = -1; //opt
+			var i = 0;
 			var j = 0;
 			var K = [];
 			var l;
 			var o;
-			while (++i < L) 
+			while (i < L) 
 			{
-				l = (o = rootNode.getElementsByTagName(tagNames[i])).length;
-				while (++j < l) 
+				l = (o = rootNode.getElementsByTagName(tagNames[i++])).length;
+				while (j < l) 
 				{
-					K[n++] = o[j];
+					K[n++] = o[j++];
 				}
-				j = -1; //opt
+				j = 0;
 			}
 			return K;
 		}
@@ -451,19 +451,19 @@
 			{
 				var L = classNames.length >> 0;
 				var n = 0;
-				var i = -1; //opt
+				var i = 0; 
 				var j = 0;
 				var K = [];
 				var l;
 				var o;
-				while (++i < L) 
+				while (i < L) 
 				{
-					l = (o = rootNode.getElementsByClassName(classNames[i])).length;
-					while (++j < l) 
+					l = (o = rootNode.getElementsByClassName(classNames[i++])).length;
+					while (j < l) 
 					{
-						K[n++] = o[j];
+						K[n++] = o[j++];
 					}
-					j = -1; //opt
+					j = 0;
 				}
 				return K;
 			}
@@ -488,10 +488,10 @@
 					if ((o = o.childNodes)) 
 					{
 						var L = o.length;
-						var i = -1; //opt
-						while (++i < L) 
+						var i = 0; 
+						while (i < L) 
 						{
-							q(o[i]);
+							q(o[i++]);
 						}
 					}
 				};
@@ -937,11 +937,11 @@
 			if (E && childNodes) 
 			{
 				var l = childNodes.length;
-				var i = -1; //opt
+				var i = 0;
 				var k;
-				while (++i < l) 
+				while (i < l) 
 				{
-					if ((k = childNodes[i]) && k.nodeType) 
+					if ((k = childNodes[i++]) && k.nodeType) 
 					{
 						if (k.parentNode) 
 						{

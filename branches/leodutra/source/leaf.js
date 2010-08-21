@@ -158,7 +158,7 @@
 			return true;
 		};
 		
-		Array.prototype.indexOf = function(searchElement, fromIndex) // very optimized
+		Array.prototype.indexOf = function(searchElement, fromIndex) // very optimized, ok
 		{
 			var L = this.length >> 0;
 			var i = fromIndex >> 0; // ceil negative, floor positive
@@ -168,11 +168,11 @@
 				i += L;
 			}
 			while (++i < L) // care here
-			{
+ 			{
 				if (i in this && this[i] === searchElement) 
 				{
 					return i;
-				} 
+				}
 			}
 			return -1;
 		};
@@ -182,24 +182,23 @@
 			var i = Number(fromIndex);
 			if (i === i) // false if is NaN 
 			{
-				if (i < 0) 
+				if ((i >>= 0) < 0) 
 				{
-					if ((i >>= 0) < 0) // ceil for less than zero
-					{
-						i += L;
-					}
+					i += L;
 				}
 				else 
-					if (L <= (i >>>= 0)) // floor, since i >= 0
+				{
+					if (L <= i) 
 					{
 						i = L - 1;
 					}
+				}
 			}
 			else 
 			{
 				i = L - 1;
 			}
-			while (~ i) // -1 < i, ~ = -(N+1)
+			while (~i) // ~ = -(N+1)
  			{
 				if (i in this && this[i] === searchElement) 
 				{
@@ -217,7 +216,7 @@
 				var R = [];
 				var n = 0;
 				var v; // prevents object mutation
-				for (var i = -1; ++i < L;)
+				for (var i = -1; ++i < L;) 
 				{
 					if (i in this && callback.call(thisObject, v = this[i], i, this)) 
 					{
@@ -234,7 +233,7 @@
 			{
 				var L = this.length >> 0;
 				var R = [];
-				for (var i = -1; ++i < L;)
+				for (var i = -1; ++i < L;) 
 				{
 					if (i in this) 
 					{
@@ -451,7 +450,7 @@
 			{
 				var L = classNames.length >> 0;
 				var n = 0;
-				var i = 0; 
+				var i = 0;
 				var j = 0;
 				var K = [];
 				var l;
@@ -488,7 +487,7 @@
 					if ((o = o.childNodes)) 
 					{
 						var L = o.length;
-						var i = 0; 
+						var i = 0;
 						while (i < L) 
 						{
 							q(o[i++]);

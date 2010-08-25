@@ -198,13 +198,13 @@
 			{
 				i = L - 1;
 			}
-			while (~i) // ~ = -(N+1)
+			while (~ i) // ~ = -(N+1)
  			{
 				if (i in this && this[i] === searchElement) 
 				{
 					return i;
 				}
-				i--;
+				--i;
 			}
 			return -1;
 		};
@@ -703,15 +703,16 @@
 				this.setCSS(cssObj);
 				this.setContent(content);
 			}
+			else 
+			{
+				this.element = this.style = null;
+			}
 			return this;
 		},
 		createChildElement: function(tagName, id, cssObj, content)
 		{
-			if (this.element) 
-			{
-				new leaf.ElementHandler().create(tagName, id, classNames, cssObj, content).append(this.element);
-			}
-			return this;
+			var E = this.element;
+			return this.create(tagName, id, classNames, cssObj, content).append(this.element).setElement(E);
 		},
 		append: function(parent)
 		{
@@ -724,7 +725,7 @@
 		},
 		insertBefore: function(node)
 		{
-			if (this.element && (node.nodeType && node.parentNode || (node = document.getElementById(node)))) 
+			if (this.element && (typeof node === 'string' ? node = document.getElementById(node) : node) && node.parentNode) 
 			{
 				this.remove();
 				node.parentNode.insertBefore(this.element, node);
@@ -733,25 +734,23 @@
 		},
 		insertAfter: function(node)
 		{
-			var E = this.element;
-			if (E && (node.nodeType && node.parentNode || (node = document.getElementById(node)))) 
+			if (this.element && (typeof node === 'string' ? node = document.getElementById(node) : node) && node.parentNode) 
 			{
 				this.remove();
 				if (node.nextSibling) 
 				{
-					node.parentNode.insertBefore(E, node.nextSibling);
+					node.parentNode.insertBefore(this.element, node.nextSibling);
 				}
 				else 
 				{
-					node.parentNode.appendChild(E);
+					node.parentNode.appendChild(this.element);
 				}
 			}
 			return this;
 		},
 		insertAsFirst: function(parent)
 		{
-			var E = this.element;
-			if (E && typeof parent === 'string' ? parent = document.getElementById(parent) : parent && (parent.nodeType === 1 || parent.nodeType === 11) || (parent = document.body)) 
+			if (this.element && typeof parent === 'string' ? parent = document.getElementById(parent) : parent && (parent.nodeType === 1 || parent.nodeType === 11) || (parent = document.body)) 
 			{
 				if (parent.firstChild) 
 				{
@@ -933,9 +932,9 @@
 		appendChildren: function(childNodes)
 		{
 			var E = this.element;
-			if (E && childNodes) 
+			if (E && typeof childNodes === 'object') 
 			{
-				var l = childNodes.length;
+				var l = childNodes.length >> 0;
 				var i = 0;
 				var k;
 				while (i < l) 
@@ -1001,12 +1000,11 @@
 				var p = leaf.purge;
 				var C = E.childNodes;
 				var i = C.length;
-				var k;
 				while (i--) 
 				{
-					if ((k = C[i]).nodeType === 1) 
+					if (C[i].nodeType === 1) 
 					{
-						p(k);
+						p(C[i]);
 					}
 				}
 			}
@@ -1079,7 +1077,6 @@
 							E.attributes[attribute] = value;
 						}
 					}
-				
 			}
 			return this;
 		},
@@ -1104,112 +1101,110 @@
 			return null;
 		}
 	};
-	(function()
+	
+	var S = document.createElement('div').style;
+	if (S.opacity === undefined) 
 	{
-		var S = document.createElement('div').style;
-		if (S.opacity === undefined) 
+		leaf.ElementHandler.prototype.setOpacity = function(opacity)
 		{
-			leaf.ElementHandler.prototype.setOpacity = function(opacity)
+			if (this.style && typeof opacity === 'number') 
 			{
-				if (this.style && typeof opacity === 'number') 
-				{
-					this.style.filter = 'alpha(opacity=' + (opacity < 0 ? 0 : 1 < opacity ? 1 : opacity * 100 >> 0) + ')';
-				}
-				return this;
-			};
-			leaf.ElementHandler.prototype.getOpacity = function()
-			{
-				if (this.element) 
-				{
-					var o;
-					try 
-					{
-						o = this.element.filters.alpha.opacity / 100;
-						return o;
-					} 
-					catch (o) 
-					{
-						return (o = (/opacity=(\d+)/i).exec(this.style.cssText)) ? o[1] / 100 : 1;
-					}
-				}
-				return null;
-			};
-		}
-		else 
+				this.style.filter = 'alpha(opacity=' + (1 < opacity ? 1 : opacity < 0 ? 0 : opacity * 100 >> 0) + ')';
+			}
+			return this;
+		};
+		leaf.ElementHandler.prototype.getOpacity = function()
 		{
-			leaf.ElementHandler.prototype.setOpacity = function(opacity)
+			if (this.element) 
 			{
-				if (this.style && typeof opacity === 'number') 
+				var o;
+				try 
 				{
-					this.style.opacity = opacity < 0 ? 0 : 1 < opacity ? 1 : opacity.toFixed(2);
-				}
-				return this;
-			};
-			leaf.ElementHandler.prototype.getOpacity = function()
-			{
-				var o = this.style;
-				if (o) 
+					return this.element.filters.alpha.opacity / 100;
+				} 
+				catch (o) 
 				{
-					return (o = parseFloat(o.opacity)) === o ? o : 1; // comparison is false if is NaN 
+					return (o = (/opacity=(\d+)/i).exec(this.style.cssText)) ? o[1] / 100 : 1;
 				}
-				return null;
-			};
-		}
-		if (S.cssText === undefined) 
+			}
+			return null;
+		};
+	}
+	else 
+	{
+		leaf.ElementHandler.prototype.setOpacity = function(opacity)
 		{
-			leaf.ElementHandler.prototype.setCSS = function(cssObj)
+			if (this.style && typeof opacity === 'number') 
 			{
-				var E = this.element;
-				if (E && cssObj) 
-				{
-					var K = [];
-					var n = 0;
-					var c;
-					for (c in cssObj) 
-					{
-						K[n++] = c + ': ' + cssObj[c] + '\; ';
-					}
-					E.setAttribute('style', (E.getAttribute('style') || '') + K.join(''));
-				}
-				return this;
-			};
-			leaf.ElementHandler.prototype.getCSS = function(property)
-			{
-				var o = this.element;
-				if (o && typeof property === 'string' && (o = o.getAttribute('style')) && ~ (i = o.search(new RegExp('(?:\\\;|\\s|\\u00A0|^)' + property + '\\\:', 'i')))) 
-				{
-					return o.substring((i = o.indexOf(':', i) + 2), (i = o.indexOf('\;', i)) === -1 ? o.length : i);
-				}
-				return null;
-			};
-		}
-		else 
+				this.style.opacity = 1 < opacity ? 1 : opacity < 0 ? 0 : (opacity * 100 >> 0) * 0.01;
+			}
+			return this;
+		};
+		leaf.ElementHandler.prototype.getOpacity = function()
 		{
-			leaf.ElementHandler.prototype.setCSS = function(cssObj)
+			var o = this.style;
+			if (o) 
 			{
-				var S = this.style;
-				if (S && cssObj) 
-				{
-					var K = [];
-					var n = 0;
-					var c;
-					for (c in cssObj) 
-					{
-						K[n++] = c + ': ' + cssObj[c] + '\; ';
-					}
-					S.cssText = ((c = S.cssText) && (c.charAt(c.length - 1) === '\;' ? c : c + '; ') || '') + K.join('');
-				}
-				return this;
-			};
-			leaf.ElementHandler.prototype.getCSS = function(property)
+				return (o = parseFloat(o.opacity)) === o ? o : 1; // comparison is false if is NaN 
+			}
+			return null;
+		};
+	}
+	if (S.cssText === undefined) 
+	{
+		leaf.ElementHandler.prototype.setCSS = function(cssObj)
+		{
+			var E = this.element;
+			if (E && cssObj) 
 			{
-				var o = this.style;
-				if (o && (o = o.cssText) && typeof property === 'string' && ~ (i = o.search(new RegExp('(?:\\\;|\\s|^)' + property + '\\\:', 'i')))) 
+				var K = [];
+				var n = 0;
+				var c;
+				for (c in cssObj) 
 				{
-					return o.substring((i = o.indexOf(':', i) + 2), (i = o.indexOf('\;', i)) === -1 ? o.length : i);
+					K[n++] = c + ': ' + cssObj[c] + '\; ';
 				}
-				return null;
-			};
-		}
-	})();
+				E.setAttribute('style', (E.getAttribute('style') || '') + K.join(''));
+			}
+			return this;
+		};
+		leaf.ElementHandler.prototype.getCSS = function(property)
+		{
+			var o = this.element;
+			if (o && typeof property === 'string' && (o = o.getAttribute('style')) && ~ (i = o.search(new RegExp('(?:\\\;|\\s|\\u00A0|^)' + property + '\\\:', 'i')))) 
+			{
+				return o.substring((i = o.indexOf(':', i) + 2), (i = o.indexOf('\;', i)) === -1 ? o.length : i);
+			}
+			return null;
+		};
+	}
+	else 
+	{
+		leaf.ElementHandler.prototype.setCSS = function(cssObj)
+		{
+			var S = this.style;
+			if (S && cssObj) 
+			{
+				var K = [];
+				var n = 0;
+				var c;
+				for (c in cssObj) 
+				{
+					K[n++] = c + ': ' + cssObj[c] + '\; ';
+				}
+				S.cssText = ((c = S.cssText) && (c.charAt(c.length - 1) === '\;' ? c : c + '; ') || '') + K.join('');
+			}
+			return this;
+		};
+		leaf.ElementHandler.prototype.getCSS = function(property)
+		{
+			var o = this.style;
+			if (o && (o = o.cssText) && typeof property === 'string' && ~ (i = o.search(new RegExp('(?:\\\;|\\s|^)' + property + '\\\:', 'i')))) 
+			{
+				return o.substring((i = o.indexOf(':', i) + 2), (i = o.indexOf('\;', i)) === -1 ? o.length : i);
+			}
+			return null;
+		};
+	}
+	
 })(this);

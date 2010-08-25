@@ -1,6 +1,6 @@
 /*
  LEAF JavaScript Library
- Version 0.10.6a
+ Version 0.10.7a
  Copyright (c) 2009-2010 Leonardo Dutra Constâncio
  MIT License (http://leaf.googlecode.com/svn/trunk/docs/MIT-license.txt)
  
@@ -16,10 +16,10 @@
  - any better option to "instanceof Array"
  - Remake: addClasses, removeClasses, setAttribute & getAttribute & getByClasses (http://www.quirksmode.org/dom/w3c_core.html#attributes);
  */
-(function(window, undefined)
+(function(W, U)
 {
-	var document = window.document;
-	leaf = window.leaf || {};
+	var D = W.document;
+	leaf = W.leaf || {};
 	
 	/*
 	 if (!this.JSON)
@@ -235,7 +235,7 @@
 			superObj = new n;
 			for (n in extension) 
 			{
-				if (extension[n] !== undefined) 
+				if (extension[n] !== U) 
 				{
 					superObj[n] = extension[n];
 				}
@@ -312,7 +312,7 @@
 	
 	leaf.getMouseXY = function(event)//ok
 	{
-		if ((event = event || window.event)) 
+		if ((event = event || W.event)) 
 		{
 			if (typeof event.pageY === 'number') 
 			{
@@ -321,8 +321,8 @@
 					y: event.pageY
 				};
 			}
-			var H = document.documentElement;
-			var B = document.body;
+			var H = D.documentElement;
+			var B = D.body;
 			if (B) 
 			{
 				return {
@@ -376,7 +376,7 @@
 	{
 		if (typeof ids === 'object') 
 		{
-			var D = document;
+			var D = D;
 			var L = ids.length >> 0;
 			var n = 0;
 			var i = 0;
@@ -391,11 +391,11 @@
 			}
 			return K;
 		}
-		return (ids = document.getElementById(ids)) ? [ids] : [];
+		return (ids = D.getElementById(ids)) ? [ids] : [];
 	};
 	leaf.getByTags = function(tagNames, rootNode)//ok
 	{
-		rootNode = rootNode ? rootNode.getElementsByTagName ? rootNode : document.getElementById(rootNode) || document : document;
+		rootNode = rootNode ? rootNode.getElementsByTagName ? rootNode : D.getElementById(rootNode) || D : D;
 		if (typeof tagNames === 'object') 
 		{
 			var L = tagNames.length >> 0;
@@ -418,11 +418,11 @@
 		}
 		return rootNode.getElementsByTagName(tagNames);
 	};
-	if (document.getElementsByClassName) 
+	if (D.getElementsByClassName) 
 	{
 		leaf.getByClasses = function(classNames, rootNode)
 		{
-			rootNode = rootNode ? rootNode.getElementsByClassName ? rootNode : document.getElementById(rootNode) || document : document;
+			rootNode = rootNode ? rootNode.getElementsByClassName ? rootNode : D.getElementById(rootNode) || D : D;
 			if (typeof classNames === 'object') 
 			{
 				var L = classNames.length >> 0;
@@ -471,7 +471,7 @@
 						}
 					}
 				};
-				q(rootNode ? rootNode.getElementsByTagName ? rootNode : document.getElementById(rootNode) || document : document); // by tagName cause of no by class
+				q(rootNode ? rootNode.getElementsByTagName ? rootNode : D.getElementById(rootNode) || D : D); // by tagName cause of no by class
 			}
 			return K;
 		};
@@ -496,7 +496,7 @@
 		{
 			if (domObj && domObj.dispatchEvent && typeof type === 'string') 
 			{
-				var e = document.createEvent('HTMLEvents');
+				var e = D.createEvent('HTMLEvents');
 				e.initEvent(type, true, true);
 				domObj.dispatchEvent(e);
 			}
@@ -530,7 +530,7 @@
 			{
 				if (domObj && domObj.fireEvent && typeof type === 'string') 
 				{
-					domObj.fireEvent('on' + type, document.createEventObject());
+					domObj.fireEvent('on' + type, D.createEventObject());
 				}
 			};
 		}
@@ -563,7 +563,7 @@
 		
 		setElement: function(element)
 		{
-			this.style = (this.element = element ? element.style ? element : document.getElementById(element) : null) ? this.element.style : null;
+			this.style = (this.element = element ? element.style ? element : D.getElementById(element) : null) ? this.element.style : null;
 			return this;
 		},
 		getElement: function()
@@ -669,7 +669,7 @@
 		},
 		create: function(tagName, id, classNames, cssObj, content)
 		{
-			if (typeof tagName === 'string' && (tagName = document.createElement(tagName))) 
+			if (typeof tagName === 'string' && (tagName = D.createElement(tagName))) 
 			{
 				if (typeof id === 'string') 
 				{
@@ -693,7 +693,7 @@
 		},
 		append: function(parent)
 		{
-			if (this.element && (typeof parent === 'string' ? parent = document.getElementById(parent) : parent && (parent.nodeType === 1 || parent.nodeType === 11) || (parent = document.body))) 
+			if (this.element && (typeof parent === 'string' ? parent = D.getElementById(parent) : parent && (parent.nodeType === 1 || parent.nodeType === 11) || (parent = D.body))) 
 			{
 				this.remove();
 				parent.appendChild(this.element);
@@ -702,7 +702,7 @@
 		},
 		insertBefore: function(node)
 		{
-			if (this.element && (typeof node === 'string' ? node = document.getElementById(node) : node) && node.parentNode) 
+			if (this.element && (typeof node === 'string' ? node = D.getElementById(node) : node) && node.parentNode) 
 			{
 				this.remove();
 				node.parentNode.insertBefore(this.element, node);
@@ -711,7 +711,7 @@
 		},
 		insertAfter: function(node)
 		{
-			if (this.element && (typeof node === 'string' ? node = document.getElementById(node) : node) && node.parentNode) 
+			if (this.element && (typeof node === 'string' ? node = D.getElementById(node) : node) && node.parentNode) 
 			{
 				this.remove();
 				if (node.nextSibling) 
@@ -727,7 +727,7 @@
 		},
 		insertAsFirst: function(parent)
 		{
-			if (this.element && typeof parent === 'string' ? parent = document.getElementById(parent) : parent && (parent.nodeType === 1 || parent.nodeType === 11) || (parent = document.body)) 
+			if (this.element && typeof parent === 'string' ? parent = D.getElementById(parent) : parent && (parent.nodeType === 1 || parent.nodeType === 11) || (parent = D.body)) 
 			{
 				if (parent.firstChild) 
 				{
@@ -1000,7 +1000,7 @@
 			var E = this.element;
 			if (E && collisorElement && collisorElement.style) 
 			{
-				var R = document.documentElement;
+				var R = D.documentElement;
 				var eX = 0;
 				var eY = 0;
 				var o = E;
@@ -1029,11 +1029,11 @@
 		setAttribute: function(attribute, value)
 		{
 			var E = this.element;
-			if (E && value !== undefined) 
+			if (E && value !== U) 
 			{
 				if (typeof attribute === 'string') 
 				{
-					if ('style' === attribute && E.style.cssText !== undefined) 
+					if ('style' === attribute && E.style.cssText !== U) 
 					{
 						E.style.cssText = value;
 					}
@@ -1062,7 +1062,7 @@
 			var o = this.element;
 			if (o && (o = o[attribute] || o.getAttribute(attribute) || o.attributes[attribute])) 
 			{
-				if ('style' === attribute && o.cssText !== undefined) 
+				if ('style' === attribute && o.cssText !== U) 
 				{
 					return o.cssText.toLowerCase();
 				}
@@ -1079,8 +1079,8 @@
 		}
 	};
 	
-	var S = document.createElement('div').style;
-	if (S.opacity === undefined) 
+	var S = D.createElement('div').style;
+	if (S.opacity === U) 
 	{
 		leaf.ElementHandler.prototype.setOpacity = function(opacity)
 		{
@@ -1127,7 +1127,7 @@
 			return null;
 		};
 	}
-	if (S.cssText === undefined) 
+	if (S.cssText === U) 
 	{
 		leaf.ElementHandler.prototype.setCSS = function(cssObj)
 		{

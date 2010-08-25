@@ -1,7 +1,7 @@
 
 /*
  LEAF JavaScript Library
- Version 0.10.5a
+ Version 0.10.6a
  
  MIT License:
  Copyright (c) 2009-2010 Leonardo Dutra Constâncio

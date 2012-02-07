@@ -1,7 +1,7 @@
 /*
  LEAF JavaScript Library
  Version 0.10.6a
- Copyright (c) 2009-2010 Leonardo Dutra Const‚ncio
+ Copyright (c) 2009-2010 Leonardo Dutra Const√¢ncio
  MIT License (http://leaf.googlecode.com/svn/trunk/docs/MIT-license.txt)
  
  TODO:
@@ -58,7 +58,7 @@
 		};
 	}
 	
-	if (!String.prototype.trim)//ok
+	if (!String.prototype.trim)// this test is simple but is ok!
 	{
 		String.prototype.trim = function()
 		{

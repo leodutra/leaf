@@ -20,45 +20,39 @@
 {
 	var document = window.document;
 	leaf = window.leaf || {};
+	var Date = Date;
 	
-	/*
-	 if (!this.JSON)
-	 {
-	 JSON =
-	 {
-	 parse: function(...) {...},
-	 stringfy: function(...) {...}
-	 };
-	 }
-	 // */
-	/*
-	 if (!Date.prototype.toISOString)
-	 {
-	 Date.prototype.toISOString = function() {};
-	 }
-	 // */
-	if (!Date.prototype.toJSON)//ok
+	if (!window.JSON)
+	{
+		JSON = {
+			parse: function(string) {
+				return eval('(' + string +')');
+			},
+			stringfy: function() {}
+		};
+	}
+	
+	function formatNum(n)
+	{
+		return n < 10 ? '0' + n : n;
+	}
+	function toISOString() {
+		return this.getUTCFullYear() + '-' +
+		formatNum(this.getUTCMonth() + 1) + '-' +
+		formatNum(this.getUTCDate()) + 'T' +
+		formatNum(this.getUTCHours()) + ':' +
+		formatNum(this.getUTCMinutes()) + ':' +
+		formatNum(this.getUTCSeconds()) + 'Z';
+	}
+	
+	if (!Date.prototype.toISOString) Date.prototype.toISOString = toISOString;
+	if (!Date.prototype.toJSON)
 	{
 		// from http://json.org/json2.js
-		Date.prototype.toJSON = function(key)
-		{
-			function f(n)
-			{
-				return n < 10 ? '0' + n : n;
-			}
-			return isFinite(this.valueOf()) ? this.getUTCFullYear() + '-' +
-			f(this.getUTCMonth() + 1) +
-			'-' +
-			f(this.getUTCDate()) +
-			'T' +
-			f(this.getUTCHours()) +
-			':' +
-			f(this.getUTCMinutes()) +
-			':' +
-			f(this.getUTCSeconds()) +
-			'Z' : null;
-		};
-		String.prototype.toJSON = Number.prototype.toJSON = Boolean.prototype.toJSON = function(key)
+		Date.prototype.toJSON = toISOString;
+		String.prototype.toJSON = 
+		Number.prototype.toJSON = 
+		Boolean.prototype.toJSON = function(key)
 		{
 			return this.valueOf();
 		};
@@ -79,6 +73,7 @@
 			return this.replace(/(\s|\u00A0)+$/, '');
 		};
 	}
+	
 	Array.isArray = function(array)
 	{
 		// array && array.constructor === Array has issues
@@ -223,6 +218,11 @@
 		};
 	}
 	
+	leaf.isElement = function (object) {
+		//return !!(object && object.nodeType == 1);
+		return !!(object && object.nodeType === 1);
+	}
+	
 	leaf.extend = function(superObj, extension)//ok
 	{
 		// cannot use on internals (IE and some others)
@@ -244,25 +244,27 @@
 		}
 		return null;
 	};
-	leaf.clone = function(obj)//ok
+	
+	function recursiveCloning(obj) {
+		var clone = {};
+		var k;
+		for (k in obj) 
+		{
+			clone[k] = typeof obj[k] === 'object' && obj[k] ? recursiveCloning(obj[k]) : obj[k];
+		}
+		return clone;
+	}
+	
+	leaf.clone = function(object)//ok
 	{
 		if (JSON.parse) 
 		{
-			return JSON.parse(JSON.stringify(obj));
+			return JSON.parse(JSON.stringify(object));
 		}
-		var c = function(o)
-		{
-			var R = {};
-			var k;
-			for (k in o) 
-			{
-				R[k] = typeof o[k] === 'object' && o[k] ? c(o[k]) : o[k];
-			}
-			return R;
-		};
-		return c(obj);
+		return recursiveCloning(object);
 	};
-	if (this.XMLHttpRequest)//ok
+	
+	if (window.XMLHttpRequest)//ok
 	{
 		leaf.createXHR = function()
 		{
@@ -270,10 +272,10 @@
 		};
 	}
 	else 
-		if (this.ActiveXObject) 
+		if (window.ActiveXObject) 
 		{
-			leaf.createXHR = function()
-			{
+			 leaf.createXHR = function() 
+			 {
 				if (!leaf.createXHR.activeX) 
 				{
 					leaf.createXHR.activeX = (function()
@@ -286,14 +288,14 @@
 						var o;
 						while (i--) 
 						{
-							try 
-							{
-								new A(V[i]);
-								return V[i];
-							} 
-							catch (o) 
-							{
-							}
+								try 
+								{
+										new A(V[i]);
+										return V[i];
+								} 
+								catch (o) 
+								{
+								}
 						}
 						return 'Microsoft.XMLHTTP';
 					})();
@@ -372,6 +374,7 @@
 			}
 		}
 	};
+	
 	leaf.getByIds = function(ids)//ok
 	{
 		if (typeof ids === 'object') 
@@ -532,18 +535,6 @@
 				{
 					domObj.fireEvent('on' + type, document.createEventObject());
 				}
-			};
-		}
-		else 
-		{
-			leaf.addListener = function(domObj, type, listener)
-			{
-			};
-			leaf.removeListener = function(domObj, type, listener)
-			{
-			};
-			leaf.dispatchEvent = function(domObj, type)
-			{
 			};
 		}
 	

@@ -1,4 +1,4 @@
-# leaf
+# [leaf](visual/logo.png)
 Automatically exported from code.google.com/p/leaf
 
 

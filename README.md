@@ -2,17 +2,17 @@
 Automatically exported from code.google.com/p/leaf
 
 
-<font color="red">This project is dead. The standards (HTML5, ECMA,...) are doing great! I'm at [https://github.com/LeoDutra GitHub] now.</font>
+<font color="red">*This project is dead.* The standards (HTML5, ECMA,...) are doing great!</font>
 
-LEAF is an open !JavaScript project. Created to ease the development of Adobe AIR and web apps (even for mobile browsers)... gadgets, widgets and APIs.
+*LEAF was created in 2009-2010 to ease the development of web and Adobe AIR apps, gadgets, widgets and APIs.*
 
 It is fully compatible with intellisense editors, like Aptana Studio, JSEclipse, Adobe Dreamweaver and others; just because it has a simple and well thinked data structure. 
 
 *Optimum compatibility, speed and size* are the most important rules of this project. LEAF purpouse is to serve as core in JavaScript implementations. It has only easing and crossbrowser functions; the real needed with the best performance.
 
-You can *download the current alpha version of LEAF*. It's open source and you can modify, customize and mashup it with any other !JavaScript.
+You can *download the current alpha version of LEAF*. It's open source and you can modify, customize and distribute.
 
-Collaborate to the project if you have advanced knowledge of !JavaScript, DOM, XHTML and all the web context. Let's make a better LEAF together.
+Collaborate to the project if you have advanced knowledge of JavaScript, DOM, XHTML and all the web context. Let's make a better LEAF together.
 
 *Use and enjoy it!*
 

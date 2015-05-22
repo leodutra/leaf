@@ -23,7 +23,7 @@ Collaborate to the project if you have advanced knowledge of JavaScript, DOM, XH
 *Changes on LEAF v0.10a*
 <br />
     - added ECMA 5 functions. These functions will work even on JavaScript 1.5:
-{{{
+```javascript
     "string".trim()
     "string".trimLeft()
     "string".trimRight()
@@ -42,7 +42,7 @@ Collaborate to the project if you have advanced knowledge of JavaScript, DOM, XH
     [].lastIndexOf()
 
     Array.isArray()
-}}}
+``` 
     - faster createXHR, with the best ActiveX for old IE versions;<br />
     - fast functions and numeric operations (tons of bitwise)<br />
 
@@ -52,7 +52,7 @@ Collaborate to the project if you have advanced knowledge of JavaScript, DOM, XH
 *Sample of LEAF v0.10a*
 
 </font>
-{{{
+```javascript
 leaf.addListener(window, 'load', function ()
 {
     var box = new leaf.ElementHandler();     // a handler full of features
@@ -72,6 +72,7 @@ var xmlHttpRequester = leaf.createXHR(); // Native calls, very fast ActiveX setu
 
 [0, 1, 2, 3]                             //.each, .map, .filter, .every and more from ECMA 5, even when using JavaScript 1.5!
 alert("   text   ".trim());              // ECMA 5 String.trim()! Even when using JavaScript 1.5 too!
-}}}
-<br />
+```
+<br>
+<br>
 <font size="1" face="verdana">Trademarks, enterprises or reserved rights: Adobe, Adobe ActionScript (language), Adobe AIR, Adobe Dreamweaver, Adobe CS4, Aptana, Aptana Studio, Apple iPhone, Apple iPod, Apple Safari, Aptana Studio, Google Chrome, JSEclipse, Microsoft Internet Explorer, Mozilla Firefox, Opera and Sun's Java (language). Names had been cited just to make known the use of LEAF, since LEAF is used to enhance the quality and usage of these softwares.</font>

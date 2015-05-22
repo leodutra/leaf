@@ -1,4 +1,5 @@
-<<<<<<< .mine
+
+
 /*
  LEAF JavaScript Library
  Version 0.10.6a
@@ -17,18 +18,20 @@
  - any better option to "instanceof Array"
  - Remake: addClasses, removeClasses, setAttribute & getAttribute & getByClasses (http://www.quirksmode.org/dom/w3c_core.html#attributes);
  */
+
 (function(window, undefined)
 {
 	leaf = window.leaf || {};
 	var document = window.document;
 	var objToString = Object.prototype.toString;
 	var userAgent = navigator.userAgent;
+    
     leaf.Browser = {
-      IE:             !!window.attachEvent && !isOpera,
-      Opera:          objToString.call(window.opera) === '[object Opera]',
-      WebKit:         userAgent.indexOf('AppleWebKit/') > -1,
-      Gecko:          userAgent.indexOf('Gecko') > -1 && userAgent.indexOf('KHTML') === -1,
-      MobileSafari:   /Apple.*Mobile/.test(userAgent)
+		IE:             !!window.attachEvent && !isOpera,
+		Opera:          objToString.call(window.opera) === '[object Opera]',
+		WebKit:         userAgent.indexOf('AppleWebKit/') > -1,
+		Gecko:          userAgent.indexOf('Gecko') > -1 && userAgent.indexOf('KHTML') === -1,
+		MobileSafari:   /Apple.*Mobile/.test(userAgent)
     };
 	
 	if (!window.JSON)
